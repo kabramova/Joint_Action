@@ -2,7 +2,7 @@ import numpy as np
 
 # array
 ar = np.array([1,2,3])          # array
-ar2 = np.array((1,2,3))          # array
+ar2 = np.array((1,2,3))         # array
 ar == ar2
 ar[1]
 br = np.array([[1,2,3]])
