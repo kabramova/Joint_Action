@@ -362,12 +362,12 @@ class Evolution(Simulate):
 
 ### Simulation of Evolution
 e1 = Evolution(simlength=5000)
-Fitness_progress, pos_target = e1.run_evolution(Generations=1000, mutation_var=.0001, complex_trials=True, fit_prop_sel=True, position_agent=[50,50], angle_to_target= np.pi/2,  distance_to_target = 30)
+Fitness_progress, pos_target = e1.run_evolution(Generations=700, mutation_var=.0001, complex_trials=True, fit_prop_sel=True, position_agent=[50,50], angle_to_target= np.pi/2,  distance_to_target = 30)
 
 import pickle
-pickle.dump(e1.pop_list,                  open('e1.pop_list.sim5000.mut.05.Gen301-1300_CT.fps',      'wb'))
-pickle.dump(np.round(Fitness_progress,2), open('Fitness_progress.sim5000.mut.05.Gen301-1300_CT.fps', 'wb'))
-pickle.dump(pos_target,                   open('pos_target.sim5000.mut.05.Gen301-1300_CT.fps',       'wb'))
+pickle.dump(e1.pop_list,                  open('e1.pop_list.sim5000.mut.05.Gen1301-2000_CT.fps',      'wb'))
+pickle.dump(np.round(Fitness_progress,2), open('Fitness_progress.sim5000.mut.05.Gen1301-2000_CT.fps', 'wb'))
+pickle.dump(pos_target,                   open('pos_target.sim5000.mut.05.Gen1301-2000_CT.fps',       'wb'))
 
 # former_pop_list         = pickle.load(open('e1.pop_list.sim5000.mut.05.Gen0-300_CT.fps'     , 'rb'))
 # former_Fitness_progress = pickle.load(open('Fitness_progress.sim5000.mut.05.Gen0-300_CT.fps', 'rb'))
@@ -404,16 +404,16 @@ for i in range(0,10):
 '''
 
 e2 = Evolution(simlength=5000)
-Fitness_progress, pos_target = e2.run_evolution(Generations=1000, mutation_var=.02, complex_trials=True, fit_prop_sel=False, position_agent=[50,50], angle_to_target= np.pi/2,  distance_to_target = 30)
+Fitness_progress, pos_target = e2.run_evolution(Generations=700, mutation_var=.02, complex_trials=True, fit_prop_sel=False, position_agent=[50,50], angle_to_target= np.pi/2,  distance_to_target = 30)
 
 import pickle
-pickle.dump(e2.pop_list,                  open('e2.pop_list.sim5000.mut.02.Gen801-1800_CT',      'wb'))
-pickle.dump(np.round(Fitness_progress,2), open('Fitness_progress.sim5000.mut.02.Gen801-1800_CT', 'wb'))
-pickle.dump(pos_target,                   open('pos_target.sim5000.mut.02.Gen801-1800_CT',       'wb'))
+pickle.dump(e2.pop_list,                  open('e2.pop_list.sim5000.mut.02.Gen1801-2500_CT',      'wb'))
+pickle.dump(np.round(Fitness_progress,2), open('Fitness_progress.sim5000.mut.02.Gen1801-2500_CT', 'wb'))
+pickle.dump(pos_target,                   open('pos_target.sim5000.mut.02.Gen1801-2500_CT',       'wb'))
 
-# former_pop_list         = pickle.load(open('e2.pop_list.sim5000.mut.02.Gen301-400_CT'     , 'rb'))
-# former_Fitness_progress = pickle.load(open('Fitness_progress.sim5000.mut.02.Gen301-400_CT', 'rb'))
-# former_pos_target       = pickle.load(open('pos_target.sim5000.mut.02.Gen301-400_CT'  , 'rb'))
+# former_pop_list         = pickle.load(open('e2.pop_list.sim5000.mut.02.Gen801-1800_CT'     , 'rb'))
+# former_Fitness_progress = pickle.load(open('Fitness_progress.sim5000.mut.02.Gen801-1800_CT', 'rb'))
+# former_pos_target       = pickle.load(open('pos_target.sim5000.mut.02.Gen801-1800_CT'  , 'rb'))
 
 # e2.pop_list = former_pop_list
 # Fitness_progress = former_Fitness_progress
