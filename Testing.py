@@ -304,3 +304,127 @@ print(np.mean(old_population[:,2:] - new_population[:,2:]))
 ## Github
 # ...
 print(24+24)  # Commit: "Test"
+
+
+## Creating files, depending on arguments:
+# t1 = Evolution(simlength=10)
+# Fitness_progress, pos_target = t1.run_evolution(Generations=10, mutation_var=.0001, complex_trials=True, fit_prop_sel=True, position_agent=[50,50], angle_to_target= np.pi/2,  distance_to_target = 30)
+
+import pickle
+# pickle.dump(t1.pop_list,                  open('t1.pop_list.sim5000.mut.05.Gen1301-2000_CT.fps',      'wb'))
+# pickle.dump(np.round(Fitness_progress,2), open('Fitness_progress.sim5000.mut.05.Gen1301-2000_CT.fps', 'wb'))
+# pickle.dump(pos_target,                   open('pos_target.sim5000.mut.05.Gen1301-2000_CT.fps',       'wb'))
+
+def foo(a,b,c):
+    d = a+b+c
+
+    Input = input("Do you want to save the final population ('(y)es'/'(n)o'):")
+    if Input in "y Y yes Yes YES":
+        # pickle.dump(d, open('d.sim{}.mut{}.Gen{}'.format(a,b,c),      'wb'))
+        print("successfully saved")
+    elif Input in "n N no No NO":
+        print("Final population won't be saved in external file")
+    else: raise ValueError("Input is not understood (either 'yes' or 'no'")
+
+    return d
+
+
+def foo(a,b,c):
+    d = a+b+c
+
+    count = 0
+    while True and count != 3:
+        Input = input("Do you want to save the final population ('(y)es'/'(n)o'):")
+
+        if Input in ["y", "Y","yes" ,"Yes", "YES"]:
+            # pickle.dump(d, open('d.sim{}.mut{}.Gen{}'.format(a,b,c),      'wb'))
+            print("successfully saved")
+            break
+        elif Input in ["n", "N", "no", "No", "NO"]:
+            print("Final population won't be saved in external file")
+            break
+        else:
+            print("Input is not understood.\n"
+                  "Type either 'yes' or 'no'.\n"
+                  "{} more attempts".format(2-count))
+            count += 1
+    if count == 3:
+        raise ValueError("Function stopped")
+
+    return d
+
+foo(100,.001,200)
+
+
+
+## TODO : Implement
+def run_evolution(self, Generations, mutation_var = .25, complex_trials=True, fit_prop_sel = False, position_agent=[50,50], angle_to_target= np.pi/2,  distance_to_target = 30):
+
+        # Ask whether results should be saved in external file
+        count = 0
+        while True and count !=3:
+
+            Input = input("Do you want to save the final population ('(y)es'/'(n)o'):")
+
+            if Input in ["y", "Y","yes" ,"Yes", "YES"]:
+                print("Saving final population in external file")
+                save = True
+                break
+
+            elif Input in ["n", "N", "no", "No", "NO"]:
+                print("Final population won't be saved")
+                save = False
+                break
+
+            else:
+                print("Input is not understood.\n"
+                    "Type either 'yes' or 'no'.\n"
+                     "{} more attempts".format(2-count) )
+                count += 1
+
+        if count == 3:
+        raise ValueError("Function stopped")
+
+        # Run evolution:
+        Fitness_progress = np.zeros((Generations,2))
+
+        pos_target = []
+
+        for i in range(Generations):
+
+            self.evolute(mutation_var, fts=fit_prop_sel)
+
+            pos_target = self._simulate_next_population(complex_trials     = complex_trials,
+                                                        position_agent     = position_agent,
+                                                        angle_to_target    = angle_to_target,
+                                                        distance_to_target = distance_to_target)
+
+            Fitness_progress[i,:] = np.round(self.pick_best()[:,1],2)
+
+            self.Generation += 1
+
+            print(Fitness_progress[i,:], "Generation", self.Generation)
+
+
+        # Save in external file:
+        if save:
+            pickle.dump(self.pop_list,                open('Poplist.sim{}.mut{}.Gen{}-{}_{}.{}',      'wb'.format(self.simlength, mutation_var)))
+            pickle.dump(np.round(Fitness_progress,2), open('Fitness_progress.sim5000.mut.05.Gen1301-2000_CT.fps', 'wb'))
+            pickle.dump(pos_target,                   open('pos_target.sim5000.mut.05.Gen1301-2000_CT.fps',       'wb'))
+
+
+            pickle.dump(d, open('d.sim{}.mut{}.Gen{}'.format(a,b,c),      'wb'))
+            print('Evolution terminated. pop_list saved in \n'
+                  'Filename: ')
+        else:
+            print('Evolution terminated. pop_list is not externally saved')
+
+        return Fitness_progress, pos_target
+
+
+
+
+
+
+
+

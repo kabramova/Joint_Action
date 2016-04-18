@@ -1,6 +1,7 @@
 from Simulator import *
 import copy
 from collections import OrderedDict
+import pickle
 
 ## Agmon & Beer (2013): "real-valued GA":
 '''
@@ -336,6 +337,8 @@ class Evolution(Simulate):
 
     def run_evolution(self, Generations, mutation_var = .25, complex_trials=True, fit_prop_sel = False, position_agent=[50,50], angle_to_target= np.pi/2,  distance_to_target = 30):
 
+
+
         Fitness_progress = np.zeros((Generations,2))
 
         pos_target = []
@@ -364,7 +367,6 @@ class Evolution(Simulate):
 e1 = Evolution(simlength=5000)
 Fitness_progress, pos_target = e1.run_evolution(Generations=700, mutation_var=.0001, complex_trials=True, fit_prop_sel=True, position_agent=[50,50], angle_to_target= np.pi/2,  distance_to_target = 30)
 
-import pickle
 pickle.dump(e1.pop_list,                  open('e1.pop_list.sim5000.mut.05.Gen1301-2000_CT.fps',      'wb'))
 pickle.dump(np.round(Fitness_progress,2), open('Fitness_progress.sim5000.mut.05.Gen1301-2000_CT.fps', 'wb'))
 pickle.dump(pos_target,                   open('pos_target.sim5000.mut.05.Gen1301-2000_CT.fps',       'wb'))
@@ -406,7 +408,7 @@ for i in range(0,10):
 e2 = Evolution(simlength=5000)
 Fitness_progress, pos_target = e2.run_evolution(Generations=700, mutation_var=.02, complex_trials=True, fit_prop_sel=False, position_agent=[50,50], angle_to_target= np.pi/2,  distance_to_target = 30)
 
-import pickle
+
 pickle.dump(e2.pop_list,                  open('e2.pop_list.sim5000.mut.02.Gen1801-2500_CT',      'wb'))
 pickle.dump(np.round(Fitness_progress,2), open('Fitness_progress.sim5000.mut.02.Gen1801-2500_CT', 'wb'))
 pickle.dump(pos_target,                   open('pos_target.sim5000.mut.02.Gen1801-2500_CT',       'wb'))

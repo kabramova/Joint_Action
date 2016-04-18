@@ -98,10 +98,123 @@ l = input("Enter some numbers:")
 l = l.split()
 sum(int(i) for  i in l)
 
+count = 0
+while True and count != 3:
+    l = input("Only numbers: ")
+    try:
+        print(int(l))
+        break
+    except ValueError:
+        print ("No Number, try {} more times".format(2-count))
+        count += 1
+
+
 
 # Current working directory
 import os
 os.getcwd()
+
+
+## Work with formaters:
+
+# Fill word in
+print("That is a {}, isn't it?".format("PLACEHOLDER"))
+
+
+# Space formater:
+print("Space is {:>10}".format("GREAT"))
+print("Space is {:>6}".format("GREAT"))  # "Great" has 5 characters, so +1 space
+print("Space is {:>5}".format("GREAT"))  # no extra space
+
+print("{:10} Space".format("GREAT"))
+print("{:5} Space".format("GREAT"))
+
+# Define size of space
+print("{:<{}s} Space".format("GREAT",10))
+print("{:{}s} Space".format("GREAT",10))
+print("{:{}s} Space".format("GREAT",len("GREAT")+5))
+
+print("Space is{:>{}s}".format("GREAT",10))  # {...s} is not necessary
+print("Space is{:>{}}".format("GREAT",10))
+print("{:{}s} Space".format("GREAT",10))
+
+# fill space with ., ,,,_, :
+print("{:_<10} Space".format("GREAT"))
+print("{:_>10} Space".format("GREAT"))
+print("Space is {:.>10}".format("GREAT"))
+
+# space left and right
+print("{:.^10}".format("SPACE"))
+print("{:_^11}".format("SPACE"))
+print("{:^11}".format("SPACE"))
+
+# shorten long words
+print("This is an {:.4}".format("abbrevation"))
+print("This is an {:.{}}".format("abbrevation",4))
+
+print("This is an {:>8.4}".format("abbrevation"))
+
+print("What is the word: {:_<{}.{}}".format("abbrevation",len("abbrevation"), 4))
+
+# Numbers
+print("{:d}".format(42))        # d is not necessary
+print("{}".format(42))
+print("{}".format(42.3456))
+print("{:f}".format(42.3456))  # f for float
+
+print("{:12f}".format(42.3))
+print("{:12}".format(42.3))
+print("{:12d}".format(42))
+print("{:12}".format(42))
+
+print("{:0.2f}".format(42.3))
+print("{:0.3f}".format(42.3))
+print("{:010.3f}".format(42.3))
+print("{:010.2f}".format(42.3))
+print("{:_>10.2f}".format(42.3))
+print("{:_<10.2f}".format(42.3))
+
+print("{:+.2f}".format(42.3))
+
+print("{:2f}".format(42.3))
+print("{: 2f}".format(42.3))
+
+print("{:=5}".format(-42))
+print("{:=10}".format(-42))
+
+
+# Placeholder Dicts
+Data = {"a": "ABC",
+        "b": "123"}
+print("Learn the {a} and counting from {b}".format(**Data)) # ** for keyword arguments
+
+Data2 = ("ABC", "123")
+print("Learn the {} and counting from {}".format(*Data2))   # * for arguments
+print("Learn the {0} and counting from {1}".format(*Data2))
+print("Learn the {1} and counting from {0}".format(*Data2))
+print("Learn the {0!s} and counting from {1!r}".format(*Data2))   # s string, r represent
+
+
+# Placeholders with classes
+
+class ABC(object):
+
+    def a(self):
+        return "A"
+
+    def b(self):
+        return "B"
+
+    type = "c"
+
+print("first {0!s}, then {0!r}".format(ABC().a()))
+print("first {0!s}, then {0!r}".format(ABC().b()))
+print("first {0!s}, then {1!r}".format(ABC().a(),ABC().b()))
+print("first {1!s}, then {0!r}".format(ABC().a(),ABC().b()))
+print("first {1!r}, then {0!s}".format(ABC().a(),ABC().b()))
+print("C is {p.type}".format(p=ABC()))
+
+
 
 # open, read, write Files
 f = open("Testtext.txt", "r+") #"r+" = mode, to read and write.
@@ -205,6 +318,27 @@ print(ac.b)
 print(ac.c)
 ac.a_plus_b()
 ac.a_plus_c()
+
+
+## Boolean
+
+1 == 1 and  1 == 2
+1 == 1 and 1 == int("1")
+2 == 1 or 2 == 3
+2 == 2 or 2 == 3
+2 == 3 or 2 == 2
+
+1 != 2
+
+not 1 != 1
+
+# XOR
+bool(1 == 1) ^ bool(1 == 2)
+bool(1 == 1) ^ bool(1 != 2)
+
+
+
+
 
 
 ## Class properties
