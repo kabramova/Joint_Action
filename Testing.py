@@ -357,6 +357,12 @@ Fitness_progress, pos_target = t3.run_evolution(Generations=10, mutation_var=.25
 
 t3.filename
 t3.reimplement_population(Plot=True)
+t3.Generation
+t3.simlength
+
+t = t3.filename
+int(t[t.find('m')+1 : t.find('.')])
+
 
 # Works!
 
