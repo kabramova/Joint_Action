@@ -1,6 +1,7 @@
 from Simulator import *
 import copy
 from collections import OrderedDict
+import pickle
 
 ## Agmon & Beer (2013): "real-valued GA":
 '''
@@ -30,6 +31,8 @@ class Evolution(Simulate):
         self.pop_list = self.__create_population_list(pop_size)
 
         self.Generation = 0
+
+        self.filename = ""
 
 
     def create_genome(self):
@@ -336,6 +339,32 @@ class Evolution(Simulate):
 
     def run_evolution(self, Generations, mutation_var = .25, complex_trials=True, fit_prop_sel = False, position_agent=[50,50], angle_to_target= np.pi/2,  distance_to_target = 30):
 
+        # Ask whether results should be saved in external file
+        count = 0
+        while True and count !=3:
+
+            Input = input("Do you want to save the final population ('(y)es'/'(n)o'):")
+
+            if Input in ["y", "Y","yes" ,"Yes", "YES"]:
+                print("Saving final population in external file")
+                save = True
+                break
+
+            elif Input in ["n", "N", "no", "No", "NO"]:
+                print("Final population won't be saved")
+                save = False
+                break
+
+            else:
+                print("Input is not understood.\n"
+                    "Type either 'yes' or 'no'.\n"
+                     "{} more attempt(s)".format(2-count) )
+                count += 1
+
+        if count == 3:
+            raise ValueError("Function stopped")
+
+        # Run evolution:
         Fitness_progress = np.zeros((Generations,2))
 
         pos_target = []
@@ -355,23 +384,69 @@ class Evolution(Simulate):
 
             print(Fitness_progress[i,:], "Generation", self.Generation)
 
+
+        # Save in external file:
+        if save:
+
+            self.filename = "sim{}.mut{}.Gen{}-{}_CT={}.fps={}".format(self.simlength, mutation_var, self.Generation - Generations + 1,
+                                                                       self.Generation, complex_trials,fit_prop_sel)
+
+            pickle.dump(self.pop_list,                open('Poplist.{}'.format(self.filename), 'wb'))
+            pickle.dump(np.round(Fitness_progress,2), open('Fitness_progress.{}'.format(self.filename), 'wb'))
+            pickle.dump(pos_target,                   open('pos_target.{}'.format(self.filename), 'wb'))
+
+            print('Evolution terminated. pop_list saved \n'
+                  '(Filename: "Poplist.{}")'.format(self.filename))
+        else:
+            print('Evolution terminated. \n'
+                  '(Caution: pop_list is not saved in external file)')
+
+
         return Fitness_progress, pos_target
 
+
+    def reimplement_population(self, Filename=None, Plot = True):
+
+        if Filename is None:
+            Filename = self.filename
+            print("Reimplements its own pop_list file")
+        else:
+            Filename = str(Filename)
+
+
+        self.pop_list        = pickle.load(open('Poplist.{}'.format(Filename),          'rb'))
+
+        if Plot:
+            Fitness_progress = pickle.load(open('Fitness_progress.{}'.format(Filename), 'rb'))
+            pos_target       = pickle.load(open('pos_target.{}'.format(Filename),       'rb'))
+
+            fig1 = plt.figure()
+            plt.plot(Fitness_progress[:,0])
+            plt.plot(Fitness_progress[:,1])
+
+            fig2 = plt.figure()
+            print("Plot the best agent")
+
+            for target in pos_target:
+                self.agent = CatchBot()
+                self.agent.position_target = target
+                self.implement_genome(self.pop_list[0,2:])
+                self.run_and_plot()
+                self.fitness()
+
+            print(np.round(self.pop_list[0:,0:4],2))
+
+            # plt.close()
 
 
 
 ### Simulation of Evolution
 e1 = Evolution(simlength=5000)
-Fitness_progress, pos_target = e1.run_evolution(Generations=300, mutation_var=.0001, complex_trials=True, fit_prop_sel=True, position_agent=[50,50], angle_to_target= np.pi/2,  distance_to_target = 30)
+Fitness_progress, pos_target = e1.run_evolution(Generations=700, mutation_var=.0001, complex_trials=True, fit_prop_sel=True, position_agent=[50,50], angle_to_target= np.pi/2,  distance_to_target = 30)
 
-import pickle
-pickle.dump(e1.pop_list,                  open('e1.pop_list.sim5000.mut.05.Gen0-300_CT.fps',      'wb'))
-pickle.dump(np.round(Fitness_progress,2), open('Fitness_progress.sim5000.mut.05.Gen0-300_CT.fps', 'wb'))
-pickle.dump(pos_target,                   open('pos_target.sim5000.mut.05.Gen0-300_CT.fps',       'wb'))
-
-# former_pop_list         = pickle.load(open('e1.pop_list.sim5000.mut.10.Gen300_CT.fps'     , 'rb'))
-# former_Fitness_progress = pickle.load(open('Fitness_progress.sim5000.mut.10.Gen300_CT.fps', 'rb'))
-# former_pos_target       = pickle.load(open('pos_target.sim5000.mut.10.Gen300_CT.fps'  , 'rb'))
+# former_pop_list         = pickle.load(open('e1.pop_list.sim5000.mut.05.Gen0-300_CT.fps'     , 'rb'))
+# former_Fitness_progress = pickle.load(open('Fitness_progress.sim5000.mut.05.Gen0-300_CT.fps', 'rb'))
+# former_pos_target       = pickle.load(open('pos_target.sim5000.mut.05.Gen0-300_CT.fps'  , 'rb'))
 
 # e1.pop_list = former_pop_list
 # Fitness_progress = former_Fitness_progress
@@ -396,24 +471,22 @@ print(np.round(e1.pop_list[0:,0:4],2))
 
 
 '''
-for i in range(0,10):
-    e1.agent = CatchBot()
-    e1.implement_genome(e1.pop_list[i,2:])
-    e1.run_and_plot()
-
+XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
+XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
+XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
+XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
+XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
+XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
+XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
 '''
 
 e2 = Evolution(simlength=5000)
-Fitness_progress, pos_target = e2.run_evolution(Generations=400, mutation_var=.02, complex_trials=True, fit_prop_sel=False, position_agent=[50,50], angle_to_target= np.pi/2,  distance_to_target = 30)
+Fitness_progress, pos_target = e2.run_evolution(Generations=700, mutation_var=.02, complex_trials=True, fit_prop_sel=False, position_agent=[50,50], angle_to_target= np.pi/2,  distance_to_target = 30)
 
-import pickle
-pickle.dump(e2.pop_list,                  open('e2.pop_list.sim5000.mut.02.Gen401-800_CT',      'wb'))
-pickle.dump(np.round(Fitness_progress,2), open('Fitness_progress.sim5000.mut.02.Gen401-800_CT', 'wb'))
-pickle.dump(pos_target,                   open('pos_target.sim5000.mut.02.Gen401-800_CT',       'wb'))
 
-# former_pop_list         = pickle.load(open('e2.pop_list.sim5000.mut.02.Gen301-400_CT'     , 'rb'))
-# former_Fitness_progress = pickle.load(open('Fitness_progress.sim5000.mut.02.Gen301-400_CT', 'rb'))
-# former_pos_target       = pickle.load(open('pos_target.sim5000.mut.02.Gen301-400_CT'  , 'rb'))
+# former_pop_list         = pickle.load(open('e2.pop_list.sim5000.mut.02.Gen801-1800_CT'     , 'rb'))
+# former_Fitness_progress = pickle.load(open('Fitness_progress.sim5000.mut.02.Gen801-1800_CT', 'rb'))
+# former_pos_target       = pickle.load(open('pos_target.sim5000.mut.02.Gen801-1800_CT'  , 'rb'))
 
 # e2.pop_list = former_pop_list
 # Fitness_progress = former_Fitness_progress
