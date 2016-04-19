@@ -109,6 +109,32 @@ while True and count != 3:
         count += 1
 
 
+def foo(a,b,c):
+    d = a+b+c
+
+    count = 0
+    while True and count != 3:
+        Input = input("Do you want to save the final population ('(y)es'/'(n)o'):")
+
+        if Input in ["y", "Y","yes" ,"Yes", "YES"]:
+            # pickle.dump(d, open('d.sim{}.mut{}.Gen{}'.format(a,b,c),      'wb'))
+            print("successfully saved")
+            break
+        elif Input in ["n", "N", "no", "No", "NO"]:
+            print("Final population won't be saved in external file")
+            break
+        else:
+            print("Input is not understood.\n"
+                  "Type either 'yes' or 'no'.\n"
+                  "{} more attempts".format(2-count))
+            count += 1
+    if count == 3:
+        raise ValueError("Function stopped")
+
+    return d
+
+foo(100,.001,200)
+
 
 # Current working directory
 import os

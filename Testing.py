@@ -308,47 +308,6 @@ print(24+24)  # Commit: "Test"
 
 ## Creating files, depending on arguments:
 
-def foo(a,b,c):
-    d = a+b+c
-
-    Input = input("Do you want to save the final population ('(y)es'/'(n)o'):")
-    if Input in "y Y yes Yes YES":
-        # pickle.dump(d, open('d.sim{}.mut{}.Gen{}'.format(a,b,c),      'wb'))
-        print("successfully saved")
-    elif Input in "n N no No NO":
-        print("Final population won't be saved in external file")
-    else: raise ValueError("Input is not understood (either 'yes' or 'no'")
-
-    return d
-
-
-def foo(a,b,c):
-    d = a+b+c
-
-    count = 0
-    while True and count != 3:
-        Input = input("Do you want to save the final population ('(y)es'/'(n)o'):")
-
-        if Input in ["y", "Y","yes" ,"Yes", "YES"]:
-            # pickle.dump(d, open('d.sim{}.mut{}.Gen{}'.format(a,b,c),      'wb'))
-            print("successfully saved")
-            break
-        elif Input in ["n", "N", "no", "No", "NO"]:
-            print("Final population won't be saved in external file")
-            break
-        else:
-            print("Input is not understood.\n"
-                  "Type either 'yes' or 'no'.\n"
-                  "{} more attempts".format(2-count))
-            count += 1
-    if count == 3:
-        raise ValueError("Function stopped")
-
-    return d
-
-foo(100,.001,200)
-
-
 t3 = Evolution(simlength=10)
 Fitness_progress, pos_target = t3.run_evolution(Generations=10, mutation_var=.25,
                                                 complex_trials=True, fit_prop_sel=True,
