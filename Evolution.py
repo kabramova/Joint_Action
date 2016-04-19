@@ -17,7 +17,6 @@ parameters to evolve:
 '''
 
 # TODO: Check whether simulation could be more efficient. Are the trajectories saved? Not necessary, only for plots.
-# TODO: commit Github !
 
 class Evolution(Simulate):
 
