@@ -16,8 +16,6 @@ parameters to evolve:
 - bias: θ (theta)
 '''
 
-# TODO: Check whether simulation could be more efficient. Are the trajectories saved? Not necessary, only for plots.
-
 class Evolution(Simulate):
 
     def __init__(self, pop_size = 10, simlength = 1000):
@@ -120,7 +118,7 @@ class Evolution(Simulate):
         return gens
 
 
-    def __evolute(self, mutation_var = .25, fts = False):
+    def _evolute(self, mutation_var = .25, fts = False):
         '''
 
         If fitness proportionate selection (fts) = False:
@@ -276,7 +274,7 @@ class Evolution(Simulate):
         if not complex: # We just create one target, depending on the angle:
             pos_target = np.array(position_agent) + np.array([np.cos(angle_to_target), np.sin(angle_to_target)]) * distance
 
-            return pos_target
+            return list([pos_target]) # This form of output is necessarry for _simulate_next_population()
 
         else: # We create different Targets around the Agent, depending on its Position (ignoring the input angle):
             circle = [0, np.pi/4, np.pi/2, 3*np.pi/4, np.pi, 5*np.pi/4, 3*np.pi/2,  7*np.pi/4]
@@ -284,55 +282,44 @@ class Evolution(Simulate):
             scalar = [.5, 2, 1, 1, 1.5, .5, 2, 1.5]
 
             for j,cle in enumerate(circle):
-                pos_target.append(self._set_target(position_agent=position_agent, angle_to_target=cle, distance=distance) * scalar[j])
+                tpos = np.array(position_agent) + np.array([np.cos(cle), np.sin(cle)]) * distance * scalar[j]
+                pos_target.append(tpos)
 
             return pos_target
 
 
-    def _simulate_next_population(self, complex_trials, position_agent, pos_target):
-        # run simulation => fitness
+    def _simulate_next_population(self, position_agent, pos_target):
+        '''
+        Run simulation => fitness
+        We save the distance to (each) target. The fitness will be the (average) distance
+        If we have more than one target:
+            - each agent will run through all trials (each trial the target is on a different position).
+            - we take average Fitness over all  ('complex trials')
+
+        :param position_agent:
+        :param pos_target:
+        :return: Updates sorted pop_list
+        '''
 
         assert self.pop_list[-1,1] == 0, "This population run already its simulation"
 
-        # Set target(s):
+        for i,string in enumerate(self.pop_list):  # Run simulation with each agent
 
-        if not complex_trials:
+            genome_string = string[2:]
 
-            for i,string in enumerate(self.pop_list):
+            Fitness = []
 
-                genome_string = string[2:]
+            for tpos in pos_target:
 
-                self.agent = CatchBot(position_agent, pos_target)   # reset self.agent
+                self.agent = CatchBot(position_agent=position_agent, position_target=[tpos[0],tpos[1]])  # reset self.agent and set new target position
 
-                self.implement_genome(genome_string)                # implement the genome in current agent
+                self.implement_genome(genome_string)      # implement the current genome in agent
 
-                self.agent.movement(self.simlength)                 # agent by agent will be simulated
+                self.agent.movement(self.simlength)
 
-                self.pop_list[i,1] = self.fitness()                 # agent's fitness will be stored
-        # TODO: concatenate both
-        else:   # Here, we do the complex simulation and average Fitness over all trials
+                Fitness.append(self.fitness())
 
-            # Each agent will run through all trials (each trial the target is on a different position).
-            # We save the distance to each target. The fitness will be the average distance
-
-            for i,string in enumerate(self.pop_list):
-
-                genome_string = string[2:]
-
-                Fitness = []
-
-                for tpos in pos_target:
-
-                    self.agent = CatchBot(position_agent=position_agent, position_target=[tpos[0],tpos[1]])  # reset self.agent and set new target position
-
-                    self.implement_genome(genome_string)      # implement the current genome in agent
-
-                    self.agent.movement(self.simlength)
-                    
-                    Fitness.append(self.fitness())
-
-                self.pop_list[i,1] = np.sum(Fitness)/len(Fitness)       # agent's average fitness will be stored
-
+            self.pop_list[i,1] = np.sum(Fitness)/len(Fitness)       # agent's average fitness will be stored
 
         self.pop_list = copy.copy(mat_sort(self.pop_list, index=1))
 
@@ -375,10 +362,9 @@ class Evolution(Simulate):
 
         for i in range(Generations):
 
-            self.__evolute(mutation_var, fts=fit_prop_sel)
+            self._evolute(mutation_var, fts=fit_prop_sel)
 
-            self._simulate_next_population(complex_trials = complex_trials,
-                                           position_agent = position_agent,
+            self._simulate_next_population(position_agent = position_agent,
                                            pos_target     = pos_target)
 
 

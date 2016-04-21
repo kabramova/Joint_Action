@@ -457,7 +457,7 @@ H = Hide()
 H1 = Hide("TRANSPARENT")
 H.s
 H.__u         # is not reachable like that
-H._Hide__u    # but like that
+H._Hide__u    # but like that ("Hide" is here the class-name)
 H.u           # or with the getter
 H.u = 23      # doesnt work because no string
 H.u = "transformed"
