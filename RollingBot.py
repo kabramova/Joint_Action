@@ -5,7 +5,7 @@ from CTRNN import CTRNN
 class CatchBot(CTRNN):
 
 
-    def __init__(self, position_agent = [50,10], position_target = [50,90]): # *args = number_of_neurons, timestep = 0.01)
+    def __init__(self, position_agent = [50,50], position_target = [50,80]): # *args = number_of_neurons, timestep = 0.01)
 
         self.N_sensor = 2
         self.N_motor = 2

@@ -82,7 +82,7 @@ class Evolution(Simulate):
 
         return np.linalg.norm(self.agent.position_target - self.agent.position)
 
-    # TODO: shorten __create pop_list (all 3 out-comment lines might be redundant)
+
     def __create_pop_list(self, pop_size):
         '''
 
@@ -94,13 +94,9 @@ class Evolution(Simulate):
 
         for i in range(pop_size):
             poplist[i,0] = i+1                         # enumerate the list
-            # self.agent.movement(self.simlength)        # agent by agent will be simulated
-            # poplist[i,1] = self.fitness()              # agent's fitness will be stored
             poplist[i,2:] = self.genome.transpose()    # the corresponding genome will be stored
             self.agent = CatchBot()                    # Create new agent
             self.genome = self.create_genome()         # ... and its genome
-
-        # poplist = mat_sort(poplist, index=1)
 
         return poplist
 
@@ -415,31 +411,36 @@ class Evolution(Simulate):
 
 
         if Plot:
-            pos_target       = pickle.load(open('pos_target.{}'.format(Filename),       'rb'))
 
+            # here we plot the fitness progress of all generation
             fig1 = plt.figure()
             plt.plot(Fitness_progress[:,1])
             plt.plot(Fitness_progress[:,2])
 
-            fig2 = plt.figure()
+            # Here we plot the trajectory of the best agent:
+            self.plot_pop_list()
             print("Plot the best agent")
 
-            for target in pos_target:
-                self.agent = CatchBot()
-                self.agent.position_target = target
-                self.implement_genome(self.pop_list[0,2:])
-                self.run_and_plot()
-                self.fitness()
-
-            print(np.round(self.pop_list[0:,0:4],2))
-
+            # TODO: Could implement an all-close-request
             # plt.close()
 
 
-    def plot_pop_list(self):
-        # TODO: create extra method and implement it in "def reimplement_population()"
+    def plot_pop_list(self, n_agents=1, position_agent=[50,50]):
 
-        pass
+        pos_target = self._set_target(position_agent=position_agent, complex=True)
 
+        for i in range(n_agents):
+
+            plt.figure()
+
+            for tpos in pos_target:
+                self.agent = CatchBot(position_agent = position_agent)
+                self.agent.position_target = tpos
+                self.implement_genome(self.pop_list[i,2:])
+                self.run_and_plot()
+
+        print(np.round(self.pop_list[0:n_agents, 0:3],2))
+
+        # plt.close()
 
 
