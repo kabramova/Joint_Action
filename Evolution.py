@@ -29,11 +29,11 @@ class Evolution(Simulate):
 
         self.genome = self.create_genome() # vector of parameters
 
-        self.pop_list = self.__create_population_list(pop_size)
+        self.pop_list = self.__create_pop_list(pop_size)
 
         self.Generation = 0
 
-        self.filename = ""
+        self.filename = ""   # starts with "sim...."
 
 
     def create_genome(self):
@@ -84,8 +84,8 @@ class Evolution(Simulate):
 
         return np.linalg.norm(self.agent.position_target - self.agent.position)
 
-
-    def __create_population_list(self, pop_size):
+    # TODO: shorten __create pop_list (all 3 out-comment lines might be redundant)
+    def __create_pop_list(self, pop_size):
         '''
 
         :param pop_size: Amount of individuals per Population
@@ -96,13 +96,13 @@ class Evolution(Simulate):
 
         for i in range(pop_size):
             poplist[i,0] = i+1                         # enumerate the list
-            self.agent.movement(self.simlength)        # agent by agent will be simulated
-            poplist[i,1] = self.fitness()              # agent's fitness will be stored
+            # self.agent.movement(self.simlength)        # agent by agent will be simulated
+            # poplist[i,1] = self.fitness()              # agent's fitness will be stored
             poplist[i,2:] = self.genome.transpose()    # the corresponding genome will be stored
             self.agent = CatchBot()                    # Create new agent
             self.genome = self.create_genome()         # ... and its genome
 
-        poplist = mat_sort(poplist, index=1)
+        # poplist = mat_sort(poplist, index=1)
 
         return poplist
 
@@ -341,6 +341,7 @@ class Evolution(Simulate):
     def run_evolution(self, Generations, mutation_var = .25, complex_trials=True, fit_prop_sel = False, position_agent=[50,50], angle_to_target= np.pi/2,  distance_to_target = 30):
 
         # Ask whether results should be saved in external file
+        # global save # TODO: What's that?
         count = 0
         while True and count !=3:
 
@@ -419,10 +420,10 @@ class Evolution(Simulate):
         # Reimplement: pop_list, simlength, Generation
         self.pop_list        = pickle.load(open('Poplist.{}'.format(Filename),          'rb'))
 
-        self.simlength = int(Filename[Filename.find('m')+1 : Filename.find('.')])  # depends on filename
+        self.simlength       = int(Filename[Filename.find('m')+1 : Filename.find('.')])  # depends on filename
 
         Fitness_progress     = pickle.load(open('Fitness_progress.{}'.format(Filename), 'rb'))
-        self.Generation = Fitness_progress[-1,0]
+        self.Generation      = int(Fitness_progress[-1,0])
 
 
         if Plot:
@@ -447,12 +448,18 @@ class Evolution(Simulate):
             # plt.close()
 
 
+    def plot_pop_list(self):
+        # TODO: create extra method and implement it in "def reimplement_population()"
+        pass
+
+
+
 
 ### Simulation of Evolution
 e1 = Evolution(simlength=5000)
-Fitness_progress, pos_target = e1.run_evolution(Generations=700, mutation_var=.0001, complex_trials=True, fit_prop_sel=True, position_agent=[50,50], angle_to_target= np.pi/2,  distance_to_target = 30)
+Fitness_progress, pos_target = e1.run_evolution(Generations=500, mutation_var=.0001, complex_trials=True, fit_prop_sel=True, position_agent=[50,50], angle_to_target= np.pi/2,  distance_to_target = 30)
 
-e1.reimplement_population(Filename=None, Plot=True)
+# e1.reimplement_population(Filename=None, Plot=True) # Filename starts with "sim..."
 
 '''
 XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX
@@ -463,5 +470,9 @@ XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX 
 e2 = Evolution(simlength=5000)
 Fitness_progress, pos_target = e2.run_evolution(Generations=700, mutation_var=.02, complex_trials=True, fit_prop_sel=False, position_agent=[50,50], angle_to_target= np.pi/2,  distance_to_target = 30)
 
-e2.reimplement_population(Filename=None, Plot=True)
+# e2.reimplement_population(Filename=None, Plot=True) # Filename starts with "sim..."
+
+t3 = Evolution(simlength=50)
+Fitness_progress, pos_target = t3.run_evolution(Generations=20, mutation_var=.02, complex_trials=True, fit_prop_sel=False, position_agent=[50,50], angle_to_target= np.pi/2,  distance_to_target = 30)
+
 
