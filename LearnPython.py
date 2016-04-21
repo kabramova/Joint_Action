@@ -10,6 +10,14 @@ br[0][2]
 am = np.array([[1, 2], [3, 4]]) # matrix
 print(ar), print(ar2), print(br), print(am)
 
+# whether all/any elements are True/False:
+if np.any(ar==3):
+    print("at least one element == 3")
+
+if np.all(ar != 0):
+    print("none of the elements == 0")
+
+
 # find min/max in Array
 np.min(ar)
 np.argmin(ar) # index of min

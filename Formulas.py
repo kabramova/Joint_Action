@@ -94,10 +94,7 @@ def normalize(array):
     '''
     :return: rescaled array in range [0,1]
     '''
-    if array != 0:
-        return (array - np.min(array)) / (np.max(array) - np.min(array))
+    if np.all(array == 0):
+        print("Input = zero.array >> no Normalization")
     else:
-        print("Input = 0, No Normalization")
-
-
-
+        return (array - np.min(array)) / (np.max(array) - np.min(array))
