@@ -88,6 +88,13 @@ np.random.rand()
 np.random.sample()
 
 
+## Conditional variable setting
+a = 0
+b = a if a!=0 else 2   # Note "else" is obligatory here.
+c = a if a==0 else 1
+print("a:", a,
+      "b:",b,
+      "c:", c)
 
 # Free space
 print("\n")
@@ -295,6 +302,9 @@ for i in range(1,len(p)):
     p.pop(-1)
     print(p)
 print("ist ein Wort")
+
+
+
 
 # raise error / exceptions (2 ways)
 

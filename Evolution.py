@@ -120,7 +120,7 @@ class Evolution(Simulate):
         return gens
 
 
-    def evolute(self, mutation_var = .25, fts = False):
+    def __evolute(self, mutation_var = .25, fts = False):
         '''
 
         If fitness proportionate selection (fts) = False:
@@ -221,7 +221,7 @@ class Evolution(Simulate):
 
 
             # 4)
-            norm_pop =  normalize( np.power(self.pop_list[2:,1], -1 ) )
+            norm_pop = normalize( np.power(self.pop_list[2:,1], -1 ) ) if np.any(t3.pop_list[2:,1] != 0) else self.pop_list[2:,1]
             rand_pop = np.random.sample(np.size(self.pop_list[2:,1]))
             norm_rand = norm_pop * rand_pop
             ordered = copy.copy(self.pop_list[np.argsort(-norm_rand)+2,:])
@@ -271,26 +271,35 @@ class Evolution(Simulate):
         self.pop_list = copy.copy(new_population)
 
 
-    def set_target(self, position_agent=[50,50], angle_to_target = np.pi/2 , distance = 30):
-        pos_target = np.array(position_agent) + np.array([np.cos(angle_to_target), np.sin(angle_to_target)]) * distance
-        return pos_target
+    def _set_target(self, position_agent=[50,50], angle_to_target = np.pi/2 , distance = 30, complex = False):
+
+        if not complex: # We just create one target, depending on the angle:
+            pos_target = np.array(position_agent) + np.array([np.cos(angle_to_target), np.sin(angle_to_target)]) * distance
+
+            return pos_target
+
+        else: # We create different Targets around the Agent, depending on its Position (ignoring the input angle):
+            circle = [0, np.pi/4, np.pi/2, 3*np.pi/4, np.pi, 5*np.pi/4, 3*np.pi/2,  7*np.pi/4]
+            pos_target = []
+            scalar = [.5, 2, 1, 1, 1.5, .5, 2, 1.5]
+
+            for j,cle in enumerate(circle):
+                pos_target.append(self._set_target(position_agent=position_agent, angle_to_target=cle, distance=distance) * scalar[j])
+
+            return pos_target
 
 
-    def _simulate_next_population(self, complex_trials=True, position_agent=[50,50], angle_to_target= np.pi/2,  distance_to_target = 30):
+    def _simulate_next_population(self, complex_trials, position_agent, pos_target):
         # run simulation => fitness
 
         assert self.pop_list[-1,1] == 0, "This population run already its simulation"
 
+        # Set target(s):
+
         if not complex_trials:
 
-            pos_target = self.set_target(position_agent=position_agent,
-                                         angle_to_target=angle_to_target,
-                                         distance=distance_to_target)
-
             for i,string in enumerate(self.pop_list):
-                # if i == 0:
-                #     pass
-                # else:
+
                 genome_string = string[2:]
 
                 self.agent = CatchBot(position_agent, pos_target)   # reset self.agent
@@ -300,16 +309,8 @@ class Evolution(Simulate):
                 self.agent.movement(self.simlength)                 # agent by agent will be simulated
 
                 self.pop_list[i,1] = self.fitness()                 # agent's fitness will be stored
-
+        # TODO: concatenate both
         else:   # Here, we do the complex simulation and average Fitness over all trials
-
-            # We create different Targets around the Agent, depending on its Position:
-            circle = [0, np.pi/4, np.pi/2, 3*np.pi/4, np.pi, 5*np.pi/4, 3*np.pi/2,  7*np.pi/4]
-            pos_target = []
-            scalar = [.5, 2, 1, 1, 1.5, .5, 2, 1.5]
-
-            for j,cle in enumerate(circle):
-                pos_target.append(self.set_target(position_agent=position_agent, angle_to_target=cle, distance=distance_to_target) * scalar[j])
 
             # Each agent will run through all trials (each trial the target is on a different position).
             # We save the distance to each target. The fitness will be the average distance
@@ -334,8 +335,6 @@ class Evolution(Simulate):
 
 
         self.pop_list = copy.copy(mat_sort(self.pop_list, index=1))
-
-        return pos_target
 
 
     def run_evolution(self, Generations, mutation_var = .25, complex_trials=True, fit_prop_sel = False, position_agent=[50,50], angle_to_target= np.pi/2,  distance_to_target = 30):
@@ -369,16 +368,19 @@ class Evolution(Simulate):
         # Run evolution:
         Fitness_progress = np.zeros((Generations,3))
 
-        pos_target = []
+        pos_target = self._set_target(position_agent=position_agent,
+                                      angle_to_target=angle_to_target,
+                                      distance=distance_to_target,
+                                      complex=complex_trials)
 
         for i in range(Generations):
 
-            self.evolute(mutation_var, fts=fit_prop_sel)
+            self.__evolute(mutation_var, fts=fit_prop_sel)
 
-            pos_target = self._simulate_next_population(complex_trials     = complex_trials,
-                                                        position_agent     = position_agent,
-                                                        angle_to_target    = angle_to_target,
-                                                        distance_to_target = distance_to_target)
+            self._simulate_next_population(complex_trials = complex_trials,
+                                           position_agent = position_agent,
+                                           pos_target     = pos_target)
+
 
 
             Fitness_progress[i,1:] = np.round(self.pick_best()[:,1],2)
@@ -410,7 +412,7 @@ class Evolution(Simulate):
         return Fitness_progress, pos_target
 
 
-    def reimplement_population(self, Filename=None, Plot = True):
+    def reimplement_population(self, Filename=None, Plot = False):
 
         if Filename is None:
             Filename = self.filename
