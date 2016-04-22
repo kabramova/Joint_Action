@@ -323,7 +323,6 @@ class Evolution(Simulate):
     def run_evolution(self, Generations, mutation_var = .25, complex_trials=True, fit_prop_sel = False, position_agent=[50,50], angle_to_target= np.pi/2,  distance_to_target = 30):
 
         # Ask whether results should be saved in external file
-        # global save # TODO: What's that?
         count = 0
         while True and count !=3:
 
@@ -413,7 +412,7 @@ class Evolution(Simulate):
         if Plot:
 
             # here we plot the fitness progress of all generation
-            fig1 = plt.figure()
+            plt.figure()
             plt.plot(Fitness_progress[:,1])
             plt.plot(Fitness_progress[:,2])
 
@@ -421,11 +420,13 @@ class Evolution(Simulate):
             self.plot_pop_list()
             print("Plot the best agent")
 
-            # TODO: Could implement an all-close-request
-            # plt.close()
-
+            global n
+            n = 2
 
     def plot_pop_list(self, n_agents=1, position_agent=[50,50]):
+
+        global n
+        n = n_agents
 
         pos_target = self._set_target(position_agent=position_agent, complex=True)
 
@@ -440,7 +441,15 @@ class Evolution(Simulate):
                 self.run_and_plot()
 
         print(np.round(self.pop_list[0:n_agents, 0:3],2))
+        if n_agents > 1:
+            print("Close all Windows with close()")
 
-        # plt.close()
+    def close(self):
+        for j in range(n):  # n is from the global variable of plot_pop_list()/reimplement_population()
+            plt.close()
 
 
+# t3 = Evolution(simlength=50)
+# t3.run_evolution(Generations=10)
+# t3.plot_pop_list(2)
+# t3.close()

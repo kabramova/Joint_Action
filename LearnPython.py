@@ -381,10 +381,6 @@ bool(1 == 1) ^ bool(1 == 2)
 bool(1 == 1) ^ bool(1 != 2)
 
 
-
-
-
-
 ## Class properties
 
 class Hide:
@@ -560,7 +556,24 @@ sum_all(3,4)
 sum_all(3,4,3)
 sum_all(3,4,3,10)
 
+## Global vs. local variables
+a, b, c = 1,2,3
+print(a,b,c)
 
+def erde(d):
+    global a     # a will be changed globally
+    b = d        # whereas b, c are just local variables of the function
+    c = 8
+    a = 12
+    print(b,c)
+
+erde(7)
+print(a,b,c)     # so b,c are uneffected, whereas a changed through the execution of the function
+
+def luft():
+    print(a)     # has no local variables "a", so it prints the global one
+
+luft()
 
 ## Special function
 data = ["4", "5", "6"]
