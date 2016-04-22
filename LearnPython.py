@@ -582,7 +582,30 @@ data = [4, 5, 6]
 np.sum(i for i in data)
 
 
+## Method calls to itself:
+class BLA:
 
+    def abc(self, a):
+        if a == 1:
+            print("haha")
+        else:
+            for i in range(a):
+                self.abc(1)
+
+bla = BLA()
+bla.abc(1)
+bla.abc(3)
+
+# Also possible without the class:
+def abc(a):
+    if a == 1:
+        print("haha")
+    else:
+        for i in range(a):
+            abc(1)
+
+abc(1)
+abc(3)
 
 ## Store an object externaly.
 
