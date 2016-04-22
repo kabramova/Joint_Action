@@ -381,7 +381,6 @@ class Evolution(Simulate):
 
             pickle.dump(self.pop_list,                open('Poplist.{}'.format(self.filename), 'wb'))
             pickle.dump(np.round(Fitness_progress,2), open('Fitness_progress.{}'.format(self.filename), 'wb'))
-            pickle.dump(pos_target,                   open('pos_target.{}'.format(self.filename), 'wb'))
 
             print('Evolution terminated. pop_list saved \n'
                   '(Filename: "Poplist.{}")'.format(self.filename))
@@ -390,7 +389,7 @@ class Evolution(Simulate):
                   '(Caution: pop_list is not saved in external file)')
 
 
-        return Fitness_progress, pos_target
+        return Fitness_progress
 
 
     def reimplement_population(self, Filename=None, Plot = False):
@@ -420,14 +419,14 @@ class Evolution(Simulate):
             self.plot_pop_list()
             print("Plot the best agent")
 
-            global n
+            global n   # this is needed for self.close()
             n = 2
 
     def plot_pop_list(self, n_agents=1, position_agent=[50,50]):
 
         global n
         n = n_agents
-
+        # TODO: Plot targets as well
         pos_target = self._set_target(position_agent=position_agent, complex=True)
 
         for i in range(n_agents):
