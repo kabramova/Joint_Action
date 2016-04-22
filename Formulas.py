@@ -98,5 +98,3 @@ def normalize(array):
         print("Input = zero.array >> no Normalization")
     else:
         return (array - np.min(array)) / (np.max(array) - np.min(array))
-
-
