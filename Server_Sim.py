@@ -17,3 +17,6 @@ e2 = Evolution(simlength=5000)
 Fitness_progress = e2.run_evolution(Generations=500, mutation_var=.02, complex_trials=True, fit_prop_sel=False, position_agent=[50,50], angle_to_target= np.pi/2,  distance_to_target = 30)
 
 # e2.reimplement_population(Filename=None, Plot=True) # Filename starts with "sim..."
+
+
+# Test from server
