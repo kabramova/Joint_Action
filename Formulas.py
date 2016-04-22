@@ -99,3 +99,4 @@ def normalize(array):
     else:
         return (array - np.min(array)) / (np.max(array) - np.min(array))
 
+
