@@ -215,7 +215,7 @@ class Evolution(Simulate):
 
 
             # 4)
-            norm_pop = normalize( np.power(self.pop_list[2:,1], -1 ) ) if np.any(t3.pop_list[2:,1] != 0) else self.pop_list[2:,1]
+            norm_pop = normalize( np.power(self.pop_list[2:,1], -1 ) ) if np.any(self.pop_list[2:,1] != 0) else self.pop_list[2:,1]
             rand_pop = np.random.sample(np.size(self.pop_list[2:,1]))
             norm_rand = norm_pop * rand_pop
             ordered = copy.copy(self.pop_list[np.argsort(-norm_rand)+2,:])

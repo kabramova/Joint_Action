@@ -582,7 +582,7 @@ data = [4, 5, 6]
 np.sum(i for i in data)
 
 
-## Method calls to itself:
+## Method calls to itself/ Recursive Function:
 class BLA:
 
     def abc(self, a):
@@ -606,6 +606,56 @@ def abc(a):
 
 abc(1)
 abc(3)
+
+def factorial(n):
+    if n == 1:
+        return 1
+    else:
+        return n * factorial(n-1)
+
+factorial(5)
+
+def factorial(n):
+    print("factorial has been called with n = " + str(n))
+    if n == 1:
+        return 1
+    else:
+        res = n * factorial(n-1)
+        print("intermediate result for ", n, " * factorial(" ,n-1, "): ",res)
+        return res
+
+print(factorial(5)
+
+def fib(n):
+    if n == 0:
+        return 0
+    elif n == 1:
+        return 1
+    else:
+        return fib(n-1) + fib(n-2)
+
+fib(6)
+
+def sum_n(n):
+    if n== 0:
+        return 0
+    else:
+        return n + sum_n(n-1)
+
+sum_n(4)
+
+def pascal(n):
+    if n == 1:
+        return [1]
+    else:
+        line = [1]
+        previous_line = pascal(n-1)
+        for i in range(len(previous_line)-1):
+            line.append(previous_line[i] + previous_line[i+1])
+        line += [1]
+    return line
+
+print(pascal(6))
 
 ## Store an object externaly.
 
