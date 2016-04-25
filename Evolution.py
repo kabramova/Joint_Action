@@ -422,11 +422,11 @@ class Evolution(Simulate):
             global n   # this is needed for self.close()
             n = 2
 
+
     def plot_pop_list(self, n_agents=1, position_agent=[50,50]):
 
         global n
         n = n_agents
-        # TODO: Plot targets as well
         pos_target = self._set_target(position_agent=position_agent, complex=True)
 
         for i in range(n_agents):
@@ -438,10 +438,15 @@ class Evolution(Simulate):
                 self.agent.position_target = tpos
                 self.implement_genome(self.pop_list[i,2:])
                 self.run_and_plot()
+                # TODO: plot the same colour as the assocciaed trajectory
+                plt.plot(tpos[0], tpos[1], 'ws')
+
+            plt.plot(position_agent[0], position_agent[1], 'bo')
 
         print(np.round(self.pop_list[0:n_agents, 0:3],2))
         if n_agents > 1:
             print("Close all Windows with close()")
+
 
     def close(self):
         for j in range(n):  # n is from the global variable of plot_pop_list()/reimplement_population()
