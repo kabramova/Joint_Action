@@ -15,5 +15,10 @@ class Tracker:
         self.position = position
         self.velocity = 0
 
-    def accelerate(self):
+    def accelerate(self, input):
+        '''
+
+        :param input:
+        :return:
+        '''
         pass
