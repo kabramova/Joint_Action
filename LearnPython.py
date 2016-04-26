@@ -704,8 +704,10 @@ print(finish-start)
 # import SimpleCV
 
 # for Neural Networks
-# FANN, neurolab
+# - FANN, neurolab
 # https://wiki.python.org/moin/PythonForArtificialIntelligence
+# - keras ("https://github.com/fchollet/keras"
+
 
 
 ## 3D plot with matplotlib
