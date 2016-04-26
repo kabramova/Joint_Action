@@ -325,30 +325,30 @@ class Evolution(Simulate):
 
     def run_evolution(self, Generations, mutation_var = .25, complex_trials=True, fit_prop_sel = False, position_agent=[50,50], angle_to_target= np.pi/2,  distance_to_target = 30):
 
-        # # Ask whether results should be saved in external file
-        # count = 0
-        # while True and count !=3:
-        #
-        #     Input = input("Do you want to save the final population ('(y)es'/'(n)o'):")
-        #
-        #     if Input in ["y", "Y","yes" ,"Yes", "YES"]:
-        #         print("Saving final population in external file")
-        #         save = True
-        #         break
-        #
-        #     elif Input in ["n", "N", "no", "No", "NO"]:
-        #         print("Final population won't be saved")
-        #         save = False
-        #         break
-        #
-        #     else:
-        #         print("Input is not understood.\n"
-        #             "Type either 'yes' or 'no'.\n"
-        #              "{} more attempt(s)".format(2-count) )
-        #         count += 1
-        #
-        # if count == 3:
-        #     raise ValueError("Function stopped")
+        # Ask whether results should be saved in external file
+        count = 0
+        while True and count !=3:
+
+            Input = input("Do you want to save the final population ('(y)es'/'(n)o'):")
+
+            if Input in ["y", "Y","yes" ,"Yes", "YES"]:
+                print("Saving final population in external file")
+                save = True
+                break
+
+            elif Input in ["n", "N", "no", "No", "NO"]:
+                print("Final population won't be saved")
+                save = False
+                break
+
+            else:
+                print("Input is not understood.\n"
+                    "Type either 'yes' or 'no'.\n"
+                     "{} more attempt(s)".format(2-count) )
+                count += 1
+
+        if count == 3:
+            raise ValueError("Function stopped")
         save = True
 
         # Run evolution:
