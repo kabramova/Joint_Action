@@ -5,10 +5,13 @@ import pickle
 
 ## Agmon & Beer (2013): "real-valued GA":
 '''
-"Each genetic string is a search vector of real numbers in the range 61, and is scaled by each parameter’s defined range
+"Each genetic string is a search vector of real numbers in the range 61,
+and is scaled by each parameter’s defined range
 (...)
-The top-performing individual is copied twice into the next generation’s population, and the rest of the population is
-repopulated through fitness-proportionate selection and mutation, with a mutation variance of 0.25." - Agmon,Beer (2013)
+The top-performing individual is copied twice into the next generation’s
+population, and the rest of the population is repopulated through
+fitness-proportionate selection and mutation, with a
+mutation variance of 0.25." - Agmon,Beer (2013)
 
 parameters to evolve:
 - time constant: τ (tau)
