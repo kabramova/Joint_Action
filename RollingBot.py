@@ -144,16 +144,8 @@ class CatchBot(CTRNN):
                   "\n \n Biases:\n", np.round(self.Theta,2))
 
 
-
-
 '''
-class Environment:
+class Environment:          # (100X100)
     def __init__(self):
         pass
-
-## class Environment (100X100)
-
-# Starting position Bot and goal:
-START_xy = np.matrix((np.arange(5,100,10),np.repeat(10,10) )) # x coordinate, row =1 # y coordinate, row =2
-Goal_xy = np.matrix(([50],[90]))
 '''
