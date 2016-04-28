@@ -324,3 +324,63 @@ int(t[t.find('m')+1 : t.find('.')])
 
 
 # Works!
+
+
+## Testing acceleration: Comparison between angle and distance.
+# Is the increase of beta(visual angle) linear to the increas of b (distance on screen):
+
+
+# First we see how distance is translated into the angle (beta):
+steps = 500
+bs = []
+b_angles = []
+for b in range(1, steps):
+    bs.append(b)
+    b_angles.append(angle_velo(b=b))
+
+plt.plot(bs,b_angles, 'r')
+
+cms = []
+cm_angles = []
+for cm in range(1, steps):
+    cms.append(cm)
+    cm_angles.append(angle_velo2(velocity_cm=cm))
+
+plt.plot(cms,cm_angles, 'yo')
+
+
+# Then, we see how the angle is translated into distance (b):
+steps = 81
+betas = []
+beta_b = []
+for beta in range(1, steps):
+    betas.append(beta)
+    beta_b.append(angle_velo(beta=beta))
+
+plt.plot(beta_b,betas, 'b')
+
+thetas = []
+theta_cm = []
+for theta in range(1, steps):
+    thetas.append(theta)
+    theta_cm.append(angle_velo2(velocity_deg=theta))
+
+plt.plot(theta_cm, thetas, 'go')
+
+plt.close()
+
+# Now we turn the plot
+plt.plot(betas, beta_b, 'b')
+
+# and see how a linear increase of distance with respect of the angle would look like:
+bs2 = []
+for i in range(1,len(betas)):
+    b = beta_b[0]*i     # we take the value of 1degree
+    bs2.append(b)
+
+plt.plot(bs2, 'r')
+
+## So or so (angle_velo vs. angle_velo2[more correct and approximate linear increase]),
+# we rather want a linear acceleration of the tracker
+
+

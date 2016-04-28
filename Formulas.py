@@ -98,3 +98,69 @@ def normalize(array):
         print("Input = zero.array >> no Normalization")
     else:
         return (array - np.min(array)) / (np.max(array) - np.min(array))
+
+
+
+## Formulas for JointAction
+
+def angle_velo(beta = None, b = None):
+    '''
+    TRIANGLE:
+    a:     = 80cm distance to screen
+    b:       velocity in cm of tracker/target
+    c:       just needed for calculation
+    alpha:   just needed for calculation
+    beta:    angle-velocity of tracker/target
+    gamma: = 90 degrees (screen is orthogonal to viewer)
+    Source:  "http://www.arndt-bruenner.de/mathe/scripts/Dreiecksberechnung.htm"
+    :param   beta, b: (see above)
+    :return: b or beta, respectively
+    '''
+
+    gamma = 90
+    a = 80
+
+    if beta == None and b == None:
+        raise ValueError("Need input, either for beta or b")
+
+    elif b==None:
+        alpha = 180 - beta - gamma
+        b = a * np.sin(np.radians(beta)) / np.sin(np.radians(alpha))
+        # c = a * np.sin(gamma) / np.sin(alpha)
+        return b
+
+    else: # beta == None:
+        c = np.sqrt(a * a + b * b - 2 * a * b * np.cos(np.radians(gamma)))
+        # alpha = np.arccos((a * a - b * b - c * c) / (-2 * b * c))
+        beta = np.arccos((b * b - c * c - a * a) / (-2 * c * a))
+        return np.degrees(beta)
+
+
+def angle_velo2(velocity_deg = None, velocity_cm = None):
+    '''
+    TRIANGLE:
+    d:     = 80cm distance to screen
+    theta:   Angle
+    vel_cm:  velocity in cm of tracker/target
+    vel_deg: velocity in degrees of tracker/target
+    Source:  "http://dragon.uml.edu/psych/eyeview.html"
+             "http://www.yorku.ca/eye/visangle.htm"
+    :param   velocity_cm, velocity_deg: (see above)
+    :return: velocity (cm, degrees, respectively)
+    '''
+
+    d = 80
+
+    if velocity_deg == None and velocity_cm == None:
+        raise ValueError("Need input, either velocity")
+
+    elif velocity_deg==None:
+        # vel_deg = np.degrees(np.arctan(velocity_cm / d))   # if, the same as angle_velo (Version1)
+        vel_deg = np.degrees(2*np.arctan(velocity_cm/(d*2)))
+        return vel_deg
+
+    else: # velocity_cm == None:
+        theta = velocity_deg
+        # vel_cm = np.tan(np.radians(theta)) * d # if, the same as angle_velo (Version1)
+        vel_cm = 2*np.tan(np.radians(theta/2)) * d
+        return vel_cm

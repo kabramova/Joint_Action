@@ -33,7 +33,10 @@ class Tracker:
 
     def accelerate(self, input):
         '''
-
+        Impact of keypress is either:
+        - low velocity change 0.7° per second squared
+        or
+        - high (1.0° per second squared).
         :param input: should be either +1 or -1 (right or left)
         :return:
         '''
