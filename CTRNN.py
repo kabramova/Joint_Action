@@ -20,7 +20,6 @@ class CTRNN:
         >>Note: Courant-Friedrichs-Lewy Condition
         :return: output
         '''
-
         self.h = timestep
 
         self.N = number_of_neurons

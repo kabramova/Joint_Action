@@ -150,6 +150,16 @@ def foo(a,b,c):
 
 foo(100,.001,200)
 
+# Double elif:
+def abc(a,b):
+
+    if a > 0 and b >0:
+        return [a,b]
+    elif a > 0:
+        return a
+    elif b > 0:
+        return b
+
 
 # Current working directory
 import os
@@ -573,6 +583,25 @@ def luft():
     print(a)     # has no local variables "a", so it prints the global one
 
 luft()
+
+class Feuer:
+    def __init__(self, brennstoff):
+        self.holz = brennstoff
+        self.stein = "Stein"
+        global holz
+        holz = self.holz
+
+    def call(self):
+        return self.holz
+
+feuer = Feuer("Holz")
+feuer.call()
+feuer.holz = "Holzkohle"
+feuer.call()
+holz  # means that global holz stays uneffected by change of self.holz (so not copy.copy() needed)
+
+feuer2 = Feuer("Bambus")
+holz  # but with new instantiation it changes!
 
 ## Special function
 data = ["4", "5", "6"]
