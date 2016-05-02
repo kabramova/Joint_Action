@@ -1,7 +1,6 @@
 from Formulas import *
 from CTRNN import CTRNN
 
-
 class CatchBot(CTRNN):
 
 
@@ -115,13 +114,13 @@ class CatchBot(CTRNN):
             Torque = (self.compute_motor_neurons()[1] - self.compute_motor_neurons()[0]) * MaxAngle
             Thrust = (self.compute_motor_neurons()[1] + self.compute_motor_neurons()[0]) * MaxThrust
 
-            oldVelo = self.Velocity
+            oldVelo = copy.copy(self.Velocity)
             self.Velocity = oldVelo * 0.9 + Thrust * self.h
 
-            oldAngle = self.Angle
+            oldAngle =  copy.copy(self.Angle)
             self.Angle = np.mod((oldAngle + Torque * self.h), 2*np.pi) # we normalize with modulus operator: Angle ∈ [0,2π]
 
-            oldPos = self.position
+            oldPos =  copy.copy(self.position)
             self.position = oldPos + np.array([np.cos(self.Angle), np.sin(self.Angle)]) * self.Velocity * self.h
 
             # After a movement, the visual input at the new position and then the next state will be computed (ordered !)

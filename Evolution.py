@@ -1,5 +1,4 @@
 from Simulator import *
-import copy
 from collections import OrderedDict
 import pickle
 

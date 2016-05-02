@@ -341,8 +341,6 @@ class Learn:
                      np.append(__class__.a_plus_b(self), self.c))   # __class__.method(self)  (abstact form)
 
 
-
-
 class Learn2(Learn):  # inherit from parent class Learn
     def __init__(self, *args):                     # or input
         super(self.__class__,self).__init__(*args) # or input
@@ -356,6 +354,7 @@ print(abc.b)
 print(abc.c)
 abc.a_plus_b()
 abc.c_plus_ab() # Here something doesnt work with the stacked operation
+abc.same_method()
 ac = Learn2("3d Letter")
 print(ac.a)
 print(ac.b)
@@ -696,6 +695,12 @@ for i in range(1000):
 finish = datetime.datetime.now()
 
 print(finish-start)
+
+## numpy
+# multi-dimensional “meshgrid”
+np.mgrid[0:5, 0:5]
+np.mgrid[-1:1:5j]
+
 
 # line_profiler...
 

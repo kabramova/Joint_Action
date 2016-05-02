@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt   # for other scripts
+import copy
 
 ## Euler Method:
 #        Δy/Δt ≈ dy/dt = f(y,t)
