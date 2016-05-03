@@ -266,6 +266,23 @@ print("first {1!r}, then {0!s}".format(ABC().a(),ABC().b()))
 print("C is {p.type}".format(p=ABC()))
 
 
+## Class: create self.objects later
+
+class ABC:
+    def __init__(self):
+        self.a = "a"
+
+    def create_b(self):
+        self.b = "b"
+
+
+abc = ABC()
+abc.a
+abc.b  # here is not self.b yet
+abc.create_b()
+abc.b  # here it is...
+
+
 
 # open, read, write Files
 f = open("Testtext.txt", "r+") #"r+" = mode, to read and write.
@@ -730,18 +747,49 @@ print(finish-start)
 np.mgrid[0:5, 0:5]
 np.mgrid[-1:1:5j]
 
+## Server:
+# Include following statements in script:
+#
+#   import sys
+#   import os
+#   os.system
+#   I = int(sys.argv[1])"
+#
+# Use argument "I" to refer to different parts of the computations to perform.
+# Then argument in script:
+#
+#   python script.py 0
+# or
+#   python script.py 1
+#
+# save a file containing the following:
+# 0
+# 1
+# 2
+# 3
+# 4
+# 5
+# under the name "args"
+# then type following statement in command line:
+#
+#   cat args | xargs -L1 -P6 python script.py
+#
+# It starts running script 6 times on 6 CPU's (given that you have 6 CPU's) with six different arguments (0,1,2,3,4,5)
+#
+# Now you just have to write your script in such a way that the arguments will split the computing task
 
-# line_profiler...
 
-# Packages:
+
+## line_profiler...
+
+## Packages:
 # For Computer Vision:
 # import SimpleCV
 
-# for Neural Networks
+## for Neural Networks
+# - https://wiki.python.org/moin/PythonForArtificialIntelligence
 # - FANN, neurolab
-# https://wiki.python.org/moin/PythonForArtificialIntelligence
-# - keras ("https://github.com/fchollet/keras"
-
+# - keras ("https://github.com/fchollet/keras")
 
 
 ## 3D plot with matplotlib

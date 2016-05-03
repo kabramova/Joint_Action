@@ -6,7 +6,6 @@ from Formulas import *
 # If target reaches the border, it abruptly turns back
 # Three target turns during each trial
 # Experiment: 3 blocks of 40 trials each.
-# Impact of keypress was either low (velocity change 0.7° per second squared) or high (1.0° per second squared).
 # The order of trials was randomized within each block.
 #
 # Implementation:
@@ -28,8 +27,6 @@ class Tracker:
         self.distance_to_bordeL = np.abs(env_range[0] - self.position)  # env_range will be globally announced by class Jordan
         self.distance_to_bordeR = np.abs(env_range[1] - self.position)
 
-        self.trial = trial # either "fast" or "slow"
-
 
     def accelerate(self, input):
         '''
@@ -38,16 +35,26 @@ class Tracker:
         - low velocity change 0.7° per second squared ["slow"]
         or
         - high (1.0° per second squared) ["fast"].
-        :param input: either +1 or -1    (right or left)
+        :param input: either -1 or +1    (left or right)
         :return: update self.velocity
         '''
-        if self.trial == "fast":
+
+        if input not in [-1,1]: raise ValueError("Input must be ∈ [-1;1]")
+
+        if trial == "fast":         # trial will be globally announced by class Jordan
             acceleration = input*1
         else: # trial == "slow"
             acceleration = input*0.7
 
         # oldVelo = copy.copy(self.velocity)
         self.velocity += acceleration
+
+        if condition==True: # condition will be globally announced by class Jordan
+            if input == -1:
+                return 0    # for auditory feedback
+            elif input == 1:
+                return 1
+
 
 
     def movement(self):
@@ -98,15 +105,16 @@ class Knoblin(CTRNN):
     # TODO: Auditory Input (condition)
 
     def __init__(self):
-        self.N_sensor = 2
+        self.N_visual_sensor = 2
+        self.N_auditory_sensor = 2
         self.N_motor = 2
 
-        # TODO: We could also apply symmetrical weights
-        self.WM = randrange(self.W_RANGE, self.N_motor * 2, 1)
-        self.WV = randrange(self.W_RANGE, self.N_sensor * 2, 1)
+        super(self.__class__, self).__init__(number_of_neurons=8, timestep=0.01)
 
-        # TODO: What is a reasonable number of neurons?
-        super(self.__class__, self).__init__(number_of_neurons=6, timestep=0.01)
+        # TODO: We could also apply symmetrical weights
+        self.WM = randrange(self.W_RANGE, self.N_motor * 2, 1)          # Weights to Keypress (left,right)
+        self.WV = randrange(self.W_RANGE, self.N_visual_sensor * 2, 1)  # Weights of visual input
+        self.WA = randrange(self.W_RANGE, self.N_visual_sensor * 2, 1)  # Weights of auditory input, Keypress (left,right)
 
         global h
         h = self.h
@@ -126,9 +134,38 @@ class Knoblin(CTRNN):
         :param position_tracker, position_target: both informations come from the class Tracker & class Target
         :return:
         '''
-        self.I[self.N-1] = self.WV[2] * position_tracker  # to left Neuron 6
+        self.I[self.N-1] = self.WV[2] * position_tracker  # to left Neuron 8
         self.I[0] = np.sum(((self.WV[0] * position_tracker), (self.WV[1] * position_target))) # suppose to subtract the two inputs
         self.I[1] = self.WV[3] * position_target          # to right Neuron 2
+
+
+    def auditory_input(self, input):  # optional: distance_to_boarder
+        '''
+        Currently we just take the position of the tracker and the position of the target as input (minimal design).
+        It's debatable, whether we want to tell the network directly, what the distance between Target and Agent is
+
+        :param input: Tone of either left(0), right(1) or both(2) keypresses (0,1,2 coding, respectively)
+        :return:
+        '''
+
+        if condition==True:  # condition will be globally announced by class Jordan
+
+            if input not in [0, 1, 2]: raise ValueError("Input must be ∈ [0;1;2]")
+
+            left_klick, right_klick = 1, 1
+
+            if input == 0:
+                self.I[self.N-2] = self.WA[0] * left_klick   # to left Neuron 7, left ear
+                self.I[round(self.N / 2)] = self.WA[1] * left_klick
+
+            elif input == 1:
+                self.I[round(self.N / 2)] = self.WA[3] * right_klick
+                self.I[2] = self.WA[2] * right_klick         # to right Neuron 3, right ear
+
+            else: # input == 2:
+                self.I[self.N - 2] = self.WA[0] * left_klick # to left Neuron 7, left ear
+                self.I[round(self.N / 2)] = np.sum(((self.WA[1] * left_klick), (self.WA[3] * right_klick)))
+                self.I[2] = self.WA[2] * right_klick         # to right Neuron 3, right ear
 
 
     def motor_output(self):
@@ -143,11 +180,11 @@ class Knoblin(CTRNN):
         :return: output
         '''
 
-        N3 = self.Y[round(self.N / 2) - 1]               # Neuron 3 (if N=6)
-        N5 = self.Y[self.N - round(self.N / 2) + 2 - 1]  # Neuron 5 (if N=6)
+        N4 = self.Y[round(self.N / 2) - 1]               # Neuron 4 (if N=8)
+        N6 = self.Y[self.N - round(self.N / 2) + 2 - 1]  # Neuron 6 (if N=8)
 
-        activation_left  = np.sum([N3 * self.WM[2], N5 * self.WM[0] ])
-        activation_right = np.sum([N3 * self.WM[1], N5 * self.WM[3] ])
+        activation_left  = np.sum([N4 * self.WM[2], N6 * self.WM[0] ])
+        activation_right = np.sum([N4 * self.WM[1], N6 * self.WM[3] ])
 
         # TODO: How to take constant input/output into account : e.g. constant output over threshold leads to key-press every 0.3 timesteps?
         # Threshold for output
@@ -165,10 +202,12 @@ class Jordan:
     # Task Environment
     def __init__(self, trial_speed, auditory_condition):
 
+        if trial_speed not in ["fast", "slow"]: raise ValueError("Must be either 'fast' or 'slow'")
         self.trial = trial_speed
         global trial
         trial = self.trial
 
+        if auditory_condition not in [True, False]: raise ValueError("Must be either True or False")
         self.condition = auditory_condition
         global condition
         condition = self.condition
@@ -177,3 +216,7 @@ class Jordan:
         self.env_range = [-50, 50]
         global env_range
         env_range = self.env_range
+
+    def auditive_feedback(self):
+        # Tone of 100-ms duration
+        pass
