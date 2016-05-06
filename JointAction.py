@@ -17,15 +17,11 @@ class Tracker:
     '''
 
     def __init__(self):
-        # trial, env_range will be globally announced by class Jordan
         self.position = 0
         self.velocity = 0
-
-        self.distance_to_target = 0  # +/-, first, we try to let the network calculate this by its own.
-
-        # TODO: Test whether the NN needs this information
-        self.distance_to_bordeL = np.abs(env_range[0] - self.position)  # env_range will be globally announced by class Jordan
-        self.distance_to_bordeR = np.abs(env_range[1] - self.position)
+        # Timer for the emitted sound-feedback
+        self.timer_sound_l = 0
+        self.timer_sound_r = 0
 
 
     def accelerate(self, input):
@@ -50,22 +46,34 @@ class Tracker:
         self.velocity += acceleration
 
         if condition==True: # condition will be globally announced by class Jordan
-            if input == -1:
-                return 0    # for auditory feedback
-            elif input == 1:
-                return 1
+            self.set_timer(left_or_right=input)
 
+
+    def set_timer(self, left_or_right):
+        ''' Tone of 100-ms duration '''
+        if left_or_right == -1:  # left
+            self.timer_sound_l = 0.1
+        elif left_or_right == 1: # right
+            self.timer_sound_r = 0.1
 
 
     def movement(self):
-        '''
-        :return: update self.position
-        '''
+        ''' Update self.position and self.timer(sound) '''
         self.position += self.velocity * h  # h will be globally announced in Agent (Knoblin)
 
+        sound_output = [None,None]
+        if condition == True:
 
-    def dist_target(self, pos_target): # see comment self.distance_to_target (above)
-        self.distance_to_target = pos_target - self.position
+            if self.timer_sound_l > 0:
+                self.timer_sound_l -= h
+                sound_output[0] = -1   # for auditory feedback
+
+            if self.timer_sound_r > 0:
+                self.timer_sound_r -= h
+                sound_output[1] = 1  # for auditory feedback
+
+        # TODO: how to deal with sound_output at next stage:
+        return sound_output
 
 
 class Target:
@@ -78,15 +86,22 @@ class Target:
     def __init__(self):
         # trial, env_range will be globally announced by class Jordan
         self.position = 0
+        #TODO: randomise the initialization of direction (maybe in the JA_Simulator.py):
         self.velocity = 4.3 if trial=="fast" else 3.3
 
-        # TODO: Test whether the NN needs this information
+        # Distances to Boarders:
         self.distance_to_bordeL = np.abs(env_range[0] - self.position)
         self.distance_to_bordeR = np.abs(env_range[1] - self.position)
 
 
     def movement(self):
+        self.direction()
         self.position += self.velocity * h  # h will be globally announced in Agent (Knoblin)
+
+    def direction(self):
+        #TODO: fine grained turning point:
+        if self.distance_to_bordeR == 0 or self.distance_to_bordeL == 0:
+            self.velocity *= -1
 
 
 class Knoblin(CTRNN):
@@ -119,6 +134,10 @@ class Knoblin(CTRNN):
         global h
         h = self.h
 
+        self.timer_motor_l = 0
+        self.timer_motor_r = 0
+
+
     def press_right(self):
         return 1
 
@@ -144,7 +163,7 @@ class Knoblin(CTRNN):
         Currently we just take the position of the tracker and the position of the target as input (minimal design).
         It's debatable, whether we want to tell the network directly, what the distance between Target and Agent is
 
-        :param input: Tone of either left(0), right(1) or both(2) keypresses (0,1,2 coding, respectively)
+        :param input: Tone of either left(0), right(1) or both(2) keypress (0,1,2 coding, respectively)
         :return:
         '''
 
@@ -186,15 +205,24 @@ class Knoblin(CTRNN):
         activation_left  = np.sum([N4 * self.WM[2], N6 * self.WM[0] ])
         activation_right = np.sum([N4 * self.WM[1], N6 * self.WM[3] ])
 
-        # TODO: How to take constant input/output into account : e.g. constant output over threshold leads to key-press every 0.3 timesteps?
+        # TODO: How to take constant input/output into account : e.g. constant output over threshold leads to key-press every 0.5 timesteps?
         # Threshold for output
         threshold = ...
 
+        if self.timer_motor_l > 0:
+            self.timer_motor_l -= self.h
+        if self.timer_motor_r > 0:
+            self.timer_motor_r -= self.h
+
         if activation_left > threshold:
-            return self.press_left()
+            if self.timer_motor_l == 0:
+                self.timer_motor_l = 0.5
+                return self.press_left()
 
         if activation_right > threshold:
-            return self.press_right()
+            if self.timer_motor_r == 0:
+                self.timer_motor_r = 0.5
+                return self.press_right()
 
 
 

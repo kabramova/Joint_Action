@@ -790,6 +790,7 @@ np.mgrid[-1:1:5j]
 # - https://wiki.python.org/moin/PythonForArtificialIntelligence
 # - FANN, neurolab
 # - keras ("https://github.com/fchollet/keras")
+# - theano
 
 
 ## 3D plot with matplotlib

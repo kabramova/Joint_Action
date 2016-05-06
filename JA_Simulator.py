@@ -16,11 +16,17 @@ class JA_Simulation:
 
     def run(self):
         for i in range(self.simlength):
+
             self.target.movement()
-            self.tracker.movement()
+
+            sound_output = self.tracker.movement()
+
             self.knoblin.visual_input(position_tracker=self.target.position, position_target=self.target.position)
+
             self.knoblin.auditory_input(input= ...)
-            self.tracker.accelerate(input = self.knoblin.motor_output())
+
+            if self.knoblin.timer_motor_l == 0 or self.knoblin.timer_motor_r == 0:
+                self.tracker.accelerate(input = self.knoblin.motor_output())
 
 
 
