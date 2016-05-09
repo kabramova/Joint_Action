@@ -11,11 +11,14 @@ am = np.array([[1, 2], [3, 4]]) # matrix
 print(ar), print(ar2), print(br), print(am)
 
 # whether all/any elements are True/False:
-if np.any(ar==3):
+if np.any(ar==3):    # any(i == 3 for i in ar)
     print("at least one element == 3")
 
-if np.all(ar != 0):
+if np.all(ar != 0):  # all(i != 0 for i in ar)
     print("none of the elements == 0")
+
+
+
 
 
 # find min/max in Array
@@ -93,7 +96,7 @@ a = 0
 b = a if a!=0 else 2   # Note "else" is obligatory here.
 c = a if a==0 else 1
 print("a:", a,
-      "b:",b,
+      "b:", b,
       "c:", c)
 
 # Free space
@@ -271,6 +274,7 @@ print("C is {p.type}".format(p=ABC()))
 class ABC:
     def __init__(self):
         self.a = "a"
+        # self.create_b() # it is also possible to initiate a class self.variable this way
 
     def create_b(self):
         self.b = "b"

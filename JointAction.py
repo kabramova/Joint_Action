@@ -60,7 +60,12 @@ class Tracker:
 
     def movement(self):
         ''' Update self.position and self.timer(sound) '''
+
         self.position += self.velocity * h  # h will be globally announced in Agent (Knoblin)
+
+        # Tacker does not continue moving, when at the edges of the environment.
+        if self.position < env_range[0]: self.position = env_range[0]
+        if self.position > env_range[1]: self.position = env_range[1]
 
         sound_output = [0,0]
 
@@ -88,19 +93,23 @@ class Target:
         #TODO: randomise the initialization of direction (maybe in the JA_Simulator.py):
         self.velocity = 4.3 if trial=="fast" else 3.3
 
-        # Distances to Boarders:
-        self.distance_to_bordeL = np.abs(env_range[0] - self.position)
-        self.distance_to_bordeR = np.abs(env_range[1] - self.position)
+    def distance_to_border(self):
+        ''' Returns the distances of the Target to each boarder of the environment '''
+        distance_to_bordeL = np.abs(env_range[0] - self.position)
+        distance_to_bordeR = np.abs(env_range[1] - self.position)
+        return [distance_to_bordeL, distance_to_bordeR]
 
+    def direction(self):
+        ''' Target turns direction if its crucially close to one of the boarders '''
+        distance_left_right = self.distance_to_border()
+        if any(distance < self.velocity * h for distance in distance_left_right):
+            self.velocity *= -1
 
     def movement(self):
         self.direction()
         self.position += self.velocity * h  # h will be globally announced in Agent (Knoblin)
 
-    def direction(self):
-        #TODO: fine grained turning point:
-        if self.distance_to_bordeR == 0 or self.distance_to_bordeL == 0:
-            self.velocity *= -1
+
 
 
 class Knoblin(CTRNN):
@@ -136,42 +145,46 @@ class Knoblin(CTRNN):
         self.timer_motor_r = 0
 
 
-    def press_right(self):
-        return 1
-
     def press_left(self):
-        return -1
+        ''' We set timer to 0.5. That means we have max. 2 clicks per time-unit, but simulatiously clicking with other hand is possible '''
+        if self.timer_motor_l <= 0:
+            self.timer_motor_l = 0.5
+            return -1
+
+    def press_right(self):
+        ''' We set timer to 0.5. That means we have max. 2 clicks per time-unit, but simulatiously clicking with other hand is possible '''
+        if self.timer_motor_r <= 0:
+            self.timer_motor_r = 0.5
+            return 1
 
 
-    def visual_input(self, position_tracker, position_target):  # optional: distance_to_boarder
+    def visual_input(self, position_tracker, position_target):  # optional: distance_to_border
         '''
         Currently we just take the position of the tracker and the position of the target as input (minimal design).
         It's debatable, whether we want to tell the network directly, what the distance between Target and Agent is
 
-        :param position_tracker, position_target: both informations come from the class Tracker & class Target
-        :return:
+        :param position_tracker, position_target: both information come from the class Tracker & class Target
         '''
         self.I[self.N-1] = self.WV[2] * position_tracker  # to left Neuron 8
         self.I[0] = np.sum(((self.WV[0] * position_tracker), (self.WV[1] * position_target))) # suppose to subtract the two inputs
         self.I[1] = self.WV[3] * position_target          # to right Neuron 2
 
 
-    def auditory_input(self, sound_input):  # optional: distance_to_boarder
+    def auditory_input(self, sound_input):  # optional: distance_to_border
         '''
         Currently we just take the position of the tracker and the position of the target as input (minimal design).
         It's debatable, whether we want to tell the network directly, what the distance between Target and Agent is
 
-        :param input: Tone of either left(0), right(1) or both(2) keypress (0,1,2 coding, respectively)
-        :return:
+        :param input: Tone(s) induced by left click and/or right click: coming from class Tracker.movement()
         '''
 
         if sound_input[0] not in [1,0] or sound_input[1] not in [0,1]: raise ValueError("Input must be ∈ [0;1]")
 
-        left_klick, right_klick = sound_input[0], sound_input[1]
+        left_click, right_click = sound_input[0], sound_input[1]
 
-        self.I[self.N-2] = self.WA[0] * left_klick   # to left Neuron 7, left ear
-        self.I[2] = self.WA[2] * right_klick         # to right Neuron 3, right ear
-        self.I[round(self.N / 2)] = np.sum(((self.WA[1] * left_klick), (self.WA[3] * right_klick))) # to middle Neuron 5
+        self.I[self.N-2] = self.WA[0] * left_click   # to left Neuron 7, left ear   (if N=8)
+        self.I[2] = self.WA[2] * right_click         # to right Neuron 3, right ear (if N=8)
+        self.I[round(self.N / 2)] = np.sum(((self.WA[1] * left_click), (self.WA[3] * right_click))) # to middle Neuron 5
 
 
     def motor_output(self):
@@ -198,20 +211,16 @@ class Knoblin(CTRNN):
         if self.timer_motor_r > 0:
             self.timer_motor_r -= self.h
 
-        # TODO: How to take constant input/output into account : e.g. constant output over threshold leads to key-press every 0.5 timesteps?
-        # Threshold for output
-        threshold = ...
-        activation = [0, 0]
+        # TODO:
+
+        threshold = 0           # Threshold for output
+        activation = [0, 0]     # Activation is zero
 
         if activation_left > threshold:
-            if self.timer_motor_l <= 0:
-                self.timer_motor_l = 0.5
-                activation[0] = self.press_left()
+            activation[0] = self.press_left()   # press() will only return something if timer == 0.
 
         if activation_right > threshold:
-            if self.timer_motor_r <= 0:
-                self.timer_motor_r = 0.5
-                activation[1] = self.press_right()
+            activation[1] = self.press_right()  # press() will only return something if timer == 0.
 
         return activation
 
