@@ -211,8 +211,7 @@ class Knoblin(CTRNN):
         if self.timer_motor_r > 0:
             self.timer_motor_r -= self.h
 
-        # TODO:
-
+        # TODO: Check threshold
         threshold = 0           # Threshold for output
         activation = [0, 0]     # Activation is zero
 
@@ -244,7 +243,3 @@ class Jordan:
         self.env_range = [-50, 50]
         global env_range
         env_range = self.env_range
-
-    def auditive_feedback(self):
-        # Tone of 100-ms duration
-        pass

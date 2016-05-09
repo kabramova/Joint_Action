@@ -26,11 +26,10 @@ class JA_Simulation:
             if condition == True: # condition will be globally announced by class Jordan (self.environment)
                 self.knoblin.auditory_input(input= sound_output)
 
-            # TODO: this is redundant (see e.g.) Knoblin.press_left(), but might be more computational efficient
-            if self.knoblin.timer_motor_l <= 0 or self.knoblin.timer_motor_r <= 0:
+            if self.knoblin.timer_motor_l <= 0 or self.knoblin.timer_motor_r <= 0: # this is a bit redundant (see e.g.) Knoblin.press_left(), but more computational efficient
                 self.tracker.accelerate(input = self.knoblin.motor_output())
 
-            # TODO: Fitness
+            # TODO: Fitness, Trajectories, Evolution(Genome)
 
 
 
