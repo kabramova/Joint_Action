@@ -35,25 +35,26 @@ class Tracker:
         :return: update self.velocity
         '''
 
-        if input not in [-1,1]: raise ValueError("Input must be ∈ [-1;1]")
+        if input[0] not in [-1,0] or input[1] not in [0, 1]: raise ValueError("Input must be ∈ [-1;1]")
 
-        if trial == "fast":         # trial will be globally announced by class Jordan
-            acceleration = input*1
-        else: # trial == "slow"
-            acceleration = input*0.7
+        input = np.array(input)
 
-        # oldVelo = copy.copy(self.velocity)
+        if trial == "fast":     v = 1.0  # trial will be globally announced by class Jordan
+        elif trial == "slow":   v = 0.7
+
+        acceleration = np.dot(np.array([v, v]).transpose(), input)
+
         self.velocity += acceleration
 
-        if condition==True: # condition will be globally announced by class Jordan
+        if condition==True:              # condition will be globally announced by class Jordan
             self.set_timer(left_or_right=input)
 
 
     def set_timer(self, left_or_right):
         ''' Tone of 100-ms duration '''
-        if left_or_right == -1:  # left
+        if left_or_right[0] == -1:  # left
             self.timer_sound_l = 0.1
-        elif left_or_right == 1: # right
+        if left_or_right[1] == 1:   # right
             self.timer_sound_r = 0.1
 
 
@@ -61,18 +62,16 @@ class Tracker:
         ''' Update self.position and self.timer(sound) '''
         self.position += self.velocity * h  # h will be globally announced in Agent (Knoblin)
 
-        sound_output = [None,None]
-        if condition == True:
+        sound_output = [0,0]
 
-            if self.timer_sound_l > 0:
-                self.timer_sound_l -= h
-                sound_output[0] = -1   # for auditory feedback
+        if self.timer_sound_l > 0:
+            self.timer_sound_l -= h
+            sound_output[0] = 1   # for auditory feedback
 
-            if self.timer_sound_r > 0:
-                self.timer_sound_r -= h
-                sound_output[1] = 1  # for auditory feedback
+        if self.timer_sound_r > 0:
+            self.timer_sound_r -= h
+            sound_output[1] = 1  # for auditory feedback
 
-        # TODO: how to deal with sound_output at next stage:
         return sound_output
 
 
@@ -117,7 +116,6 @@ class Knoblin(CTRNN):
 
     2 different tones for the keys (left, right), duration = 100ms
     '''
-    # TODO: Auditory Input (condition)
 
     def __init__(self):
         self.N_visual_sensor = 2
@@ -158,7 +156,7 @@ class Knoblin(CTRNN):
         self.I[1] = self.WV[3] * position_target          # to right Neuron 2
 
 
-    def auditory_input(self, input):  # optional: distance_to_boarder
+    def auditory_input(self, sound_input):  # optional: distance_to_boarder
         '''
         Currently we just take the position of the tracker and the position of the target as input (minimal design).
         It's debatable, whether we want to tell the network directly, what the distance between Target and Agent is
@@ -167,24 +165,13 @@ class Knoblin(CTRNN):
         :return:
         '''
 
-        if condition==True:  # condition will be globally announced by class Jordan
+        if sound_input[0] not in [1,0] or sound_input[1] not in [0,1]: raise ValueError("Input must be ∈ [0;1]")
 
-            if input not in [0, 1, 2]: raise ValueError("Input must be ∈ [0;1;2]")
+        left_klick, right_klick = sound_input[0], sound_input[1]
 
-            left_klick, right_klick = 1, 1
-
-            if input == 0:
-                self.I[self.N-2] = self.WA[0] * left_klick   # to left Neuron 7, left ear
-                self.I[round(self.N / 2)] = self.WA[1] * left_klick
-
-            elif input == 1:
-                self.I[round(self.N / 2)] = self.WA[3] * right_klick
-                self.I[2] = self.WA[2] * right_klick         # to right Neuron 3, right ear
-
-            else: # input == 2:
-                self.I[self.N - 2] = self.WA[0] * left_klick # to left Neuron 7, left ear
-                self.I[round(self.N / 2)] = np.sum(((self.WA[1] * left_klick), (self.WA[3] * right_klick)))
-                self.I[2] = self.WA[2] * right_klick         # to right Neuron 3, right ear
+        self.I[self.N-2] = self.WA[0] * left_klick   # to left Neuron 7, left ear
+        self.I[2] = self.WA[2] * right_klick         # to right Neuron 3, right ear
+        self.I[round(self.N / 2)] = np.sum(((self.WA[1] * left_klick), (self.WA[3] * right_klick))) # to middle Neuron 5
 
 
     def motor_output(self):
@@ -205,24 +192,28 @@ class Knoblin(CTRNN):
         activation_left  = np.sum([N4 * self.WM[2], N6 * self.WM[0] ])
         activation_right = np.sum([N4 * self.WM[1], N6 * self.WM[3] ])
 
-        # TODO: How to take constant input/output into account : e.g. constant output over threshold leads to key-press every 0.5 timesteps?
-        # Threshold for output
-        threshold = ...
-
+        # Update timer:
         if self.timer_motor_l > 0:
             self.timer_motor_l -= self.h
         if self.timer_motor_r > 0:
             self.timer_motor_r -= self.h
 
+        # TODO: How to take constant input/output into account : e.g. constant output over threshold leads to key-press every 0.5 timesteps?
+        # Threshold for output
+        threshold = ...
+        activation = [0, 0]
+
         if activation_left > threshold:
-            if self.timer_motor_l == 0:
+            if self.timer_motor_l <= 0:
                 self.timer_motor_l = 0.5
-                return self.press_left()
+                activation[0] = self.press_left()
 
         if activation_right > threshold:
-            if self.timer_motor_r == 0:
+            if self.timer_motor_r <= 0:
                 self.timer_motor_r = 0.5
-                return self.press_right()
+                activation[1] = self.press_right()
+
+        return activation
 
 
 
