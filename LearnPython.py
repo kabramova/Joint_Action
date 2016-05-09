@@ -790,6 +790,10 @@ np.mgrid[-1:1:5j]
 # For Computer Vision:
 # import SimpleCV
 
+## Machine Learnin:
+# https://www.tensorflow.org (by google)
+# import tensorflow as tf
+
 ## for Neural Networks
 # - https://wiki.python.org/moin/PythonForArtificialIntelligence
 # - FANN, neurolab
