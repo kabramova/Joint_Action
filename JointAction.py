@@ -102,14 +102,12 @@ class Target:
     def direction(self):
         ''' Target turns direction if its crucially close to one of the boarders '''
         distance_left_right = self.distance_to_border()
-        if any(distance < self.velocity * h for distance in distance_left_right):
+        if any(distance < np.abs(self.velocity * h) for distance in distance_left_right):
             self.velocity *= -1
 
     def movement(self):
         self.direction()
         self.position += self.velocity * h  # h will be globally announced in Agent (Knoblin)
-
-
 
 
 class Knoblin(CTRNN):
@@ -146,15 +144,9 @@ class Knoblin(CTRNN):
 
 
     def press_left(self):
-        ''' We set timer to 0.5. That means we have max. 2 clicks per time-unit, but simulatiously clicking with other hand is possible '''
-        if self.timer_motor_l <= 0:
-            self.timer_motor_l = 0.5
             return -1
 
     def press_right(self):
-        ''' We set timer to 0.5. That means we have max. 2 clicks per time-unit, but simulatiously clicking with other hand is possible '''
-        if self.timer_motor_r <= 0:
-            self.timer_motor_r = 0.5
             return 1
 
 
@@ -168,6 +160,8 @@ class Knoblin(CTRNN):
         self.I[self.N-1] = self.WV[2] * position_tracker  # to left Neuron 8
         self.I[0] = np.sum(((self.WV[0] * position_tracker), (self.WV[1] * position_target))) # suppose to subtract the two inputs
         self.I[1] = self.WV[3] * position_target          # to right Neuron 2
+
+        # print("Visual Input: \n", self.I[[self.N-1, 0, 1]])
 
 
     def auditory_input(self, sound_input):  # optional: distance_to_border
@@ -186,6 +180,8 @@ class Knoblin(CTRNN):
         self.I[2] = self.WA[2] * right_click         # to right Neuron 3, right ear (if N=8)
         self.I[round(self.N / 2)] = np.sum(((self.WA[1] * left_click), (self.WA[3] * right_click))) # to middle Neuron 5
 
+        # if any(i > 0 for i in sound_input):
+        #     print("Auditory Input: \n", self.I[[self.N-2, 2, round(self.N / 2)]])
 
     def motor_output(self):
         '''
@@ -215,11 +211,16 @@ class Knoblin(CTRNN):
         threshold = 0           # Threshold for output
         activation = [0, 0]     # Activation is zero
 
+        # We set timer to 0.5. That means we have max. 2 clicks per time-unit, but simulatiously clicking with other hand is possible
         if activation_left > threshold:
-            activation[0] = self.press_left()   # press() will only return something if timer == 0.
+            if self.timer_motor_l <= 0:
+                self.timer_motor_l = 0.5
+                activation[0] = self.press_left()   # press() will only return something if timer == 0.
 
         if activation_right > threshold:
-            activation[1] = self.press_right()  # press() will only return something if timer == 0.
+            if self.timer_motor_r <= 0:
+                self.timer_motor_r = 0.5
+                activation[1] = self.press_right()  # press() will only return something if timer == 0.
 
         return activation
 
@@ -231,15 +232,23 @@ class Jordan:
 
         if trial_speed not in ["fast", "slow"]: raise ValueError("Must be either 'fast' or 'slow'")
         self.trial = trial_speed
-        global trial
-        trial = self.trial
 
         if auditory_condition not in [True, False]: raise ValueError("Must be either True or False")
         self.condition = auditory_condition
+
+        # TODO: Environment range either [-20,20] or [0,40]
+        # [-20,20] is a plausible Screen size (40cm) with a visual angle of approx. 28 degrees (check with angle_velo2())
+        self.env_range = [-20, 20]
+
+        self.globalization()
+
+
+    def globalization(self):
+        global trial
+        trial = self.trial
+
         global condition
         condition = self.condition
 
-        # TODO: Environment range either [-50,50] or [0,100]
-        self.env_range = [-50, 50]
         global env_range
         env_range = self.env_range
