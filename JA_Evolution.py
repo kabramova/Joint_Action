@@ -306,7 +306,6 @@ class JA_Evolution(JA_Simulation):
             print('Evolution terminated. \n'
                   '(Caution: pop_list is not saved in external file)')
 
-    # TODO: <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     def reimplement_population(self, filename=None, Plot=False):
 
@@ -338,6 +337,7 @@ class JA_Evolution(JA_Simulation):
             global n  # this is needed for self.close()
             n = 2
 
+    # TODO: <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     def plot_pop_list(self, n_knoblins=1):
 
@@ -347,7 +347,7 @@ class JA_Evolution(JA_Simulation):
         for i in range(n_knoblins):
 
             plt.figure()
-
+            # TODO: def run_and_plot()
             ...
 
             # plt.plot()
@@ -355,6 +355,7 @@ class JA_Evolution(JA_Simulation):
         print(np.round(self.pop_list[0:n_knoblins, 0:3], 2))
         if n_knoblins > 1:
             print("Close all Windows with close()")
+
 
     def close(self):
         for j in range(n):  # n is from the global variable of plot_pop_list()/reimplement_population()
