@@ -369,8 +369,6 @@ class Evolution(Simulate):
                   '(Caution: pop_list is not saved in external file)')
 
 
-        return Fitness_progress
-
 
     def reimplement_population(self, Filename=None, Plot = False):
 
