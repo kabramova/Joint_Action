@@ -116,7 +116,7 @@ class Evolution(Simulate):
         return gens
 
 
-    def _evolute(self, mutation_var = .25, fps = False):
+    def _reproduction(self, mutation_var = .25, fps = False):
         '''
 
         If fitness proportionate selection (fps) = False:
@@ -325,31 +325,7 @@ class Evolution(Simulate):
     def run_evolution(self, Generations, mutation_var = .25, complex_trials=True, fit_prop_sel = False, position_agent=[50,50], angle_to_target= np.pi/2,  distance_to_target = 30):
 
         # Ask whether results should be saved in external file
-        count = 0
-        while True and count !=3:
-
-            Input = input("Do you want to save the final population ('(y)es'/'(n)o'):")
-
-            if Input in ["y", "Y","yes" ,"Yes", "YES"]:
-                print("Saving final population in external file")
-                save = True
-                break
-
-            elif Input in ["n", "N", "no", "No", "NO"]:
-                print("Final population won't be saved")
-                save = False
-                break
-
-            else:
-                print("Input is not understood.\n"
-                    "Type either 'yes' or 'no'.\n"
-                     "{} more attempt(s)".format(2-count) )
-                count += 1
-
-        if count == 3:
-            raise ValueError("Function stopped")
-
-        # save = True
+        save = save_request()
 
         # Run evolution:
         Fitness_progress = np.zeros((Generations,3))
@@ -361,7 +337,7 @@ class Evolution(Simulate):
 
         for i in range(Generations):
 
-            self._evolute(mutation_var, fps=fit_prop_sel)
+            self._reproduction(mutation_var, fps=fit_prop_sel)
 
             self._simulate_next_population(position_agent = position_agent,
                                            pos_target     = pos_target)
@@ -455,6 +431,7 @@ class Evolution(Simulate):
     def close(self):
         for j in range(n):  # n is from the global variable of plot_pop_list()/reimplement_population()
             plt.close()
+
 
 
 # t3 = Evolution(simlength=50)

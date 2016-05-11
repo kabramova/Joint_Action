@@ -673,7 +673,7 @@ def factorial(n):
         print("intermediate result for ", n, " * factorial(" ,n-1, "): ",res)
         return res
 
-print(factorial(5)
+print(factorial(5))
 
 def fib(n):
     if n == 0:
@@ -750,6 +750,14 @@ print(finish-start)
 # multi-dimensional “meshgrid”
 np.mgrid[0:5, 0:5]
 np.mgrid[-1:1:5j]
+
+## pycharm
+# Breakpoint
+for i in range(5):
+    for j in range(3):
+        print(i, "J:",j)
+
+
 
 ## Server:
 # Include following statements in script:

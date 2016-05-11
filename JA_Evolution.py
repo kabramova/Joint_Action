@@ -1,4 +1,5 @@
 from JA_Simulator import *
+import pickle
 
 class JA_Evolution(JA_Simulation):
 
@@ -8,12 +9,13 @@ class JA_Evolution(JA_Simulation):
 
         self.genome = self.create_genome(Knoblin=self.knoblin)
 
+        self.generation = 0
+
         self.pop_size = pop_size
 
         self.pop_list = self.__create_pop_list(pop_size)
 
-
-
+        self.filename = ""
 
 
     def __create_pop_list(self, pop_size):
@@ -113,14 +115,15 @@ class JA_Evolution(JA_Simulation):
         return fitness
 
 
-    def run_population(self):
+    def _run_population(self):
 
         for i, string in enumerate(self.pop_list):
-            genome = string[2:]
-            self.knoblin = Knoblin()
-            self.implement_genome(genome_string=genome)
-            # Run all trials an save fitness in pop_list:
-            self.pop_list[i, 1] = self.run_trials()
+            if string[1] == 0:  # run only if fitness is no evaluated yet
+                genome = string[2:]
+                self.knoblin = Knoblin()
+                self.implement_genome(genome_string=genome)
+                # Run all trials an save fitness in pop_list:
+                self.pop_list[i, 1] = self.run_trials()
 
         self.pop_list = copy.copy(mat_sort(self.pop_list, index=1)) # sorts the pop_list, best agents on top
 
@@ -135,7 +138,7 @@ class JA_Evolution(JA_Simulation):
         return gens
 
 
-    def _evolute(self, mutation_var=.02):
+    def _reproduction(self, mutation_var=.02):
         '''
         Combination of asexual (fitness proportionate selection (fps)) sexual reproduction
             Minimal population size = 10
@@ -221,56 +224,139 @@ class JA_Evolution(JA_Simulation):
 
 
         # 4) Fill with randomly created agents, 30% (+ 1/2 fill up)
+        n_fitfamily = n_family + n_fps
+        for n in range(n_fitfamily, n_fitfamily+n_random):
+            self.knoblin = Knoblin()                                    # Create random new agent
+            self.genome = self.create_genome(Knoblin = self.knoblin)    # ... and its genome
+            new_population[n, 2:] = self.genome.transpose()
 
-        # TODO: <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-        norm_pop = normalize(np.power(self.pop_list[2:, 1], -1)) if np.any(self.pop_list[2:, 1] != 0) else self.pop_list[2:, 1]
-        rand_pop = np.random.sample(np.size(self.pop_list[2:, 1]))
-        norm_rand = norm_pop * rand_pop
-        ordered = copy.copy(self.pop_list[np.argsort(-norm_rand) + 2, :])
-        new_population[5, :] = ordered[0, :]
-        new_population[6, :] = ordered[1, :]
+        # 5) All but the first two best agents will fall under a mutation with a variance of .02 (default)
 
-        # 5)
-        for i in range(new_population[7:, :].shape[0]):
-            self.agent = CatchBot()  # Create new agent
-            self.genome = self.create_genome()  # ... and its genome
-            new_population[7 + i, 2:] = self.genome.transpose()
-
-        # 6) Mutation (for fps=True & False):
-
-        AGTC = sum(gens.values()) - gens["U"]  # sum of all gen-sizes, except Tau
+        AGTXC = sum(gens.values()) - gens["U"]  # sum of all gen-sizes, except Tau
         U = gens["U"]  # == self.agent.Tau.size
 
         mu, sigma = 0, np.sqrt(mutation_var)  # mean and standard deviation
 
-        for i in range(1 - fps, new_population.shape[0]):  # if fps = False => range(1,size), else => range(0,size)
+        for i in range(n_parents, n_fitfamily):  # we start with the 3rd agent and end with the agents via fps, rest is random, anyways.
 
-            mutation_AGTC = np.random.normal(mu, sigma, AGTC)
+            mutation_AGTXC = np.random.normal(mu, sigma, AGTXC)
             mutation_U = np.random.normal(mu, sigma, U)
 
-            AGTC_mutated = new_population[i, 2:AGTC + 2] + mutation_AGTC
+            AGTXC_mutated = new_population[i, 2: AGTXC+2] + mutation_AGTXC
 
-            AGTC_mutated[AGTC_mutated > self.agent.W_RANGE[1]] = self.agent.W_RANGE[
-                1]  # Replace values beyond the range with max.range
-            AGTC_mutated[AGTC_mutated < self.agent.W_RANGE[0]] = self.agent.W_RANGE[
-                0]  # ... or min.range (T_RANGE = W.RANGE =[-13, 13])
+            AGTXC_mutated[AGTXC_mutated > self.agent.W_RANGE[1]] = self.agent.W_RANGE[1]  # Replace values beyond the range with max.range
+            AGTXC_mutated[AGTXC_mutated < self.agent.W_RANGE[0]] = self.agent.W_RANGE[0]  # ... or min.range (T_RANGE = W.RANGE =[-13, 13])
 
-            new_population[i, 2:AGTC + 2] = AGTC_mutated
+            new_population[i, 2: AGTXC+2] = AGTXC_mutated
 
-            U_mutated = new_population[i, (AGTC + 2):] + mutation_U
+            U_mutated = new_population[i, (AGTXC + 2):] + mutation_U
 
-            U_mutated[U_mutated > self.agent.TAU_RANGE[1]] = self.agent.TAU_RANGE[
-                1]  # Replace values beyond the range with max.range
-            U_mutated[U_mutated < self.agent.TAU_RANGE[0]] = self.agent.TAU_RANGE[
-                0]  # ... or min.range (TAU_RANGE = [1, 10])
+            U_mutated[U_mutated > self.agent.TAU_RANGE[1]] = self.agent.TAU_RANGE[1]  # Replace values beyond the range with max.range
+            U_mutated[U_mutated < self.agent.TAU_RANGE[0]] = self.agent.TAU_RANGE[0]  # ... or min.range (TAU_RANGE = [1, 10])
 
-            new_population[i, (AGTC + 2):] = U_mutated
-
-            new_population[i, 0] = i + 1  # reset enumeration
-            new_population[i, 1] = 0  # reset fitness
-
-        self.pop_list = copy.copy(new_population)
+            new_population[i, (AGTXC + 2):] = U_mutated
 
 
+        # Reset enumeration and fitness (except first two agents)
+        new_population[:, 0] = range(1, self.pop_size+1)
+        new_population[n_parents:, 1] = 0
+
+        self.pop_list = new_population
+
+
+
+    def run_evolution(self, generations, mutation_var=.02):
+
+        save = save_request()
+
+        # Run evolution:
+        Fitness_progress = np.zeros((generations, 6))
+
+        for i in range(generations):
+
+            # Create new Generation
+            self._reproduction(mutation_var)
+
+            # Evaluate fitness of each member
+            self._run_population()
+
+            Fitness_progress[i, 1:] = np.round(self.pop_list[0:5, 1], 2)
+
+            self.generation += 1
+
+            Fitness_progress[i, 0] = self.generation
+
+            print(Fitness_progress[i, 1:], "Generation", self.generation)
+
+        # Save in external file:
+        if save:
+
+            self.filename = "sim{}.mut{}.Gen{}-{}.JA.single".format(self.simlength,
+                                                                    mutation_var,
+                                                                    self.generation - generations + 1,
+                                                                    self.generation)
+
+            pickle.dump(self.pop_list, open('Poplist.{}'.format(self.filename), 'wb'))
+            pickle.dump(np.round(Fitness_progress, 2), open('Fitness_progress.{}'.format(self.filename), 'wb'))
+
+            print('Evolution terminated. pop_list saved \n'
+                  '(Filename: "Poplist.{}")'.format(self.filename))
+        else:
+            print('Evolution terminated. \n'
+                  '(Caution: pop_list is not saved in external file)')
+
+    # TODO: <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+    def reimplement_population(self, filename=None, Plot=False):
+
+        if filename is None:
+            if self.filename != "":
+                filename = self.filename
+                print("Reimplements its own pop_list file")
+            else:
+                raise ValueError("No file to reimplement")
+
+        # Reimplement: pop_list, simlength, Generation
+        self.pop_list = pickle.load(open('Poplist.{}'.format(filename), 'rb'))
+
+        self.simlength = int(filename[filename.find('m') + 1: filename.find('.')])  # depends on filename
+
+        fitness_progress = pickle.load(open('Fitness_progress.{}'.format(filename), 'rb'))
+        self.generation = int(fitness_progress[-1, 0])
+
+        if Plot:
+            # here we plot the fitness progress of all generation
+            plt.figure()
+            for i in range(1, fitness_progress.shape[1])
+                plt.plot(fitness_progress[:, i])
+
+            # Here we plot the trajectory of the best agent:
+            self.plot_pop_list()
+            print("Plot the best agent")
+
+            global n  # this is needed for self.close()
+            n = 2
+
+
+    def plot_pop_list(self, n_knoblins=1):
+
+        global n
+        n = n_knoblins
+
+        for i in range(n_knoblins):
+
+            plt.figure()
+
+            ...
+
+            # plt.plot()
+
+        print(np.round(self.pop_list[0:n_knoblins, 0:3], 2))
+        if n_knoblins > 1:
+            print("Close all Windows with close()")
+
+    def close(self):
+        for j in range(n):  # n is from the global variable of plot_pop_list()/reimplement_population()
+            plt.close()
 
