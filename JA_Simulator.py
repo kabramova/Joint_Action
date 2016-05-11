@@ -6,11 +6,11 @@ class JA_Simulation:
 
     def __init__(self, simlength=2789):
         # Withe simlength=2789, Target turns 3times during each trial (with regard to Knoblich & Jordan, 2003)
+        self.knoblin = Knoblin()
         self.simlength = simlength
 
     def setup(self, trial_speed="slow", auditory_condition=False):
         self.environment = Jordan(trial_speed=trial_speed, auditory_condition=auditory_condition)
-        self.knoblin = Knoblin()
         self.globalization()
         self.tracker = Tracker()
         self.target = Target()

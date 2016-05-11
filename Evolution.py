@@ -25,7 +25,7 @@ class Evolution(Simulate):
         :param pop_size:
         :param args:
         """
-        super(self.__class__, self).__init__(simlength)
+        super(self.__class__, self).__init__(simlength)  # self.agent, self.simlength
 
         self.genome = self.create_genome() # vector of parameters
 

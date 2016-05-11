@@ -382,3 +382,17 @@ plt.plot(bs2, 'r')
 
 ## So or so (angle_velo vs. angle_velo2[more correct and approximate linear increase]),
 # we rather want a linear acceleration of the tracker
+
+
+# Iterate through different conditions:
+i = 0
+for trial_speed in ["slow", "fast"]:
+    for auditory_condition in [False, True]:
+        for init_target_direction in [-1, 1]:  # left(-1) or right(1)
+            i += 1
+            print("____",i,"____")
+            print(trial_speed)
+            print(auditory_condition)
+            print(init_target_direction)
+print("___________")
+print(i,"different combinations")

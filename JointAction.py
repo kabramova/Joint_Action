@@ -132,9 +132,9 @@ class Knoblin(CTRNN):
         super(self.__class__, self).__init__(number_of_neurons=8, timestep=0.01)
 
         # TODO: We could also apply symmetrical weights
-        self.WM = randrange(self.W_RANGE, self.N_motor * 2, 1)          # Weights to Keypress (left,right)
-        self.WV = randrange(self.W_RANGE, self.N_visual_sensor * 2, 1)  # Weights of visual input
-        self.WA = randrange(self.W_RANGE, self.N_visual_sensor * 2, 1)  # Weights of auditory input, Keypress (left,right)
+        self.WM = randrange(self.W_RANGE, self.N_motor * 2, 1)           # Weights to Keypress (left,right)
+        self.WV = randrange(self.W_RANGE, self.N_visual_sensor * 2, 1)   # Weights of visual input
+        self.WA = randrange(self.W_RANGE, self.N_auditory_sensor * 2, 1) # Weights of auditory input, Keypress (left,right)
 
         global h
         h = self.h
