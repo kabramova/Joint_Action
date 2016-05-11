@@ -125,130 +125,126 @@ class JA_Evolution(JA_Simulation):
         self.pop_list = copy.copy(mat_sort(self.pop_list, index=1)) # sorts the pop_list, best agents on top
 
 
+    def gen_code(self):
+        gens = OrderedDict([("A", self.agent.W.size),
+                            ("G", self.agent.WM.size),
+                            ("T", self.agent.WV.size),
+                            ("X", self.agent.WA.size),
+                            ("C", self.agent.Theta.size),
+                            ("U", self.agent.Tau.size)])
+        return gens
 
-    def _evolute(self, mutation_var=.25, fts=False):
+
+    def _evolute(self, mutation_var=.02):
         '''
-
-        If fitness proportionate selection (fts) = False:
-            +: sexual reproduction, saves best, adds new random bots
-            -: Computationally expensive.
-
-            1) Takes the best agent and copy it twice in new population.
-            2) Takes the second best agent and copy it once in new population.
-            3) Creates two children of two parents. Since step 1) & 2) we have a chance of genetic crossover of 100%.
-                Furthermore, we use whole sections of the genome for the crossover (e.g. all W, or all Thetas)
-            4) Fitness-proportionate selection of 2 further agents
-            5) Fill the rest with randomly created agents
-
-            6) All but the first best agent will fall under a mutation with a variance of .25 (default)
+        Combination of asexual (fitness proportionate selection (fps)) sexual reproduction
+            Minimal population size = 10
+            1) Takes the two best agents and copy them in new population.
+            2) Based on pop_size, creates 2-10 children (parents: two best agents)
+                - Since step 1) we have a chance of genetic crossover of 100%.
+                - we use whole sections of the genome for the crossover (e.g. all W, or all Thetas)
+                - 20% of population size and max. 10
+            3) Fitness proportionate selection of 30% (+ 1/2 fill up)
+            4) Fill with randomly created agents, 30% (+ 1/2 fill up)
+            5) All but the first two best agents will fall under a mutation with a variance of .02 (default)
                 - time constant: τ (tau) in range [1, 10]
                 - weights: w (weights of interneurons, sensory and motor neurons) in range [-13, 13]
                 - bias: θ (theta) in range [-13, 13]
 
-        > > > > > < < < < < > > > > > < < < < < > > > > > < < < < < > > > > > < < < < < > > > > > < < < < <
-
-        If fts = True:
-            More simple, asexual, fitness-proportionate selection.
-
-            + : Computationally more efficient.
-            - : Might need more Generations to converge
-
-             All new agents will fall under a mutation with a variance of .25 (default):
-                - time constant: τ (tau) in range [1, 10]
-                - weights: w (weights of interneurons, sensory and motor neurons) in range [-13, 13]
-                - bias: θ (theta) in range [-13, 13]
-
-        :param mutation_var: 0.25 by default, according to Agmon & Beer (2013)
+        :param mutation_var: 0.02 by default, turned out to be better.
         :return: self.pop_list = repopulated list (new_population)
         '''
 
         gens = self.gen_code()
 
-        if fts == True:
+        new_population = np.zeros(self.pop_list.shape)
 
-            new_population = np.zeros(self.pop_list.shape)  # This will be turned in the end...
 
-            ## Algorithm for fitness proportionate selection:
-            # Source: http://stackoverflow.com/questions/298301/roulette-wheel-selection-algorithm/320788#320788
-            # >>
+        # 1) Takes the two best agents and copy them in new population.
+        n_parents = 2
+        new_population[0:n_parents,:] = copy.copy(self.pop_list[(0,1),:])
 
-            fitness = copy.copy(self.pop_list[:, 1])
-            fitness = 1 - normalize(fitness)  # sign is correct, apparently
+        # 2) Based on pop_size, creates 2-10 children (parents: two best agents)
+        n_children = self.pop_size*0.2 if self.pop_size*0.2 < 10 else 10
 
-            total_fitness = sum(fitness)
-            relative_fitness = [f / total_fitness for f in fitness]
+        for n in range(n_children):
+            new_population[2+n,2:] = copy.copy(self.pop_list[0,2:])
 
-            probs = [sum(relative_fitness[:i + 1]) for i in range(len(relative_fitness))]
+            ## Crossover of a whole genome section of the second parent:
+            choice = np.random.choice([gen for gen in gens])  # Random choice of a section in genome
 
-            for n in range(new_population.shape[0]):
-                r = np.random.random()  # random sample of continous uniform distribution [0,1)
-                for (i, individual) in enumerate(self.pop_list):
-                    if r <= probs[i]:
-                        new_population[n, :] = individual
-                        break
+            index = 0  # indexing the section in whole genome string
+            for gen in gens:
+                index += gens[gen]
+                if gen == choice:
+                    break
+            index += 2  # leaves the number and fitness of agent out (new_population[:,(0,1)])
 
-                        # <<
+            new_population[2+n, (index - gens[choice]):index] = copy.copy(self.pop_list[1, (index - gens[choice]):index])  # crossover from second parent
 
-        else:  # if fts is false: Complex Evolution
+            # TODO: Test: self.agent.PARAMETER (depending on choice)
 
-            new_population = copy.copy(self.pop_list)  # This will be turned in the end...
+        # 3) Fitness proportionate selection of 30% (+ 1/2 fill up)
 
-            new_population[0, 0] = 1  # reset enumeration for first agent
-            # 1)
-            new_population[1, :] = copy.copy(
-                self.pop_list[0, :])  # is already on first place, here we set it again on the second place
-            # 2)
-            new_population[2, :] = copy.copy(self.pop_list[1, :])
-            # 3)
-            new_population[3, :] = copy.copy(self.pop_list[0, :])
-            new_population[4, :] = copy.copy(self.pop_list[0, :])
+        # Define the number of agents via fps & via random instantiation
+        n_family = n_parents + n_children
+        n_fps = self.pop_size*0.3
+        n_random = self.pop_size*0.3
 
-            for i in [3, 4]:  # => new_population[(3,4),:]
+        if (self.pop_size - (n_family + n_fps + n_random))!= 0:
+            rest = self.pop_size - (n_family + n_fps + n_random) # rest has to be filled up
+            if rest%2>0:  # if rest is odd
+                n_fps += (rest+1)/2
+                n_random += (rest-1)/2
+            else:         # if rest is even
+                n_fps += rest/2
+                n_random += rest/2
 
-                ##  Alternatively, here we pick randomly 2 single genomic loci:
-                # index = np.argmax(np.random.sample(self.genome.size)) + 2 -1
-                # index2 = np.argmax(np.random.sample(self.genome.size)) +2 -1
-                # new_population[i,index]  = copy.copy(self.pop_list[1, index])               # crossover from second parent
-                # new_population[i,index2] = copy.copy(self.pop_list[1, index2])
+        # Algorithm for fitness proportionate selection:
+        # (Source: http://stackoverflow.com/questions/298301/roulette-wheel-selection-algorithm/320788#320788)
 
-                ## Crossover of a whole genome section of the second parent:
+        fitness = copy.copy(self.pop_list[:, 1])
+        fitness = 1 - normalize(fitness)  # sign is correct, apparently
 
-                choice = np.random.choice([gen for gen in gens])  # Random choice of a section in genome
+        total_fitness = sum(fitness)
+        relative_fitness = [f / total_fitness for f in fitness]
 
-                index = 0  # indexing the section in whole genome string
-                for gen in gens:
-                    index += gens[gen]
-                    if gen == choice:
-                        break
-                index += 2  # leaves the number and fitness of agent out (new_population[:,(0,1)])
-                new_population[i, (index - gens[choice]):index] = copy.copy(
-                    self.pop_list[1, (index - gens[choice]):index])  # crossover from second parent
+        probs = [sum(relative_fitness[:i + 1]) for i in range(len(relative_fitness))]
 
-                # Test: self.agent.PARAMETER (depending on choice)
+        for n in range(n_family, n_family+n_fps):   # or range(n_family, self.pop_size-n_random-1)
+            r = np.random.random()        # random sample of continuous uniform distribution [0,1)
 
-            # 4)
-            norm_pop = normalize(np.power(self.pop_list[2:, 1], -1)) if np.any(
-                self.pop_list[2:, 1] != 0) else self.pop_list[2:, 1]
-            rand_pop = np.random.sample(np.size(self.pop_list[2:, 1]))
-            norm_rand = norm_pop * rand_pop
-            ordered = copy.copy(self.pop_list[np.argsort(-norm_rand) + 2, :])
-            new_population[5, :] = ordered[0, :]
-            new_population[6, :] = ordered[1, :]
+            for (i, individual) in enumerate(self.pop_list):
+                if r <= probs[i]:
+                    new_population[n, :] = individual
+                    break
 
-            # 5)
-            for i in range(new_population[7:, :].shape[0]):
-                self.agent = CatchBot()  # Create new agent
-                self.genome = self.create_genome()  # ... and its genome
-                new_population[7 + i, 2:] = self.genome.transpose()
 
-        # 6) Mutation (for fts=True & False):
+        # 4) Fill with randomly created agents, 30% (+ 1/2 fill up)
+
+        # TODO: <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+        norm_pop = normalize(np.power(self.pop_list[2:, 1], -1)) if np.any(self.pop_list[2:, 1] != 0) else self.pop_list[2:, 1]
+        rand_pop = np.random.sample(np.size(self.pop_list[2:, 1]))
+        norm_rand = norm_pop * rand_pop
+        ordered = copy.copy(self.pop_list[np.argsort(-norm_rand) + 2, :])
+        new_population[5, :] = ordered[0, :]
+        new_population[6, :] = ordered[1, :]
+
+        # 5)
+        for i in range(new_population[7:, :].shape[0]):
+            self.agent = CatchBot()  # Create new agent
+            self.genome = self.create_genome()  # ... and its genome
+            new_population[7 + i, 2:] = self.genome.transpose()
+
+        # 6) Mutation (for fps=True & False):
 
         AGTC = sum(gens.values()) - gens["U"]  # sum of all gen-sizes, except Tau
         U = gens["U"]  # == self.agent.Tau.size
 
         mu, sigma = 0, np.sqrt(mutation_var)  # mean and standard deviation
 
-        for i in range(1 - fts, new_population.shape[0]):  # if fts = False => range(1,size), else => range(0,size)
+        for i in range(1 - fps, new_population.shape[0]):  # if fps = False => range(1,size), else => range(0,size)
 
             mutation_AGTC = np.random.normal(mu, sigma, AGTC)
             mutation_U = np.random.normal(mu, sigma, U)

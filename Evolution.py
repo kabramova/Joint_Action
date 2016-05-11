@@ -116,10 +116,10 @@ class Evolution(Simulate):
         return gens
 
 
-    def _evolute(self, mutation_var = .25, fts = False):
+    def _evolute(self, mutation_var = .25, fps = False):
         '''
 
-        If fitness proportionate selection (fts) = False:
+        If fitness proportionate selection (fps) = False:
             +: sexual reproduction, saves best, adds new random bots
             -: Computationally expensive.
 
@@ -137,7 +137,7 @@ class Evolution(Simulate):
 
         > > > > > < < < < < > > > > > < < < < < > > > > > < < < < < > > > > > < < < < < > > > > > < < < < <
 
-        If fts = True:
+        If fps = True:
             More simple, asexual, fitness-proportionate selection.
 
             + : Computationally more efficient.
@@ -154,7 +154,7 @@ class Evolution(Simulate):
 
         gens = self.gen_code()
 
-        if fts == True:
+        if fps == True:
 
             new_population = np.zeros(self.pop_list.shape)  # This will be turned in the end...
 
@@ -179,7 +179,7 @@ class Evolution(Simulate):
 
             # <<
 
-        else: # if fts is false: Complex Evolution
+        else: # if fps is false: Complex Evolution
 
             new_population = copy.copy(self.pop_list)               # This will be turned in the end...
 
@@ -231,14 +231,14 @@ class Evolution(Simulate):
                 new_population[7+i,2:] = self.genome.transpose()
 
 
-        # 6) Mutation (for fts=True & False):
+        # 6) Mutation (for fps=True & False):
 
         AGTC = sum(gens.values()) - gens["U"]   # sum of all gen-sizes, except Tau
         U    = gens["U"]                        # == self.agent.Tau.size
 
         mu, sigma = 0, np.sqrt(mutation_var)    # mean and standard deviation
 
-        for i in range(1-fts, new_population.shape[0]):  # if fts = False => range(1,size), else => range(0,size)
+        for i in range(1-fps, new_population.shape[0]):  # if fps = False => range(1,size), else => range(0,size)
 
             mutation_AGTC = np.random.normal(mu, sigma, AGTC)
             mutation_U    = np.random.normal(mu, sigma, U)
@@ -348,7 +348,8 @@ class Evolution(Simulate):
 
         if count == 3:
             raise ValueError("Function stopped")
-        save = True
+
+        # save = True
 
         # Run evolution:
         Fitness_progress = np.zeros((Generations,3))
@@ -360,7 +361,7 @@ class Evolution(Simulate):
 
         for i in range(Generations):
 
-            self._evolute(mutation_var, fts=fit_prop_sel)
+            self._evolute(mutation_var, fps=fit_prop_sel)
 
             self._simulate_next_population(position_agent = position_agent,
                                            pos_target     = pos_target)

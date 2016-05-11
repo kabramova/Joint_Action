@@ -1,6 +1,6 @@
 from Formulas import *
 from RollingBot import CatchBot
-# from Evolution import Evolution
+from Evolution import Evolution
 
 
 ### Study angles between Target and agent_positions:
@@ -221,14 +221,19 @@ print("Tau:\n", n1.Tau,
 
 ## Fitness proportionate selection
 
-e3 = Evolution(simlength=10)
-population = e3.pop_list[:,0]
-fitness = e3.pop_list[:,1]
+# e3 = Evolution(simlength=10)
+# e3.run_evolution(Generations=1)
+# population = e3.pop_list[:,0]
+# fitness = e3.pop_list[:,1]
+population = np.array(range(1,11))
+fitness = np.sort(np.array([98,26,67,3,51,2,32,82,11,9]))   # more or less equally distributed fitness
+# fitness = np.sort(np.array([98,96,87,3,81,2,72,82,91,9]))   # very biased fitness distribution
+pop_mat = np.zeros((np.size(population),2))
+pop_mat[:,0] = population
+pop_mat[:,1] = fitness
+
 fitness = 1-normalize(fitness)
-
-population = np.arange(1,11)
-fitness = np.array([98,76,67,53,51,41,32,22,11,9])
-
+print(fitness)
 
 total_fitness = sum(fitness)
 relative_fitness = [f/total_fitness for f in fitness]
@@ -246,6 +251,22 @@ for n in range(len(fitness)):
 
 print(population)
 print(new_population)
+print(np.mean(new_population))
+
+
+# FPS for particular area in the pop_list:
+new_population = np.zeros(pop_mat.shape)
+for n in range(3,7):
+    r = np.random.random()   # continous uniform distribution
+
+    for (i, individual) in enumerate(population):
+        if r <= probs[i]:
+            new_population[n] = individual
+            break
+
+print(pop_mat)
+print(new_population)
+
 
 
 ### Testing Mutation
@@ -254,7 +275,7 @@ print(new_population)
 t1 = Evolution(simlength=10)
 gens = t1.gen_code()
 mutation_var = .001
-fts = True
+fps = True
 
 new_population = copy.copy(t1.pop_list)
 old_population = copy.copy(t1.pop_list)
@@ -264,7 +285,7 @@ U    = gens["U"]                        # == t1.agent.Tau.size
 
 mu, sigma = 0, np.sqrt(mutation_var)    # mean and standard deviation
 
-for i in range(1-fts, new_population.shape[0]):  # if fts = False => range(1,size), else => range(0,size)
+for i in range(1-fps, new_population.shape[0]):  # if fps = False => range(1,size), else => range(0,size)
 
     mutation_AGTC = np.random.normal(mu, sigma, AGTC)
     mutation_U    = np.random.normal(mu, sigma, U)
@@ -396,3 +417,31 @@ for trial_speed in ["slow", "fast"]:
             print(init_target_direction)
 print("___________")
 print(i,"different combinations")
+
+
+## Indexing
+
+pop_size = 111
+
+n_p = 2
+
+n_c = pop_size*0.2 if pop_size*0.2 < 10 else 10
+
+n_f = pop_size * 0.3
+n_r = pop_size * 0.3
+
+if (pop_size - (n_p + n_c + n_f + n_r)) != 0:
+    rest = pop_size - (n_p + n_c + n_f + n_r)
+    if rest % 2 > 0:
+        n_f += (rest + 1) / 2
+        n_r += (rest - 1) / 2
+    else:
+        n_f += rest / 2
+        n_r += rest / 2
+
+print("pop_size:", pop_size)
+print("n_p:", n_p)
+print("n_c:", n_c)
+print("n_f:", n_f)
+print("n_r:", n_r)
+print("Sum:", np.sum((n_p, n_c, n_f, n_r)))
