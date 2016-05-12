@@ -30,9 +30,17 @@ class JA_Simulation:
         h = self.knoblin.h
 
 
-    def run(self):
+    def run(self, track=False):
 
+        global keypress
         fitness_curve = []
+
+        if track==True:
+            positions = np.zeros((self.simlength,2))
+            keypress = np.zeros((self.simlength,2))
+            if condition ==True:
+                sounds = np.zeros((self.simlength,2))
+
 
         for i in range(self.simlength):
 
@@ -48,10 +56,14 @@ class JA_Simulation:
 
             # 3) Agent sees:
             self.knoblin.visual_input(position_tracker=self.tracker.position, position_target=self.target.position)
+            if track==True: # save positions
+                positions[i,:] = [self.tracker.position, self.target.position]
 
             # 4) Agent hears:
             if condition == True: # condition will be globally announced by class Jordan (self.environment)
                 self.knoblin.auditory_input(sound_input = sound_output)
+                if track==True: # save sound_output
+                    sounds[i,:] = sound_output
 
             # 5) Update agent's neural system
             self.knoblin.next_state()
@@ -63,6 +75,9 @@ class JA_Simulation:
                 activation = self.knoblin.motor_output()
                 # if any(act > 0 for act in np.abs(activation)): print("Activation:", activation)
                 self.tracker.accelerate(input = activation)
+            else:
+                if track==True:
+                    keypress[i,:] = activation if activation != None else [0,0]
 
             # 6) Fitness tacking:
             fitness_curve.append(self.fitness())

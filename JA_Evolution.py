@@ -104,6 +104,7 @@ class JA_Evolution(JA_Simulation):
                     self.setup(trial_speed=trial_speed, auditory_condition=auditory_condition)
                     self.target.velocity *= init_target_direction
 
+                    # Run trial:
                     fitness = self.run()
                     fitness_per_trials.append(fitness)
 
@@ -265,7 +266,6 @@ class JA_Evolution(JA_Simulation):
         self.pop_list = new_population
 
 
-
     def run_evolution(self, generations, mutation_var=.02):
 
         save = save_request()
@@ -345,6 +345,8 @@ class JA_Evolution(JA_Simulation):
         n = n_knoblins
 
         for i in range(n_knoblins):
+            self.reset_neural_system()
+            self.implement_genome(genome_string=self.pop_list[i,2:])
 
             plt.figure()
             # TODO: def run_and_plot()
