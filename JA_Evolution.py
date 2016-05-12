@@ -90,8 +90,6 @@ class JA_Evolution(JA_Simulation):
         # self.knoblin = Knoblin()
         # self.implement_genome(genome_string=self.genome)
 
-    # TODO: Plot(Trajectories, Gif)
-
 
     def run_trials(self):
 
@@ -349,7 +347,7 @@ class JA_Evolution(JA_Simulation):
             self.implement_genome(genome_string=self.pop_list[i,2:])
 
             plt.figure()
-            # TODO: def run_and_plot()
+            # TODO: def run_and_plot() (Trajectories, Gif)
             ...
 
             # plt.plot()
