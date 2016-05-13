@@ -32,12 +32,12 @@ class JA_Simulation:
 
     def run(self, track=False):
 
-        global keypress
         fitness_curve = []
 
         if track==True:
             positions = np.zeros((self.simlength,2))
             keypress = np.zeros((self.simlength,2))
+            activation = None # necessary for tracking of keypress
             if condition ==True:
                 sounds = np.zeros((self.simlength,2))
 
@@ -84,7 +84,16 @@ class JA_Simulation:
 
         # 7) Overall fitness:
         print("Average distance to Target (Fitness:)", np.mean(fitness_curve))
-        return np.mean(fitness_curve)
+        output = [np.mean(fitness_curve)]
+
+        if track==True:
+            output.append(positions)
+            output.append(keypress)
+            if condition == True:
+                output.append(sounds)
+            print("Output contains trajectories, keypress and sounds(if applicable)")
+
+        return output
 
 
     def fitness(self):

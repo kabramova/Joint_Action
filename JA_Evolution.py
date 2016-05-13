@@ -103,7 +103,7 @@ class JA_Evolution(JA_Simulation):
                     self.target.velocity *= init_target_direction
 
                     # Run trial:
-                    fitness = self.run()
+                    fitness = self.run(track=False)[0]
                     fitness_per_trials.append(fitness)
 
                     self.reset_neural_system()
@@ -346,11 +346,19 @@ class JA_Evolution(JA_Simulation):
             self.reset_neural_system()
             self.implement_genome(genome_string=self.pop_list[i,2:])
 
-            plt.figure()
-            # TODO: def run_and_plot() (Trajectories, Gif)
-            ...
+            for j in range(self.simlength):
+                # TODO: def run_and_plot() (Trajectories, Gif)
+                # TODO: how to deal with globally announced variables (see globalization())
 
-            # plt.plot()
+                output = self.run(track=True)
+                output...
+
+
+                plt.figure()
+
+                plt.plot()
+                plt.close()
+
 
         print(np.round(self.pop_list[0:n_knoblins, 0:3], 2))
         if n_knoblins > 1:
