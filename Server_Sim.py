@@ -14,7 +14,7 @@ XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX XXX 
 '''
 
 e2 = Evolution(simlength=5000)
-e2.filename = "sim5000.mut0.02.Gen5501-7000_CT=True.fps=False"
+e2.filename = "sim5000.mut0.02.Gen7001-8500_CT=True.fps=False"
 e2.reimplement_population(Filename=None, Plot=False)
 e2.run_evolution(Generations=1500, mutation_var=.02, complex_trials=True, fit_prop_sel=False, position_agent=[50,50], angle_to_target= np.pi/2,  distance_to_target = 30)
 
