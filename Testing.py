@@ -445,3 +445,61 @@ print("n_c:", n_c)
 print("n_f:", n_f)
 print("n_r:", n_r)
 print("Sum:", np.sum((n_p, n_c, n_f, n_r)))
+
+
+##  Test PLotting for JA_Simulator:
+simlength = 100
+condition = True
+
+positions = np.zeros((simlength, 2))
+keypress = np.zeros((simlength, 2))
+if condition == True:
+    sounds = np.zeros((simlength, 2))
+
+if not os.path.exists("Animation"):
+    os.makedirs("Animation")
+
+for i in range(simlength):
+    positions[i,0] = i* 0.2  # Tracker...
+    positions[i,1] = i*-0.2  # ... and target move in opposite directions
+
+    if i%5 == 0:
+        keypress[i,0] = -1
+    if i%10 == 0:
+        keypress[i,1] = 1
+
+    if i%5 == 0 or i%10 == 0 and condition == True:
+        sounds[i,:] = keypress[i,:]
+
+    # Plot:
+    if i % 10 == 0:  # should do 9 images
+
+    # For matplotlib see: http://www.scipy-lectures.org/intro/matplotlib/matplotlib.html
+        plt.figure(figsize=(10, 6), dpi=80)
+
+        plt.plot(positions[i,0],0, 'ro', markersize=12, alpha = 0.5) # Tracker
+        plt.plot(positions[i,1],0, 'go') # Target
+
+        if keypress[i,0] == -1:
+            plt.plot(-10, -4, 'yo', markersize=24,  alpha = 0.5)  # sound left
+            plt.plot(-10, -4, 'bs', markersize=16)  # keypress left
+
+
+        if keypress[i,1] == 1:
+            plt.plot(10, -4, 'yo', markersize=24,  alpha = 0.5)  # sound right
+            plt.plot( 10, -4, 'bs', markersize=16)  # keypress right
+
+
+        plt.xlim(-25, 25)
+        plt.ylim(-5, 5)
+
+        plt.annotate(xy=[0,4], xytext=[0,4], s="fitness = 12")
+
+        plt.savefig('./Animation/animation{}.png'.format(int(i/10)))
+
+        plt.close()
+
+# To create gif use Terminal Command in for folder:
+# convert -delay 0 -loop 0 animation*.png animated.gif
+# Source: http://johannesluderschmidt.de/creating-animated-gifs-from-the-command-line-in-mac-os-x-using-convert/2732/
+
