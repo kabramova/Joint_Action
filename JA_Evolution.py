@@ -80,17 +80,6 @@ class JA_Evolution(JA_Simulation):
         self.genome = genome_string
 
 
-    def reset_neural_system(self):
-        '''Sets all activation to zero'''
-        self.knoblin.Y             = np.matrix(np.zeros((self.knoblin.N, 1)))
-        self.knoblin.I             = np.matrix(np.zeros((self.knoblin.N, 1)))
-        self.knoblin.timer_motor_l = 0
-        self.knoblin.timer_motor_r = 0
-        # Alternatively:
-        # self.knoblin = Knoblin()
-        # self.implement_genome(genome_string=self.genome)
-
-
     def run_trials(self):
 
         fitness_per_trials = []
@@ -128,12 +117,12 @@ class JA_Evolution(JA_Simulation):
 
 
     def gen_code(self):
-        gens = OrderedDict([("A", self.agent.W.size),
-                            ("G", self.agent.WM.size),
-                            ("T", self.agent.WV.size),
-                            ("X", self.agent.WA.size),
-                            ("C", self.agent.Theta.size),
-                            ("U", self.agent.Tau.size)])
+        gens = OrderedDict([("A", self.knoblin.W.size),
+                            ("G", self.knoblin.WM.size),
+                            ("T", self.knoblin.WV.size),
+                            ("X", self.knoblin.WA.size),
+                            ("C", self.knoblin.Theta.size),
+                            ("U", self.knoblin.Tau.size)])
         return gens
 
 
@@ -167,7 +156,7 @@ class JA_Evolution(JA_Simulation):
         new_population[0:n_parents,:] = copy.copy(self.pop_list[(0,1),:])
 
         # 2) Based on pop_size, creates 2-10 children (parents: two best agents)
-        n_children = self.pop_size*0.2 if self.pop_size*0.2 < 10 else 10
+        n_children = int(np.round(self.pop_size*0.2) if np.round(self.pop_size*0.2) < 10 else 10)
 
         for n in range(n_children):
             new_population[2+n,2:] = copy.copy(self.pop_list[0,2:])
@@ -184,28 +173,30 @@ class JA_Evolution(JA_Simulation):
 
             new_population[2+n, (index - gens[choice]):index] = copy.copy(self.pop_list[1, (index - gens[choice]):index])  # crossover from second parent
 
-            # TODO: Test: self.agent.PARAMETER (depending on choice)
+            # TODO: Test: self.knoblin.PARAMETER (depending on choice)
 
         # 3) Fitness proportionate selection of 30% (+ 1/2 fill up)
 
         # Define the number of agents via fps & via random instantiation
         n_family = n_parents + n_children
-        n_fps = self.pop_size*0.3
-        n_random = self.pop_size*0.3
+        n_fps    = int(np.round(self.pop_size*0.3))
+        n_random = int(np.round(self.pop_size*0.3))
 
         if (self.pop_size - (n_family + n_fps + n_random))!= 0:
             rest = self.pop_size - (n_family + n_fps + n_random) # rest has to be filled up
             if rest%2>0:  # if rest is odd
-                n_fps += (rest+1)/2
-                n_random += (rest-1)/2
+                n_fps += int((rest+1)/2)
+                n_random += int((rest-1)/2)
             else:         # if rest is even
-                n_fps += rest/2
-                n_random += rest/2
+                n_fps += int(rest/2)
+                n_random += int(rest/2)
 
         # Algorithm for fitness proportionate selection:
         # (Source: http://stackoverflow.com/questions/298301/roulette-wheel-selection-algorithm/320788#320788)
 
         fitness = copy.copy(self.pop_list[:, 1])
+        # TODO: CHeck
+        print(fitness)
         fitness = 1 - normalize(fitness)  # sign is correct, apparently
 
         total_fitness = sum(fitness)
@@ -233,7 +224,7 @@ class JA_Evolution(JA_Simulation):
         # 5) All but the first two best agents will fall under a mutation with a variance of .02 (default)
 
         AGTXC = sum(gens.values()) - gens["U"]  # sum of all gen-sizes, except Tau
-        U = gens["U"]  # == self.agent.Tau.size
+        U = gens["U"]  # == self.knoblin.Tau.size
 
         mu, sigma = 0, np.sqrt(mutation_var)  # mean and standard deviation
 
@@ -244,15 +235,15 @@ class JA_Evolution(JA_Simulation):
 
             AGTXC_mutated = new_population[i, 2: AGTXC+2] + mutation_AGTXC
 
-            AGTXC_mutated[AGTXC_mutated > self.agent.W_RANGE[1]] = self.agent.W_RANGE[1]  # Replace values beyond the range with max.range
-            AGTXC_mutated[AGTXC_mutated < self.agent.W_RANGE[0]] = self.agent.W_RANGE[0]  # ... or min.range (T_RANGE = W.RANGE =[-13, 13])
+            AGTXC_mutated[AGTXC_mutated > self.knoblin.W_RANGE[1]] = self.knoblin.W_RANGE[1]  # Replace values beyond the range with max.range
+            AGTXC_mutated[AGTXC_mutated < self.knoblin.W_RANGE[0]] = self.knoblin.W_RANGE[0]  # ... or min.range (T_RANGE = W.RANGE =[-13, 13])
 
             new_population[i, 2: AGTXC+2] = AGTXC_mutated
 
             U_mutated = new_population[i, (AGTXC + 2):] + mutation_U
 
-            U_mutated[U_mutated > self.agent.TAU_RANGE[1]] = self.agent.TAU_RANGE[1]  # Replace values beyond the range with max.range
-            U_mutated[U_mutated < self.agent.TAU_RANGE[0]] = self.agent.TAU_RANGE[0]  # ... or min.range (TAU_RANGE = [1, 10])
+            U_mutated[U_mutated > self.knoblin.TAU_RANGE[1]] = self.knoblin.TAU_RANGE[1]  # Replace values beyond the range with max.range
+            U_mutated[U_mutated < self.knoblin.TAU_RANGE[0]] = self.knoblin.TAU_RANGE[0]  # ... or min.range (TAU_RANGE = [1, 10])
 
             new_population[i, (AGTXC + 2):] = U_mutated
 
@@ -274,7 +265,8 @@ class JA_Evolution(JA_Simulation):
         for i in range(generations):
 
             # Create new Generation
-            self._reproduction(mutation_var)
+            if i != 0:
+                self._reproduction(mutation_var)
 
             # Evaluate fitness of each member
             self._run_population()
@@ -325,7 +317,7 @@ class JA_Evolution(JA_Simulation):
         if Plot:
             # here we plot the fitness progress of all generation
             plt.figure()
-            for i in range(1, fitness_progress.shape[1])
+            for i in range(1, fitness_progress.shape[1]):
                 plt.plot(fitness_progress[:, i])
 
             # Here we plot the trajectory of the best agent:

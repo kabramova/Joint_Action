@@ -502,4 +502,3 @@ for i in range(simlength):
 # To create gif use Terminal Command in for folder:
 # convert -delay 0 -loop 0 animation*.png animated.gif
 # Source: http://johannesluderschmidt.de/creating-animated-gifs-from-the-command-line-in-mac-os-x-using-convert/2732/
-

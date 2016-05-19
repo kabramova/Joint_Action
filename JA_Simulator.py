@@ -8,12 +8,14 @@ class JA_Simulation:
         # Withe simlength=2789, Target turns 3times during each trial (with regard to Knoblich & Jordan, 2003)
         self.knoblin = Knoblin()
         self.simlength = simlength
+        self.runs = 0               # to count how many runs the agent made
 
     def setup(self, trial_speed="slow", auditory_condition=False):
         self.environment = Jordan(trial_speed=trial_speed, auditory_condition=auditory_condition)
         self.globalization()
         self.tracker = Tracker()
         self.target = Target()
+        self.reset_neural_system()
 
 
     def globalization(self):   # for a certain reason I have to add this here a second time.
@@ -30,14 +32,26 @@ class JA_Simulation:
         h = self.knoblin.h
 
 
+    def reset_neural_system(self):
+        '''Sets all activation to zero'''
+        self.knoblin.Y             = np.matrix(np.zeros((self.knoblin.N, 1)))
+        self.knoblin.I             = np.matrix(np.zeros((self.knoblin.N, 1)))
+        self.knoblin.timer_motor_l = 0
+        self.knoblin.timer_motor_r = 0
+        # Alternatively for class JA_Evolution:
+        # self.knoblin = Knoblin()
+        # self.implement_genome(genome_string=self.genome)
+
+
     def run(self):
 
         fitness_curve = []
 
+        self.runs += 1
 
         for i in range(self.simlength):
 
-            # print("Timestep:",i+1)
+            # if i%200 ==0: print("Timestep:",i+1)  # Print every now and then a timestep
 
             # 1) Target movement
             self.target.movement()
@@ -69,7 +83,7 @@ class JA_Simulation:
             fitness_curve.append(self.fitness())
 
         # 7) Overall fitness:
-        print("Average distance to Target (Fitness:)", np.mean(fitness_curve))
+        print("{} trial, Sound {}: Average distance to Target (Fitness:)".format(trial, condition), np.mean(fitness_curve))
         output = np.mean(fitness_curve)
 
         return output
@@ -149,32 +163,32 @@ class JA_Simulation:
             # With a simlength of 2789 the resulting gif-animation is approx. 11sec long (25frames/sec)
             # we can change the animation length by changing the modulo here [i%x].
 
-            plt.figure(figsize=(10, 6), dpi=80)
+                plt.figure(figsize=(10, 6), dpi=80)
 
-            plt.plot(positions[i, 0], 0, 'ro', markersize=12, alpha=0.5)    # Tracker
-            plt.plot(positions[i, 1], 0, 'go')                              # Target
+                plt.plot(positions[i, 0], 0, 'ro', markersize=12, alpha=0.5)    # Tracker
+                plt.plot(positions[i, 1], 0, 'go')                              # Target
 
-            if keypress[i, 0] == -1:
-                plt.plot(-10, -4, 'bs', markersize=16)                      # keypress left
-            if keypress[i, 1] == 1:
-                plt.plot( 10, -4, 'bs', markersize=16)                      # keypress right
+                if keypress[i, 0] == -1:
+                    plt.plot(-10, -4, 'bs', markersize=16)                      # keypress left
+                if keypress[i, 1] == 1:
+                    plt.plot( 10, -4, 'bs', markersize=16)                      # keypress right
 
-            if condition==True:
-                if sounds[i,0] == 1:
-                    plt.plot(-10, -3, 'yo', markersize=24, alpha=0.3)       # sound left
-                if sounds[i, 1] == 1:
-                    plt.plot( 10, -3, 'yo', markersize=24, alpha=0.3)       # sound right
+                if condition==True:
+                    if sounds[i,0] == 1:
+                        plt.plot(-10, -3, 'yo', markersize=24, alpha=0.3)       # sound left
+                    if sounds[i, 1] == 1:
+                        plt.plot( 10, -3, 'yo', markersize=24, alpha=0.3)       # sound right
 
-            # Define boarders
-            plt.xlim(-25, 25)
-            plt.ylim(-5, 5)
+                # Define boarders
+                plt.xlim(-25, 25)
+                plt.ylim(-5, 5)
 
-            # Print Fitnesss in Plot
-            plt.annotate(xy=[0, 4], xytext=[0, 4], s="fitness = {}".format(output[0]))
+                # Print Fitnesss in Plot
+                plt.annotate(xy=[0, 4], xytext=[0, 4], s="fitness = {}".format(output[0]))
 
-            plt.savefig('./Animation/{}.Animation/animation{}.png'.format(time, int(i/ticker) ) )
+                plt.savefig('./Animation/{}.Animation/animation{}.png'.format(time, int(i/ticker) ) )
 
-            plt.close()
+                plt.close()
 
 
         return output

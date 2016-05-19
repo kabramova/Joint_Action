@@ -1,5 +1,4 @@
 from Simulator import *
-from collections import OrderedDict
 import pickle
 
 ## Agmon & Beer (2013): "real-valued GA":
