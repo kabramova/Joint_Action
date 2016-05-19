@@ -15,7 +15,6 @@ class JA_Simulation:
         self.globalization()
         self.tracker = Tracker()
         self.target = Target()
-        self.reset_neural_system()
 
 
     def globalization(self):   # for a certain reason I have to add this here a second time.
@@ -45,6 +44,8 @@ class JA_Simulation:
 
     def run(self):
 
+        self.reset_neural_system()  # All inner neural states = 0
+
         fitness_curve = []
 
         self.runs += 1
@@ -55,11 +56,9 @@ class JA_Simulation:
 
             # 1) Target movement
             self.target.movement()
-            # plt.plot(i, self.target.position, "ro")
 
             # 2) Tracker movement
             sound_output = self.tracker.movement()
-            # plt.plot(i, self.tracker.position, "bo")
 
             # 3) Agent sees:
             self.knoblin.visual_input(position_tracker=self.tracker.position, position_target=self.target.position)
@@ -83,8 +82,8 @@ class JA_Simulation:
             fitness_curve.append(self.fitness())
 
         # 7) Overall fitness:
-        print("{} trial, Sound {}: Average distance to Target (Fitness:)".format(trial, condition), np.mean(fitness_curve))
-        output = np.mean(fitness_curve)
+        print("{} trial, Sound {}: Average distance to Target (Fitness:) {}".format(trial, condition, np.round(np.mean(fitness_curve),3)))
+        output = np.round(np.mean(fitness_curve),3)
 
         return output
 
@@ -92,13 +91,17 @@ class JA_Simulation:
     def run_and_plot(self):
         # TODO: how to deal with globally announced variables (see globalization())
 
+        self.reset_neural_system() # All inner neural states = 0
+
         fitness_curve = []
 
         positions = np.zeros((self.simlength,2))
         keypress = np.zeros((self.simlength,2))
-        activation = None # necessary for tracking of keypress
         if condition ==True:
             sounds = np.zeros((self.simlength,2))
+
+        print("Sound condition:\t {} \n"
+              "Trial speed:\t {}".format(condition,trial))
 
         for i in range(self.simlength):
 
@@ -106,11 +109,9 @@ class JA_Simulation:
 
             # 1) Target movement
             self.target.movement()
-            # plt.plot(i, self.target.position, "ro")
 
             # 2) Tracker movement
             sound_output = self.tracker.movement()
-            # plt.plot(i, self.tracker.position, "bo")
 
             # 3) Agent sees:
             self.knoblin.visual_input(position_tracker=self.tracker.position, position_target=self.target.position)
@@ -127,27 +128,25 @@ class JA_Simulation:
 
             # print("State of Neurons:\n", self.knoblin.Y)
 
-            # 5) Agent reacts:
-            if self.knoblin.timer_motor_l <= 0 or self.knoblin.timer_motor_r <= 0: # this is a bit redundant (see e.g.) Knoblin.press_left(), but more computational efficient
+            # 6) Agent reacts:
+            if self.knoblin.timer_motor_l <= 0 or self.knoblin.timer_motor_r <= 0:  # this is a bit redundant (see e.g.) Knoblin.press_left(), but more computational efficient
                 activation = self.knoblin.motor_output()
-                # if any(act > 0 for act in np.abs(activation)): print("Activation:", activation)
+                if any(act > 0 for act in np.abs(activation)): print("Activation:", activation)
                 self.tracker.accelerate(input = activation)
-            else:
-                keypress[i,:] = activation if activation != None else [0,0]
+                keypress[i, :] = activation
 
-            # 6) Fitness tacking:
+            # 7) Fitness tacking:
             fitness_curve.append(self.fitness())
 
-        # 7) Overall fitness:
-        print("Average distance to Target (Fitness:)", np.mean(fitness_curve))
-        # TODO: Question is, whether this output is usefull
-        output = [np.mean(fitness_curve)]
+        # 8) Overall fitness:
+        print("Average distance to Target (Fitness:)", np.round(np.mean(fitness_curve),3))
+        output = [np.round(np.mean(fitness_curve),3)]
 
         output.append(positions)
         output.append(keypress)
         if condition == True:
             output.append(sounds)
-        print("Output contains trajectories, keypress and sounds(if applicable)")
+        print("Output contains fitness[0], trajectories[1], keypress[2] and sounds[3](if applicable)")
 
 
         ## PLOT and save current state of the system:
@@ -159,7 +158,11 @@ class JA_Simulation:
         for i in range(self.simlength):
 
             ticker = 10 # just plot every 10th (x-th) state.
+            counter_img = 0
+            counter_sec = 0
+
             if i % ticker == 0:
+
             # With a simlength of 2789 the resulting gif-animation is approx. 11sec long (25frames/sec)
             # we can change the animation length by changing the modulo here [i%x].
 
@@ -175,18 +178,26 @@ class JA_Simulation:
 
                 if condition==True:
                     if sounds[i,0] == 1:
-                        plt.plot(-10, -3, 'yo', markersize=24, alpha=0.3)       # sound left
+                        plt.plot(-10, -3.8, 'yo', markersize=24, alpha=0.3)       # sound left
                     if sounds[i, 1] == 1:
-                        plt.plot( 10, -3, 'yo', markersize=24, alpha=0.3)       # sound right
+                        plt.plot( 10, -3.8, 'yo', markersize=24, alpha=0.3)       # sound right
 
                 # Define boarders
-                plt.xlim(-25, 25)
+                plt.xlim(-20, 20)
                 plt.ylim(-5, 5)
 
-                # Print Fitnesss in Plot
-                plt.annotate(xy=[0, 4], xytext=[0, 4], s="fitness = {}".format(output[0]))
+                # Print Fitnesss and time in Plot
+                plt.annotate(xy=[0, 4], xytext=[0, 4], s="fitness = {}".format(output[0])) # Fitness
 
-                plt.savefig('./Animation/{}.Animation/animation{}.png'.format(time, int(i/ticker) ) )
+                # Updated time-counter:
+                if counter_img==25:
+                    counter_sec += 1
+                counter_img = counter_img + 1 if counter_img < 25 else 1
+
+                plt.annotate(xy=[-15, 4], xytext=[-15, 4], s="Time = {}:{}sec".format(str(counter_sec).zfill(2), str(counter_img).zfill(2))) # Time
+
+                plt.savefig('./Animation/{}.Animation/animation{}.png'.format(time, str(int(i/ticker)).zfill(len(str(int(self.simlength/ticker))))))
+
 
                 plt.close()
 
@@ -196,9 +207,6 @@ class JA_Simulation:
 
     def fitness(self):
         return np.abs(self.target.position - self.tracker.position)
-
-
-
 
 
 

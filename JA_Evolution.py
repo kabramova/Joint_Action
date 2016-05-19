@@ -95,10 +95,9 @@ class JA_Evolution(JA_Simulation):
                     fitness = self.run()
                     fitness_per_trials.append(fitness)
 
-                    self.reset_neural_system()
 
         fitness = np.mean(fitness_per_trials)
-        print("Average fitness over all trials:", fitness)
+        print("Average fitness over all 8 trials:", np.round(fitness,2))
 
         return fitness
 
@@ -282,10 +281,11 @@ class JA_Evolution(JA_Simulation):
         # Save in external file:
         if save:
 
-            self.filename = "sim{}.mut{}.Gen{}-{}.JA.single".format(self.simlength,
-                                                                    mutation_var,
-                                                                    self.generation - generations + 1,
-                                                                    self.generation)
+            self.filename = "sim{}.mut{}.Gen{}-{}.popsize{}.JA.single".format(self.simlength,
+                                                                              mutation_var,
+                                                                              self.generation - generations + 1,
+                                                                              self.generation,
+                                                                              self.pop_size)
 
             pickle.dump(self.pop_list, open('Poplist.{}'.format(self.filename), 'wb'))
             pickle.dump(np.round(Fitness_progress, 2), open('Fitness_progress.{}'.format(self.filename), 'wb'))
@@ -308,11 +308,14 @@ class JA_Evolution(JA_Simulation):
 
         # Reimplement: pop_list, simlength, Generation
         self.pop_list = pickle.load(open('Poplist.{}'.format(filename), 'rb'))
+        self.pop_size = self.pop_list.shape[0]
 
         self.simlength = int(filename[filename.find('m') + 1: filename.find('.')])  # depends on filename
 
         fitness_progress = pickle.load(open('Fitness_progress.{}'.format(filename), 'rb'))
         self.generation = int(fitness_progress[-1, 0])
+
+        self.globalization()
 
         if Plot:
             # here we plot the fitness progress of all generation
@@ -335,7 +338,6 @@ class JA_Evolution(JA_Simulation):
         n = n_knoblins
 
         for i in range(n_knoblins):
-            self.reset_neural_system()
             # TODO: run all four trials
             self.implement_genome(genome_string=self.pop_list[i,2:])
 
@@ -345,6 +347,11 @@ class JA_Evolution(JA_Simulation):
         print(np.round(self.pop_list[0:n_knoblins, 0:3], 2))
         if n_knoblins > 1:
             print("Close all Windows with close()")
+
+
+    def print_best(self, n=5):
+
+        print(self.pop_list[0:n,0:3])
 
 
     def close(self):
