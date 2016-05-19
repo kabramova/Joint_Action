@@ -201,7 +201,7 @@ class JA_Simulation:
             plt.annotate(xy=[-15, 3.5], xytext=[-15, 3.5], s="{} Trial".format(trial))                 # trial
             plt.annotate(xy=[-15, 3.0], xytext=[-15, 3.0], s="Sound Condition: {}".format(condition))  # condition
 
-            plt.savefig('./Animation/{}.Animation/animation{}.png'.format(time, str(int(i/ticker)).zfill(len(str(int(self.simlength/ticker))))))
+            plt.savefig('./Animation/{}.Animation.Sound_{}.{}_trial/animation{}.png'.format(time,condition,trial, str(int(i/ticker)).zfill(len(str(int(self.simlength/ticker))))))
 
 
             plt.close()

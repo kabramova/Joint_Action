@@ -18,3 +18,7 @@ ja.print_best(3)
 sim = JA_Simulation()
 sim.setup(trial_speed="fast",auditory_condition=True)
 tab = sim.run_and_plot()
+
+sim = JA_Simulation()
+sim.setup(trial_speed="slow",auditory_condition=False)
+tab = sim.run_and_plot()
