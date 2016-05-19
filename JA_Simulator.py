@@ -1,4 +1,8 @@
 from JointAction import *
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+
 
 
 class JA_Simulation:
@@ -155,51 +159,53 @@ class JA_Simulation:
         time = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
         os.makedirs("./Animation/{}.Animation".format(time))
 
-        for i in range(self.simlength):
+        ticker = 10  # just plot every 10th (x-th) state.
+        counter_img = 0
+        counter_sec = 0
 
-            ticker = 10 # just plot every 10th (x-th) state.
-            counter_img = 0
-            counter_sec = 0
+        for i in np.arange(0,self.simlength+1,ticker):
 
-            if i % ticker == 0:
+        # With a simlength of 2789 the resulting gif-animation is approx. 11sec long (25frames/sec)
+        # we can change the animation length by changing the modulo here [i%x].
 
-            # With a simlength of 2789 the resulting gif-animation is approx. 11sec long (25frames/sec)
-            # we can change the animation length by changing the modulo here [i%x].
+            plt.figure(figsize=(10, 6), dpi=80)
 
-                plt.figure(figsize=(10, 6), dpi=80)
+            plt.plot(positions[i, 0], 0, 'ro', markersize=12, alpha=0.5)    # Tracker
+            plt.plot(positions[i, 1], 0, 'go')                              # Target
 
-                plt.plot(positions[i, 0], 0, 'ro', markersize=12, alpha=0.5)    # Tracker
-                plt.plot(positions[i, 1], 0, 'go')                              # Target
+            if keypress[i, 0] == -1:
+                plt.plot(-10, -4, 'bs', markersize=16)                      # keypress left
+            if keypress[i, 1] == 1:
+                plt.plot( 10, -4, 'bs', markersize=16)                      # keypress right
 
-                if keypress[i, 0] == -1:
-                    plt.plot(-10, -4, 'bs', markersize=16)                      # keypress left
-                if keypress[i, 1] == 1:
-                    plt.plot( 10, -4, 'bs', markersize=16)                      # keypress right
+            if condition==True:
+                if sounds[i,0] == 1:
+                    plt.plot(-10, -3.9, 'yo', markersize=24, alpha=0.3)       # sound left
+                if sounds[i, 1] == 1:
+                    plt.plot( 10, -3.9, 'yo', markersize=24, alpha=0.3)       # sound right
 
-                if condition==True:
-                    if sounds[i,0] == 1:
-                        plt.plot(-10, -3.8, 'yo', markersize=24, alpha=0.3)       # sound left
-                    if sounds[i, 1] == 1:
-                        plt.plot( 10, -3.8, 'yo', markersize=24, alpha=0.3)       # sound right
+            # Define boarders
+            plt.xlim(-20, 20)
+            plt.ylim(-5, 5)
 
-                # Define boarders
-                plt.xlim(-20, 20)
-                plt.ylim(-5, 5)
+            # Print Fitnesss, time and conditions in Plot
+            plt.annotate(xy=[0, 4], xytext=[0, 4], s="fitness = {}".format(output[0])) # Fitness
 
-                # Print Fitnesss and time in Plot
-                plt.annotate(xy=[0, 4], xytext=[0, 4], s="fitness = {}".format(output[0])) # Fitness
+            # Updated time-counter:
+            if counter_img==25:
+                counter_sec += 1
+            counter_img = counter_img + 1 if counter_img < 25 else 1
 
-                # Updated time-counter:
-                if counter_img==25:
-                    counter_sec += 1
-                counter_img = counter_img + 1 if counter_img < 25 else 1
+            plt.annotate(xy=[-15, 4], xytext=[-15, 4], s="Time = {}:{}sec".format(str(counter_sec).zfill(2), str(counter_img).zfill(2))) # Time
+            print("Time = {}:{}sec".format(str(counter_sec).zfill(2), str(counter_img).zfill(2))) # Time)
 
-                plt.annotate(xy=[-15, 4], xytext=[-15, 4], s="Time = {}:{}sec".format(str(counter_sec).zfill(2), str(counter_img).zfill(2))) # Time
+            plt.annotate(xy=[-15, 3.5], xytext=[-15, 3.5], s="{} Trial".format(trial))                 # trial
+            plt.annotate(xy=[-15, 3.0], xytext=[-15, 3.0], s="Sound Condition: {}".format(condition))  # condition
 
-                plt.savefig('./Animation/{}.Animation/animation{}.png'.format(time, str(int(i/ticker)).zfill(len(str(int(self.simlength/ticker))))))
+            plt.savefig('./Animation/{}.Animation/animation{}.png'.format(time, str(int(i/ticker)).zfill(len(str(int(self.simlength/ticker))))))
 
 
-                plt.close()
+            plt.close()
 
 
         return output

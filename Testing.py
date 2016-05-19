@@ -1,6 +1,7 @@
 from Formulas import *
 from RollingBot import CatchBot
 from Evolution import Evolution
+import matplotlib.pyplot as plt
 
 
 ### Study angles between Target and agent_positions:
@@ -502,3 +503,26 @@ for i in range(simlength):
 # To create gif use Terminal Command in for folder:
 # convert -delay 0 -loop 0 animation*.png animated.gif
 # Source: http://johannesluderschmidt.de/creating-animated-gifs-from-the-command-line-in-mac-os-x-using-convert/2732/
+
+
+## Counting speed
+
+import datetime
+
+start = datetime.datetime.now()
+ticker = 10
+for i in range(2789):
+    if i % ticker == 0:
+        print(i)
+finish = datetime.datetime.now()
+
+
+start2 = datetime.datetime.now()
+ticker = 10
+for i in np.arange(0,2789+1,ticker):
+    print(i)
+finish2 = datetime.datetime.now()
+
+print(finish-start)
+print("")
+print(finish2-start2)

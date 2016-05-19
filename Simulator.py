@@ -1,5 +1,6 @@
 from Formulas import *
 from RollingBot import CatchBot
+import matplotlib.pyplot as plt
 
 
 class Simulate:

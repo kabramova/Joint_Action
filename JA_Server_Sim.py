@@ -16,5 +16,5 @@ ja.print_best(3)
 
 
 sim = JA_Simulation()
-sim.setup(trial_speed="Fast",auditory_condition=True)
+sim.setup(trial_speed="fast",auditory_condition=True)
 tab = sim.run_and_plot()
