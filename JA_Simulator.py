@@ -154,10 +154,9 @@ class JA_Simulation:
 
 
         ## PLOT and save current state of the system:
-        # TODO: include condition & trialspeed
         # Create Folder for images:
         time = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-        os.makedirs("./Animation/{}.Animation".format(time))
+        os.makedirs("./Animation/{}.Animation.Sound_{}.{}_trial".format(time,condition,trial))
 
         ticker = 10  # just plot every 10th (x-th) state.
         counter_img = 0
