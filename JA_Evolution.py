@@ -85,6 +85,7 @@ class JA_Evolution(JA_Simulation):
         fitness_per_trials = []
 
         for trial_speed in ["slow", "fast"]:
+            # TODO: change (so it will be 4trials per condition):
             for auditory_condition in [False, True]:
                 for init_target_direction in [-1, 1]:  # left(-1) or right(1)
 
@@ -172,7 +173,6 @@ class JA_Evolution(JA_Simulation):
 
             new_population[2+n, (index - gens[choice]):index] = copy.copy(self.pop_list[1, (index - gens[choice]):index])  # crossover from second parent
 
-            # TODO: Test: self.knoblin.PARAMETER (depending on choice)
 
         # 3) Fitness proportionate selection of 30% (+ 1/2 fill up)
 

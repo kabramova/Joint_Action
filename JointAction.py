@@ -90,7 +90,6 @@ class Target:
     def __init__(self):
         # trial, env_range will be globally announced by class Jordan
         self.position = 0
-        #TODO: randomise the initialization of direction (maybe in the JA_Simulator.py):
         self.velocity = 4.3 if trial=="fast" else 3.3
 
     def distance_to_border(self):
