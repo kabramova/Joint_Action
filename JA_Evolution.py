@@ -3,9 +3,9 @@ import pickle
 
 class JA_Evolution(JA_Simulation):
 
-    def __init__(self, pop_size=111):
+    def __init__(self, auditory_condition, pop_size=111):
 
-        super(self.__class__, self).__init__(simlength=2789) # self.knoblin, self.simlength
+        super(self.__class__, self).__init__(auditory_condition, simlength=2789) # self.knoblin, self.simlength, self.condition
 
         self.genome = self.create_genome(Knoblin=self.knoblin)
 
@@ -85,16 +85,14 @@ class JA_Evolution(JA_Simulation):
         fitness_per_trials = []
 
         for trial_speed in ["slow", "fast"]:
-            # TODO: change (so it will be 4trials per condition):
-            for auditory_condition in [False, True]:
-                for init_target_direction in [-1, 1]:  # left(-1) or right(1)
+            for init_target_direction in [-1, 1]:  # left(-1) or right(1)
 
-                    self.setup(trial_speed=trial_speed, auditory_condition=auditory_condition)
-                    self.target.velocity *= init_target_direction
+                self.setup(trial_speed=trial_speed)
+                self.target.velocity *= init_target_direction
 
-                    # Run trial:
-                    fitness = self.run()
-                    fitness_per_trials.append(fitness)
+                # Run trial:
+                fitness = self.run()
+                fitness_per_trials.append(fitness)
 
 
         fitness = np.mean(fitness_per_trials)
@@ -300,19 +298,25 @@ class JA_Evolution(JA_Simulation):
     def reimplement_population(self, filename=None, Plot=False):
 
         if filename is None:
-            if self.filename != "":
-                filename = self.filename
-                print("Reimplements its own pop_list file")
-            else:
+            if self.filename == "":
                 raise ValueError("No file to reimplement")
+            else:
+                print("Reimplements its own pop_list file")
+        else:
+            self.filename = filename
 
         # Reimplement: pop_list, simlength, Generation
-        self.pop_list = pickle.load(open('Poplist.{}'.format(filename), 'rb'))
+        self.pop_list = pickle.load(open('Poplist.{}'.format(self.filename), 'rb'))
         self.pop_size = self.pop_list.shape[0]
 
-        self.simlength = int(filename[filename.find('m') + 1: filename.find('.')])  # depends on filename
+        self.simlength = int(self.filename[self.filename.find('m') + 1: self.filename.find('.')])  # depends on filename
 
-        fitness_progress = pickle.load(open('Fitness_progress.{}'.format(filename), 'rb'))
+        # TODO: How to reimplement condition: extract from filename
+
+        assert self.filename.find("False") != -1 or self.filename.find("True") != -1, "Condition is unknown (please add to filename (if known)"
+        self.condition = False if self.filename.find("False") != -1 and self.filename.find("True") == -1 else True
+
+        fitness_progress = pickle.load(open('Fitness_progress.{}'.format(self.filename), 'rb'))
         self.generation = int(fitness_progress[-1, 0])
 
         self.globalization()
@@ -337,16 +341,18 @@ class JA_Evolution(JA_Simulation):
         global n
         n = n_knoblins
 
+        # TODO: run all four trials
         for i in range(n_knoblins):
-            # TODO: run all four trials
-            self.implement_genome(genome_string=self.pop_list[i,2:])
+            for trial_speed in ["slow", "fast"]:
+                for init_target_direction in [-1, 1]:  # left(-1) or right(1)
 
-            self.run_and_plot()
+                    self.setup(trial_speed=trial_speed)
 
+                    self.target.velocity *= init_target_direction
 
-        print(np.round(self.pop_list[0:n_knoblins, 0:3], 2))
-        if n_knoblins > 1:
-            print("Close all Windows with close()")
+                    self.implement_genome(genome_string=self.pop_list[i,2:])
+
+                    self.run_and_plot()  # include reset of the neural system
 
 
     def print_best(self, n=5):

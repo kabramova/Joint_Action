@@ -8,14 +8,16 @@ import matplotlib.pyplot as plt
 class JA_Simulation:
 # Joint Action Simulation:
 
-    def __init__(self, simlength=2789):
+    def __init__(self, auditory_condition, simlength=2789):
         # Withe simlength=2789, Target turns 3times during each trial (with regard to Knoblich & Jordan, 2003)
         self.knoblin = Knoblin()
         self.simlength = simlength
+        self.condition = auditory_condition
         self.runs = 0               # to count how many runs the agent made
 
-    def setup(self, trial_speed="slow", auditory_condition=False):
-        self.environment = Jordan(trial_speed=trial_speed, auditory_condition=auditory_condition)
+    def setup(self, trial_speed):
+        # TODO: check whether Jordan can be inherited by JA_Simulation and consequently by JA_Evolution
+        self.environment = Jordan(trial_speed=trial_speed, auditory_condition=self.condition)
         self.globalization()
         self.tracker = Tracker()
         self.target = Target()
@@ -24,9 +26,6 @@ class JA_Simulation:
     def globalization(self):   # for a certain reason I have to add this here a second time.
         global trial
         trial = self.environment.trial
-
-        global condition
-        condition = self.environment.condition
 
         global env_range
         env_range = self.environment.env_range
@@ -68,7 +67,7 @@ class JA_Simulation:
             self.knoblin.visual_input(position_tracker=self.tracker.position, position_target=self.target.position)
 
             # 4) Agent hears:
-            if condition == True: # condition will be globally announced by class Jordan (self.environment)
+            if self.condition == True: # condition will be globally announced by class Jordan (self.environment)
                 self.knoblin.auditory_input(sound_input = sound_output)
 
             # 5) Update agent's neural system
@@ -86,7 +85,7 @@ class JA_Simulation:
             fitness_curve.append(self.fitness())
 
         # 7) Overall fitness:
-        print("{} trial, Sound {}: Average distance to Target (Fitness:) {}".format(trial, condition, np.round(np.mean(fitness_curve),3)))
+        print("{} trial, Sound {}: Average distance to Target (Fitness:) {}".format(trial, self.condition, np.round(np.mean(fitness_curve),3)))
         output = np.round(np.mean(fitness_curve),3)
 
         return output
@@ -101,11 +100,11 @@ class JA_Simulation:
 
         positions = np.zeros((self.simlength,2))
         keypress = np.zeros((self.simlength,2))
-        if condition ==True:
+        if self.condition ==True:
             sounds = np.zeros((self.simlength,2))
 
         print("Sound condition:\t {} \n"
-              "Trial speed:\t {}".format(condition,trial))
+              "Trial speed:\t {}".format(self.condition,trial))
 
         for i in range(self.simlength):
 
@@ -123,7 +122,7 @@ class JA_Simulation:
             positions[i,:] = [self.tracker.position, self.target.position] # save positions
 
             # 4) Agent hears:
-            if condition == True: # condition will be globally announced by class Jordan (self.environment)
+            if self.condition == True: # condition will be globally announced by class Jordan (self.environment)
                 self.knoblin.auditory_input(sound_input = sound_output)
                 sounds[i,:] = sound_output # save sound_output
 
@@ -148,7 +147,7 @@ class JA_Simulation:
 
         output.append(positions)
         output.append(keypress)
-        if condition == True:
+        if self.condition == True:
             output.append(sounds)
         print("Output contains fitness[0], trajectories[1], keypress[2] and sounds[3](if applicable)")
 
@@ -156,7 +155,7 @@ class JA_Simulation:
         ## PLOT and save current state of the system:
         # Create Folder for images:
         time = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-        os.makedirs("./Animation/{}.Animation.Sound_{}.{}_trial".format(time,condition,trial))
+        os.makedirs("./Animation/{}.Animation.Sound_{}.{}_trial".format(time,self.condition,trial))
 
         ticker = 10  # just plot every 10th (x-th) state.
         counter_img = 0
@@ -177,7 +176,7 @@ class JA_Simulation:
             if keypress[i, 1] == 1:
                 plt.plot( 10, -4, 'bs', markersize=16)                      # keypress right
 
-            if condition==True:
+            if self.condition==True:
                 if sounds[i,0] == 1:
                     plt.plot(-10, -3.9, 'yo', markersize=24, alpha=0.3)       # sound left
                 if sounds[i, 1] == 1:
@@ -199,9 +198,9 @@ class JA_Simulation:
             print("Time = {}:{}sec".format(str(counter_sec).zfill(2), str(counter_img).zfill(2))) # Time)
 
             plt.annotate(xy=[-15, 3.5], xytext=[-15, 3.5], s="{} Trial".format(trial))                 # trial
-            plt.annotate(xy=[-15, 3.0], xytext=[-15, 3.0], s="Sound Condition: {}".format(condition))  # condition
+            plt.annotate(xy=[-15, 3.0], xytext=[-15, 3.0], s="Sound Condition: {}".format(self.condition))  # condition
 
-            plt.savefig('./Animation/{}.Animation.Sound_{}.{}_trial/animation{}.png'.format(time,condition,trial, str(int(i/ticker)).zfill(len(str(int(self.simlength/ticker))))))
+            plt.savefig('./Animation/{}.Animation.Sound_{}.{}_trial/animation{}.png'.format(time, self.condition, trial, str(int(i/ticker)).zfill(len(str(int(self.simlength/ticker))))))
 
 
             plt.close()
@@ -212,14 +211,3 @@ class JA_Simulation:
 
     def fitness(self):
         return np.abs(self.target.position - self.tracker.position)
-
-
-
-# j1 = JA_Simulation(simlength=2789)
-# j1.setup(trial_speed="fast", auditory_condition=True)
-# j1.run()
-# print("Target Position:", j1.target.position)
-# print("Tracker Position:", j1.tracker.position)
-# print("Tracker Velocity:", j1.tracker.velocity)
-# print("Tracker Timer_L:", j1.tracker.timer_sound_l)
-# print("Tracker Timer_R:",j1.tracker.timer_sound_r)
