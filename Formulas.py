@@ -222,3 +222,29 @@ def save_request():
             count += 1
 
     raise ValueError("Function stopped")
+
+
+def audio_condition_request():
+
+    condition = input("Sound condition is '(T)rue' / '(F)alse':")
+
+    if condition == 1 or condition.lower() == "t" or condition.lower() == "true":
+        condition = True
+
+    elif condition == 0 or condition.lower() == "f" or condition.lower() == "false":
+        condition = False
+
+    else:
+        raise ValueError("Input must be True or False")
+
+    return condition
+
+def generation_request():
+
+    number_of_generations = input("How many Generations to run (int):")
+    if int(number_of_generations): number_of_generations = int(number_of_generations)
+
+    if number_of_generations <= 1:
+        raise ValueError("Evolution must run for at least 2 Generations")
+
+    return number_of_generations

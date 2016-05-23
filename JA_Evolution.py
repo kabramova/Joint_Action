@@ -278,7 +278,7 @@ class JA_Evolution(JA_Simulation):
 
             Fitness_progress[i, 0] = self.generation
 
-            print("Generation", self.generation, ": Fitness (5 best Agents):",Fitness_progress[i, 1:])
+            print("Generation {}: Fitness (5 best Agents): {}".format(self.generation, Fitness_progress[i, 1:]))
 
         # Save in external file:
         if save:
