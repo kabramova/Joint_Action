@@ -194,3 +194,31 @@ def save_request():
             count += 1
 
     raise ValueError("Function stopped")
+
+
+def save_request():
+    '''
+    Ask whether results should be saved in external file
+    take output of save_request() as follows:
+    save = save_request()
+    :return True or False
+    '''
+    count = 0
+    while count != 3:
+        Input = input("Do you want to save the final population ('(y)es'/'(n)o'):")
+
+        if Input in ["y", "Y", "yes", "Yes", "YES"]:
+            print("Saving final population in external file")
+            return True
+
+        elif Input in ["n", "N", "no", "No", "NO"]:
+            print("Final population won't be saved")
+            return False
+
+        else:
+            print("Input is not understood.\n"
+                  "Type either 'yes' or 'no'.\n"
+                  "{} more attempt(s)".format(2 - count))
+            count += 1
+
+    raise ValueError("Function stopped")

@@ -96,7 +96,7 @@ class JA_Evolution(JA_Simulation):
 
 
         fitness = np.mean(fitness_per_trials)
-        print("Average fitness over all 8 trials:", np.round(fitness,2))
+        # print("Average fitness over all 8 trials:", np.round(fitness,2))
 
         return fitness
 
@@ -108,7 +108,13 @@ class JA_Evolution(JA_Simulation):
                 genome = string[2:]
                 self.knoblin = Knoblin()
                 self.implement_genome(genome_string=genome)
+
                 # Run all trials an save fitness in pop_list:
+                ticker = 10
+                if i%ticker == 0 or i==0:
+                    fill = i+ticker if i <= self.pop_size-ticker else self.pop_size
+                    print("Generation {}: Run trials for Agents {}-{}".format(self.generation, i+1, fill))
+
                 self.pop_list[i, 1] = self.run_trials()
 
         self.pop_list = copy.copy(mat_sort(self.pop_list, index=1)) # sorts the pop_list, best agents on top
@@ -192,7 +198,6 @@ class JA_Evolution(JA_Simulation):
         # (Source: http://stackoverflow.com/questions/298301/roulette-wheel-selection-algorithm/320788#320788)
 
         fitness = copy.copy(self.pop_list[:, 1])
-        print(fitness)
         fitness = 1 - normalize(fitness)  # sign is correct, apparently
 
         total_fitness = sum(fitness)
@@ -273,7 +278,7 @@ class JA_Evolution(JA_Simulation):
 
             Fitness_progress[i, 0] = self.generation
 
-            print("Fitness(Agent 1-5):",Fitness_progress[i, 1:], "Generation", self.generation)
+            print("Fitness(5 Best Agents):",Fitness_progress[i, 1:], "Generation", self.generation)
 
         # Save in external file:
         if save:

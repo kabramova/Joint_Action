@@ -1,10 +1,19 @@
 from JA_Evolution import *
 
-ja = JA_Evolution(auditory_condition=True)
-ja.run_evolution(generations=3)
+audit = input("Sound condition is '(T)rue' / '(F)alse':")
 
-ja2 = JA_Evolution(auditory_condition=False)
-ja2.run_evolution(generations=100)
+audit = True if audit ==1 or audit =="T" or audit =="True" else audit
+audit = False if audit ==0 or audit =="F" or audit =="False" else audit
+if isinstance(audit, str):
+    raise ValueError("Must be True or False")
+
+gens = input("How many Generations to run (int):")
+if int(gens): gens = int(gens)
+
+print("Run Evolution for {} Generations in Sound Condition={}".format(gens, audit))
+
+ja = JA_Evolution(auditory_condition=audit)
+ja.run_evolution(generations=gens)
 
 
 
