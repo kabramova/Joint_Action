@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 
 
-class JA_Simulation:
+class SA_Simulation:
 # Joint Action Simulation:
 
     def __init__(self, auditory_condition, simlength=2789):
@@ -48,7 +48,7 @@ class JA_Simulation:
         self.knoblin.I             = np.matrix(np.zeros((self.knoblin.N, 1)))
         self.knoblin.timer_motor_l = 0
         self.knoblin.timer_motor_r = 0
-        # Alternatively for class JA_Evolution:
+        # Alternatively for class SA_Evolution:
         # self.knoblin = Knoblin()
         # self.implement_genome(genome_string=self.genome)
 

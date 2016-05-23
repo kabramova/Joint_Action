@@ -1,7 +1,7 @@
-from JA_Simulator import *
+from SA_Simulator import *
 import pickle
 
-class JA_Evolution(JA_Simulation):
+class SA_Evolution(SA_Simulation):
 
     def __init__(self, auditory_condition, pop_size=111):
 

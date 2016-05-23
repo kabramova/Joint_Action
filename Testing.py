@@ -448,7 +448,7 @@ print("n_r:", n_r)
 print("Sum:", np.sum((n_p, n_c, n_f, n_r)))
 
 
-##  Test PLotting for JA_Simulator:
+##  Test PLotting for SA_Simulator:
 simlength = 100
 condition = True
 
