@@ -20,11 +20,11 @@ ja.run_evolution(generations=gens)
 
 
 ## Test
-ja = JA_Evolution(pop_size=5, auditory_condition=False)
-print("Sound_Cond:", ja.condition,", popsize:", ja.pop_size,", Gen:", ja.generation)
-ja.reimplement_population(filename="Gen1-2.popsize111.mut0.02.sound_cond=False.JA.single(Fitness9.99)", Plot=True)
-print("Sound_Cond:", ja.condition,", popsize:", ja.pop_size,", Gen:", ja.generation)
-ja.print_best(5)
+# ja = JA_Evolution(pop_size=5, auditory_condition=False)
+# print("Sound_Cond:", ja.condition,", popsize:", ja.pop_size,", Gen:", ja.generation)
+# ja.reimplement_population(filename="Gen1-2.popsize111.mut0.02.sound_cond=False.JA.single(Fitness9.99)", Plot=True)
+# print("Sound_Cond:", ja.condition,", popsize:", ja.pop_size,", Gen:", ja.generation)
+# ja.print_best(5)
 
 # sim = JA_Simulation(False)
 # sim.setup(trial_speed="slow")
