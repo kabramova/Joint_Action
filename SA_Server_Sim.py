@@ -1,5 +1,3 @@
-# TODO: >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
 from SA_Evolution import *
 
 audicon = audio_condition_request()

@@ -1,5 +1,3 @@
-# TODO: >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
 from JointAction import *
 import matplotlib
 matplotlib.use('Agg')

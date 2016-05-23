@@ -1,4 +1,3 @@
-# TODO: >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 from SA_Simulator import *
 import pickle
 
