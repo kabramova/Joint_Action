@@ -192,7 +192,6 @@ class JA_Evolution(JA_Simulation):
         # (Source: http://stackoverflow.com/questions/298301/roulette-wheel-selection-algorithm/320788#320788)
 
         fitness = copy.copy(self.pop_list[:, 1])
-        # TODO: CHeck
         print(fitness)
         fitness = 1 - normalize(fitness)  # sign is correct, apparently
 
@@ -268,22 +267,21 @@ class JA_Evolution(JA_Simulation):
             # Evaluate fitness of each member
             self._run_population()
 
-            Fitness_progress[i, 1:] = np.round(self.pop_list[0:5, 1], 2)
+            Fitness_progress[i, 1:] = np.round(self.pop_list[0:5, 1], 2) # saves fitness progress for the five best agents
 
             self.generation += 1
 
             Fitness_progress[i, 0] = self.generation
 
-            print(Fitness_progress[i, 1:], "Generation", self.generation)
+            print("Fitness(Agent 1-5):",Fitness_progress[i, 1:], "Generation", self.generation)
 
         # Save in external file:
         if save:
-
-            self.filename = "sim{}.mut{}.Gen{}-{}.popsize{}.JA.single".format(self.simlength,
-                                                                              mutation_var,
-                                                                              self.generation - generations + 1,
-                                                                              self.generation,
-                                                                              self.pop_size)
+            self.filename = "Gen{}-{}.popsize{}.mut{}.sound_cond={}.JA.single".format(self.generation - generations + 1,
+                                                                                      self.generation,
+                                                                                      self.pop_size,
+                                                                                      mutation_var,
+                                                                                      self.condition)
 
             pickle.dump(self.pop_list, open('Poplist.{}'.format(self.filename), 'wb'))
             pickle.dump(np.round(Fitness_progress, 2), open('Fitness_progress.{}'.format(self.filename), 'wb'))
@@ -305,13 +303,9 @@ class JA_Evolution(JA_Simulation):
         else:
             self.filename = filename
 
-        # Reimplement: pop_list, simlength, Generation
+        # Reimplement: pop_list, condition, Generation
         self.pop_list = pickle.load(open('Poplist.{}'.format(self.filename), 'rb'))
         self.pop_size = self.pop_list.shape[0]
-
-        self.simlength = int(self.filename[self.filename.find('m') + 1: self.filename.find('.')])  # depends on filename
-
-        # TODO: How to reimplement condition: extract from filename
 
         assert self.filename.find("False") != -1 or self.filename.find("True") != -1, "Condition is unknown (please add to filename (if known)"
         self.condition = False if self.filename.find("False") != -1 and self.filename.find("True") == -1 else True
@@ -319,29 +313,26 @@ class JA_Evolution(JA_Simulation):
         fitness_progress = pickle.load(open('Fitness_progress.{}'.format(self.filename), 'rb'))
         self.generation = int(fitness_progress[-1, 0])
 
-        self.globalization()
+        # self.setup(trial_speed="fast") # Trial speed is arbitrary. This command is needed to globally announce variables
 
         if Plot:
             # here we plot the fitness progress of all generation
             plt.figure()
             for i in range(1, fitness_progress.shape[1]):
                 plt.plot(fitness_progress[:, i])
+                plt.ylim(0, 15)
+
+            plt.savefig('./Fitness/Fitness_Progress_{}.png'.format(self.filename))
+            plt.close()
 
             # Here we plot the trajectory of the best agent:
             self.plot_pop_list()
-            print("Plot the best agent")
+            self.print_best(n=1)
+            print("Animation of best agent is saved")
 
-            global n  # this is needed for self.close()
-            n = 2
-
-    # TODO: <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     def plot_pop_list(self, n_knoblins=1):
 
-        global n
-        n = n_knoblins
-
-        # TODO: run all four trials
         for i in range(n_knoblins):
             for trial_speed in ["slow", "fast"]:
                 for init_target_direction in [-1, 1]:  # left(-1) or right(1)
@@ -358,9 +349,3 @@ class JA_Evolution(JA_Simulation):
     def print_best(self, n=5):
 
         print(self.pop_list[0:n,0:3])
-
-
-    def close(self):
-        for j in range(n):  # n is from the global variable of plot_pop_list()/reimplement_population()
-            plt.close()
-

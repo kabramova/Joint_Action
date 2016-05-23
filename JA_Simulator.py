@@ -9,15 +9,23 @@ class JA_Simulation:
 # Joint Action Simulation:
 
     def __init__(self, auditory_condition, simlength=2789):
-        # Withe simlength=2789, Target turns 3times during each trial (with regard to Knoblich & Jordan, 2003)
         self.knoblin = Knoblin()
+        # With simlength=2789, Target turns 3times during each fast trial (with regard to Knoblich & Jordan, 2003)
+        # With simlength=3635, Target turns 3times during each slow trial, will be changed in setup
         self.simlength = simlength
         self.condition = auditory_condition
         self.runs = 0               # to count how many runs the agent made
 
     def setup(self, trial_speed):
-        # TODO: check whether Jordan can be inherited by JA_Simulation and consequently by JA_Evolution
         self.environment = Jordan(trial_speed=trial_speed, auditory_condition=self.condition)
+
+        if self.environment.trial == "slow" and self.simlength != 3635:
+            self.simlength = 3635   # Target needs more time to make 3 turns
+
+        elif self.environment.trial == "fast" and self.simlength != 2789:
+            self.simlength = 2789   # Target needs less time to make 3 turns
+
+
         self.globalization()
         self.tracker = Tracker()
         self.target = Target()
@@ -85,14 +93,13 @@ class JA_Simulation:
             fitness_curve.append(self.fitness())
 
         # 7) Overall fitness:
-        print("{} trial, Sound {}: Average distance to Target (Fitness:) {}".format(trial, self.condition, np.round(np.mean(fitness_curve),3)))
+        # print("{} trial, Sound {}: Average distance to Target (Fitness): {}".format(trial, self.condition, np.round(np.mean(fitness_curve),3)))
         output = np.round(np.mean(fitness_curve),3)
 
         return output
 
 
     def run_and_plot(self):
-        # TODO: how to deal with globally announced variables (see globalization())
 
         self.reset_neural_system() # All inner neural states = 0
 
@@ -104,7 +111,7 @@ class JA_Simulation:
             sounds = np.zeros((self.simlength,2))
 
         print("Sound condition:\t {} \n"
-              "Trial speed:\t {}".format(self.condition,trial))
+              "Trial speed:\t {}".format(self.condition, trial))
 
         for i in range(self.simlength):
 
@@ -142,7 +149,7 @@ class JA_Simulation:
             fitness_curve.append(self.fitness())
 
         # 8) Overall fitness:
-        print("Average distance to Target (Fitness:)", np.round(np.mean(fitness_curve),3))
+        print("{} trial, Sound {}: Average distance to Target (Fitness): {}".format(trial, self.condition,np.round(np.mean(fitness_curve),3)))
         output = [np.round(np.mean(fitness_curve),3)]
 
         output.append(positions)
@@ -161,9 +168,10 @@ class JA_Simulation:
         counter_img = 0
         counter_sec = 0
 
-        for i in np.arange(0,self.simlength+1,ticker):
+        for i in np.arange(0,self.simlength,ticker):
 
-        # With a simlength of 2789 the resulting gif-animation is approx. 11sec long (25frames/sec)
+        # For Fast Trials: with a simlength of 2789 the resulting gif-animation is approx. 11sec long (25frames/sec)
+        # & for Slow Trials: with a simlength of 3635.
         # we can change the animation length by changing the modulo here [i%x].
 
             plt.figure(figsize=(10, 6), dpi=80)
@@ -192,10 +200,11 @@ class JA_Simulation:
             # Updated time-counter:
             if counter_img==25:
                 counter_sec += 1
+                print("Time: {} sec".format(str(counter_sec).zfill(2)))  # Time
+
             counter_img = counter_img + 1 if counter_img < 25 else 1
 
             plt.annotate(xy=[-15, 4], xytext=[-15, 4], s="Time = {}:{}sec".format(str(counter_sec).zfill(2), str(counter_img).zfill(2))) # Time
-            print("Time = {}:{}sec".format(str(counter_sec).zfill(2), str(counter_img).zfill(2))) # Time)
 
             plt.annotate(xy=[-15, 3.5], xytext=[-15, 3.5], s="{} Trial".format(trial))                 # trial
             plt.annotate(xy=[-15, 3.0], xytext=[-15, 3.0], s="Sound Condition: {}".format(self.condition))  # condition
