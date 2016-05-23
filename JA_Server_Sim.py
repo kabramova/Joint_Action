@@ -2,9 +2,11 @@ from JA_Evolution import *
 
 audit = input("Sound condition is '(T)rue' / '(F)alse':")
 
-audit = True if audit ==1 or audit =="T" or audit =="True" else audit
-audit = False if audit ==0 or audit =="F" or audit =="False" else audit
-if isinstance(audit, str):
+if audit ==1 or audit.lower() =="t" or audit.lower() =="true":
+    audit = True
+elif audit ==0 or audit.lower() =="f" or audit.lower() =="false":
+    audit = False
+else:
     raise ValueError("Must be True or False")
 
 gens = input("How many Generations to run (int):")
@@ -18,11 +20,11 @@ ja.run_evolution(generations=gens)
 
 
 ## Test
-# ja = JA_Evolution(pop_size=5, auditory_condition=False)
-# print("Sound_Cond:", ja.condition,", popsize:", ja.pop_size,", Gen:", ja.generation)
-# ja.reimplement_population(filename="Gen1-3.popsize111.mut0.02.sound_cond=True.JA.single", Plot=False)
-# print("Sound_Cond:", ja.condition,", popsize:", ja.pop_size,", Gen:", ja.generation)
-# ja.print_best()
+ja = JA_Evolution(pop_size=5, auditory_condition=False)
+print("Sound_Cond:", ja.condition,", popsize:", ja.pop_size,", Gen:", ja.generation)
+ja.reimplement_population(filename="Gen1-2.popsize111.mut0.02.sound_cond=False.JA.single(Fitness9.99)", Plot=True)
+print("Sound_Cond:", ja.condition,", popsize:", ja.pop_size,", Gen:", ja.generation)
+ja.print_best(5)
 
 # sim = JA_Simulation(False)
 # sim.setup(trial_speed="slow")

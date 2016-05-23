@@ -111,9 +111,9 @@ class JA_Evolution(JA_Simulation):
 
                 # Run all trials an save fitness in pop_list:
                 ticker = 10
-                if i%ticker == 0 or i==0:
-                    fill = i+ticker if i <= self.pop_size-ticker else self.pop_size
-                    print("Generation {}: Run trials for Agents {}-{}".format(self.generation, i+1, fill))
+                if i%ticker == 2:  # ignores the two first spots in pop_list, since they run already.
+                    fill = i+ticker if i < self.pop_size-ticker else self.pop_size
+                    print("Generation {}: Run trials for Agents {}-{}".format(self.generation, i-1, fill-2))
 
                 self.pop_list[i, 1] = self.run_trials()
 
@@ -278,15 +278,16 @@ class JA_Evolution(JA_Simulation):
 
             Fitness_progress[i, 0] = self.generation
 
-            print("Fitness(5 Best Agents):",Fitness_progress[i, 1:], "Generation", self.generation)
+            print("Generation", self.generation, ": Fitness (5 best Agents):",Fitness_progress[i, 1:])
 
         # Save in external file:
         if save:
-            self.filename = "Gen{}-{}.popsize{}.mut{}.sound_cond={}.JA.single".format(self.generation - generations + 1,
-                                                                                      self.generation,
-                                                                                      self.pop_size,
-                                                                                      mutation_var,
-                                                                                      self.condition)
+            self.filename = "Gen{}-{}.popsize{}.mut{}.sound_cond={}.JA.single(Fitness{})".format(self.generation - generations + 1,
+                                                                                                 self.generation,
+                                                                                                 self.pop_size,
+                                                                                                 mutation_var,
+                                                                                                 self.condition,
+                                                                                                 np.round(self.pop_list[0,1],2))
 
             pickle.dump(self.pop_list, open('Poplist.{}'.format(self.filename), 'wb'))
             pickle.dump(np.round(Fitness_progress, 2), open('Fitness_progress.{}'.format(self.filename), 'wb'))
@@ -321,11 +322,12 @@ class JA_Evolution(JA_Simulation):
         # self.setup(trial_speed="fast") # Trial speed is arbitrary. This command is needed to globally announce variables
 
         if Plot:
+
             # here we plot the fitness progress of all generation
             plt.figure()
             for i in range(1, fitness_progress.shape[1]):
                 plt.plot(fitness_progress[:, i])
-                plt.ylim(0, 15)
+                plt.ylim(0, 12)
 
             plt.savefig('./Fitness/Fitness_Progress_{}.png'.format(self.filename))
             plt.close()
