@@ -251,42 +251,40 @@ def generation_request():
 
 def filename_request():
     found = 0
+
     for file in os.listdir():
         if file.find("sound") != -1:
+            count = 0
             found += 1
+            No = False
+
             filename = file[file.find("Gen"):]
 
-    if found > 3:
-        print("Not clear what file is to be implemented")
-        filename_ext = input("Please enter the right filename:")
-        print("Try to implement following file:\n {}".format(filename_ext))
-        return filename_ext
+            while count != 3 and No == False:
+                file_request = input("{} \n Do you want to implement this file ((y)es, (n)o:".format(filename))
 
-    elif found > 0:
-        count = 0
-        while count != 3:
-            file_request = input("{} \n Do you want to implement this file ((y)es, (n)o:".format(filename))
+                if file_request in ["y", "Y", "yes", "Yes", "YES"]:
+                    print(">> File will be implemented")
+                    return filename
 
-            if file_request in ["y", "Y", "yes", "Yes", "YES"]:
-                print("File will be implemented")
-                return filename
+                elif file_request in ["n", "N", "no", "No", "NO"]:
+                    print(">> Looking for further files")
+                    No = True
 
-            elif file_request in ["n", "N", "no", "No", "NO"]:
-                filename_ext = input("Please enter the right filename:")
-                print("Try to implement following file:\n {}".format(filename_ext))
-                return filename_ext
+                else:
+                    print("Input is not understood.\n"
+                          "Type either 'yes' or 'no' ({} more attempt(s))".format(2 - count))
+                    count += 1
+                    if count >= 3:
+                        raise ValueError("Function stopped, input is not understood")
 
-            else:
-                print("Input is not understood.\n"
-                      "Type either 'yes' or 'no'.\n"
-                      "{} more attempt(s)".format(2 - count))
-                count += 1
+    print("There were {} file(s) to implement".format(found))
+    if found > 0:
+        print("No file was selected \n".format(found))
+    print(">> New evolution will be started")
 
-        raise ValueError("Function stopped, input is not understood")
 
-    else: # found == 0
-        print("There is no file to implement \n")
-        print(">> New evolution will be started")
+
 
 
 
