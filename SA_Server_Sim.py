@@ -2,22 +2,30 @@ from SA_Evolution import *
 
 audicon = audio_condition_request()
 number_of_generations = generation_request()
-print("Run Evolution for {} Generations in Sound Condition={}".format(number_of_generations, audicon))
 
 sa = SA_Evolution(auditory_condition=audicon)
+
+filename = filename_request()
+
+if isinstance(filename, str):
+    sa.reimplement_population(filename=filename, Plot=False)
+    print("...")
+    print("File is successfully implemented")
+
+if audicon != sa.condition:
+    print("...")
+    print("Note: Initial Sound Condition differs from the one in implemented file!")
+    print("...")
+
+print("Run Evolution for {} Generations in Sound Condition={}".format(number_of_generations, sa.condition))
 sa.run_evolution(generations=number_of_generations)
 
 
-
-## Test
-# sa = SA_Evolution(pop_size=5, auditory_condition=False)
-# print("Sound_Cond:", sa.condition,", popsize:", sa.pop_size,", Gen:", sa.generation)
-# sa.reimplement_population(filename="Gen1-2.popsize111.mut0.02.sound_cond=False.JA.single(Fitness9.99)", Plot=True)
-# print("Sound_Cond:", sa.condition,", popsize:", sa.pop_size,", Gen:", sa.generation)
-# sa.print_best(5)
-
-# sim = SA_Simulation(False)
-# sim.setup(trial_speed="slow")
-# print("Simlength:", sim.simlength)
-# sim_table = sim.run_and_plot() # sim_table contains: fitness[0], trajectories[1], keypress[2] and sounds[3](if applicable)
-
+# # Reimplement and Plot
+# sa2 = SA_Evolution(auditory_condition=False)
+# print("Sound_Cond:", sa2.condition,", popsize:", sa2.pop_size,", Gen:", sa2.generation)
+# filename = filename_request()
+# sa2.reimplement_population(filename=filename, Plot=True)
+# print("Sound_Cond:", sa2.condition,", popsize:", sa2.pop_size,", Gen:", sa2.generation)
+# sa2.print_best(5)
+# # print(np.round(sa2.pop_list[0:50,0:2],2))

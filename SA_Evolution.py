@@ -355,4 +355,4 @@ class SA_Evolution(SA_Simulation):
 
     def print_best(self, n=5):
 
-        print(self.pop_list[0:n,0:3])
+        print(np.round(self.pop_list[0:n,0:4],3))

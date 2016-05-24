@@ -248,3 +248,46 @@ def generation_request():
         raise ValueError("Evolution must run for at least 2 Generations")
 
     return number_of_generations
+
+def filename_request():
+    found = 0
+    for file in os.listdir():
+        if file.find("sound") != -1:
+            found += 1
+            filename = file[file.find("Gen"):]
+
+    if found > 3:
+        print("Not clear what file is to be implemented")
+        filename_ext = input("Please enter the right filename:")
+        print("Try to implement following file:\n {}".format(filename_ext))
+        return filename_ext
+
+    elif found > 0:
+        count = 0
+        while count != 3:
+            file_request = input("{} \n Do you want to implement this file ((y)es, (n)o:".format(filename))
+
+            if file_request in ["y", "Y", "yes", "Yes", "YES"]:
+                print("File will be implemented")
+                return filename
+
+            elif file_request in ["n", "N", "no", "No", "NO"]:
+                filename_ext = input("Please enter the right filename:")
+                print("Try to implement following file:\n {}".format(filename_ext))
+                return filename_ext
+
+            else:
+                print("Input is not understood.\n"
+                      "Type either 'yes' or 'no'.\n"
+                      "{} more attempt(s)".format(2 - count))
+                count += 1
+
+        raise ValueError("Function stopped, input is not understood")
+
+    else: # found == 0
+        print("There is no file to implement \n")
+        print(">> New evolution will be started")
+
+
+
+
