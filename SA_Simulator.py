@@ -4,9 +4,8 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 
-
 class SA_Simulation:
-# Joint Action Simulation:
+# Joint Action Simulation (Single Task):
 
     def __init__(self, auditory_condition, simlength=2789):
         self.knoblin = Knoblin()
@@ -16,7 +15,12 @@ class SA_Simulation:
         self.condition = auditory_condition
         self.runs = 0               # to count how many runs the agent made
 
+
     def setup(self, trial_speed):
+        '''
+        Setup the experiment: Tracker, target, environment.
+        Prepares for different trial speeds.
+        '''
         self.environment = Jordan(trial_speed=trial_speed, auditory_condition=self.condition)
 
         if self.environment.trial == "slow" and self.simlength != 3635:

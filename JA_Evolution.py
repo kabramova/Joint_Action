@@ -1,25 +1,27 @@
-# TODO: >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-from SA_Simulator import *
+from JA_Simulator import *
 import pickle
 
-class SA_Evolution(SA_Simulation):
+class SA_Evolution(JA_Simulation):
 
     def __init__(self, auditory_condition, pop_size=111):
 
         super(self.__class__, self).__init__(auditory_condition, simlength=2789) # self.knoblin, self.simlength, self.condition
 
-        self.genome = self.create_genome(Knoblin=self.knoblin)
+        self.genome_L = self.create_genome(Knoblin=self.knoblin_L)
+        self.genome_R = self.create_genome(Knoblin=self.knoblin_R)
 
         self.generation = 0
 
         self.pop_size = pop_size
 
-        self.pop_list = self.__create_pop_list(pop_size)
+        self.pop_list_L = self.__create_pop_list(pop_size, "left")
+        self.pop_list_R = self.__create_pop_list(pop_size, "right")
 
+        # TODO: Possible L-R distinction, here as well:
         self.filename = ""
 
 
-    def __create_pop_list(self, pop_size):
+    def __create_pop_list(self, pop_size, side):
         '''
          :param pop_size: Amount of individuals per Population
          :return: list of agents
@@ -28,11 +30,15 @@ class SA_Evolution(SA_Simulation):
         poplist = np.zeros((pop_size, np.size(self.genome) + 2))
 
         for i in range(pop_size):
-            poplist[i, 0] = i + 1                                   # enumerate the list
-            # poplist[i, 1]                                         = fitness, is initially zero
-            poplist[i, 2:] = self.genome.transpose()                # the current genome will be stored
-            self.knoblin = Knoblin()                                # Create new agent
-            self.genome = self.create_genome(Knoblin=self.knoblin)  # ... and its genome
+            poplist[i, 0] = i + 1                                           # enumerate the list
+            # poplist[i, 1]                                                 = fitness, is initially zero
+            poplist[i, 2:] = self.genome_L.transpose() if side=="left" else self.genome_R.transpose()  # the current genome will be stored
+            if side == "left":
+                self.knoblin_L = Knoblin()                                  # Create new agent
+                self.genome_L = self.create_genome(Knoblin=self.knoblin_L)  # ... and its genome
+            else: # its a bit redundant, but for the readability and comprehensibility
+                self.knoblin_R = Knoblin()
+                self.genome_R = self.create_genome(Knoblin=self.knoblin_R)
 
         return poplist
 
@@ -49,16 +55,18 @@ class SA_Evolution(SA_Simulation):
         return np.concatenate((A, G, T, X, C, U))
 
 
-    def implement_genome(self, genome_string):
+    def implement_genome(self, genome_string, side):
 
-        assert genome_string.size == self.genome.size, "Genome has not the right size"
+        assert genome_string.size == self.genome_L.size and genome_string.size == self.genome_R.size, "Genome has not the right size"
 
-        A = self.knoblin.W.size
-        G = self.knoblin.WM.size
-        T = self.knoblin.WV.size
-        X = self.knoblin.WA.size
-        C = self.knoblin.Theta.size
-        U = self.knoblin.Tau.size
+        knoblin = self.knoblin_L if side == "left" else self.knoblin_R
+
+        A = knoblin.W.size
+        G = knoblin.WM.size
+        T = knoblin.WV.size
+        X = knoblin.WA.size
+        C = knoblin.Theta.size
+        U = knoblin.Tau.size
 
         W       = genome_string[:A]
         WM      = genome_string[A:A + G]
@@ -67,18 +75,22 @@ class SA_Evolution(SA_Simulation):
         Theta   = genome_string[A + G + T + X:A + G + T + X + C]
         Tau     = genome_string[A + G + T + X + C:A + G + T + X + C + U]
 
-        self.knoblin.W = np.reshape(W, (self.knoblin.N, self.knoblin.N))
-        self.knoblin.WM = WM
-        self.knoblin.WV = WV
-        self.knoblin.WA = WA
-        self.knoblin.Theta = Theta
-        self.knoblin.Tau = Tau
+        # TODO: check whether the implementation works without "self."knoblin_L/R
+        knoblin.W = np.reshape(W, (knoblin.N, knoblin.N))
+        knoblin.WM = WM
+        knoblin.WV = WV
+        knoblin.WA = WA
+        knoblin.Theta = Theta
+        knoblin.Tau = Tau
 
         # Update the self.genome:
         if not isinstance(genome_string, np.matrix):
             genome_string = np.matrix(genome_string).transpose()
 
-        self.genome = genome_string
+        if side == "left":
+            self.genome_L = genome_string
+        else:  # side == "right"
+            self.genome_R = genome_string
 
 
     def run_trials(self):
@@ -104,11 +116,17 @@ class SA_Evolution(SA_Simulation):
 
     def _run_population(self):
 
-        for i, string in enumerate(self.pop_list):
-            if string[1] == 0:  # run only if fitness is no evaluated yet
-                genome = string[2:]
-                self.knoblin = Knoblin()
-                self.implement_genome(genome_string=genome)
+        for i, string_L in enumerate(self.pop_list_L):
+
+            string_R = self.pop_list_R[i,:]
+
+            if string_L[1] == 0 or string_R == 0:  # run only if fitness is no evaluated yet
+                genome_L = string_L[2:]
+                genome_R = string_R[2:]
+                self.knoblin_L = Knoblin()
+                self.knoblin_R = Knoblin()
+                self.implement_genome(genome_string=genome_L, side="left")
+                self.implement_genome(genome_string=genome_R, side="right")
 
                 # Run all trials an save fitness in pop_list:
                 ticker = 10
@@ -116,21 +134,27 @@ class SA_Evolution(SA_Simulation):
                     fill = i+ticker if i < self.pop_size-ticker else self.pop_size
                     print("Generation {}: Run trials for Agents {}-{}".format(self.generation, i-1, fill-2))
 
-                self.pop_list[i, 1] = self.run_trials()
+                fitness = self.run_trials()
+                self.pop_list_L[i, 1] = fitness
+                self.pop_list_R[i, 1] = fitness
 
-        self.pop_list = copy.copy(mat_sort(self.pop_list, index=1)) # sorts the pop_list, best agents on top
+        self.pop_list_L = copy.copy(mat_sort(self.pop_list_L, index=1))     # sorts the pop_list, best agents on top
+        self.pop_list_R = copy.copy(mat_sort(self.pop_list_R, index=1))     # sorts the pop_list, best agents on top
 
 
     def gen_code(self):
-        gens = OrderedDict([("A", self.knoblin.W.size),
-                            ("G", self.knoblin.WM.size),
-                            ("T", self.knoblin.WV.size),
-                            ("X", self.knoblin.WA.size),
-                            ("C", self.knoblin.Theta.size),
-                            ("U", self.knoblin.Tau.size)])
+
+        assert self.genome_L.size == self.genome_R.size, "Genomes of left and right Agent don't have the same size!"
+
+        gens = OrderedDict([("A", self.knoblin_L.W.size),       # could be also self.knoblin_R
+                            ("G", self.knoblin_L.WM.size),
+                            ("T", self.knoblin_L.WV.size),
+                            ("X", self.knoblin_L.WA.size),
+                            ("C", self.knoblin_L.Theta.size),
+                            ("U", self.knoblin_L.Tau.size)])
         return gens
 
-
+    # TODO: >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     def _reproduction(self, mutation_var=.02):
         '''
         Combination of asexual (fitness proportionate selection (fps)) sexual reproduction
