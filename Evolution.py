@@ -336,6 +336,8 @@ class Evolution(Simulate):
 
         for i in range(Generations):
 
+            start_timer = datetime.datetime.now().replace(microsecond=0)
+
             self._reproduction(mutation_var, fps=fit_prop_sel)
 
             self._simulate_next_population(position_agent = position_agent,
@@ -350,6 +352,13 @@ class Evolution(Simulate):
             Fitness_progress[i,0]  = self.Generation
 
             print(Fitness_progress[i,1:], "Generation", self.Generation)
+
+            # Estimate Duration of Evolution
+            end_timer = datetime.datetime.now().replace(microsecond=0)
+            duration = end_timer - start_timer
+            rest_duration = duration * (Generations - (i + 1))
+            print("Time passed to evolve Generation {}: {} [h:m:s]".format(i, duration))
+            print("Estimated time to evolve Generation {}-{}: {} [h:m:s]".format(i + 1, Generations, rest_duration))
 
 
         # Save in external file:

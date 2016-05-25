@@ -39,6 +39,7 @@ def vec_angle(v1, v2):
     '''
     return np.arccos( np.dot(v1, v2) / (np.linalg.norm(v1)*np.linalg.norm(v2)) )
 
+
 def vec_angle2(v1,v2):
     '''
     Computes the minimal signed(!) angle between the two input vectors.
@@ -100,7 +101,6 @@ def normalize(array):
         print("Input = zero.array >> no Normalization")
     else:
         return (array - np.min(array)) / (np.max(array) - np.min(array))
-
 
 
 ## Formulas for JointAction
@@ -168,34 +168,7 @@ def angle_velo2(velocity_deg = None, velocity_cm = None):
         return vel_cm
 
 
-def save_request():
-    '''
-    Ask whether results should be saved in external file
-    take output of save_request() as follows:
-    save = save_request()
-    :return True or False
-    '''
-    count = 0
-    while count != 3:
-        Input = input("Do you want to save the final population ('(y)es'/'(n)o'):")
-
-        if Input in ["y", "Y", "yes", "Yes", "YES"]:
-            print("Saving final population in external file")
-            return True
-
-        elif Input in ["n", "N", "no", "No", "NO"]:
-            print("Final population won't be saved")
-            return False
-
-        else:
-            print("Input is not understood.\n"
-                  "Type either 'yes' or 'no'.\n"
-                  "{} more attempt(s)".format(2 - count))
-            count += 1
-
-    raise ValueError("Function stopped")
-
-
+# Requests:
 def save_request():
     '''
     Ask whether results should be saved in external file
@@ -239,6 +212,7 @@ def audio_condition_request():
 
     return condition
 
+
 def generation_request():
 
     number_of_generations = input("How many Generations to run (int):")
@@ -248,6 +222,7 @@ def generation_request():
         raise ValueError("Evolution must run for at least 2 Generations")
 
     return number_of_generations
+
 
 def filename_request():
     found = 0
@@ -282,6 +257,52 @@ def filename_request():
     if found > 0:
         print("No file was selected \n".format(found))
     print(">> New evolution will be started")
+
+
+# Timers:
+def function_timer(function):
+    ''' Time and execute input-function'''
+    start_timer = datetime.datetime.now()
+
+    output = function()  # == function()
+
+    # Estimate Duration of Evolution
+    end_timer = datetime.datetime.now()
+    duration = end_timer - start_timer
+    print("Processing time of {}: {} [h:m:s:ms]".format(function.__name__, duration))
+
+    return output
+
+
+# Alternative:
+from functools import wraps
+
+def function_timed(function):
+    '''
+    This allows to define new function with the timer-wrapper
+    Write:
+        @function_timed
+        def foo():
+            print("Any Function")
+    And try:
+        foo()
+    :Source: http://stackoverflow.com/questions/2245161/how-to-measure-execution-time-of-functions-automatically-in-python
+    '''
+
+    @wraps(function)
+    def wrapper(*args, **kwds):
+        start_timer = datetime.datetime.now()
+
+        output = function(*args, **kwds)  # == function()
+
+        duration = datetime.datetime.now() - start_timer
+
+        print("Processing time of {}: {} [h:m:s:ms]".format(function.__name__, duration))
+
+        return output
+
+    return wrapper
+
 
 
 
