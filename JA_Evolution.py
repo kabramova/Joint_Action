@@ -239,8 +239,7 @@ class JA_Evolution(JA_Simulation):
         # Algorithm for fitness proportionate selection:
         # (Source: http://stackoverflow.com/questions/298301/roulette-wheel-selection-algorithm/320788#320788)
 
-
-        assert self.pop_list_L[:,1]==self.pop_list_R[:,1], "Fitness of each partner must be the same"
+        assert np.all(np.array([self.pop_list_L[:, 1] == self.pop_list_R[:, 1]]) == True), "Fitness of each partner must be the same"
         fitness = copy.copy(self.pop_list_L[:, 1])  # == self.pop_list_R[:, 1]
         fitness = 1 - normalize(fitness)  # sign is correct, apparently
 
@@ -318,8 +317,8 @@ class JA_Evolution(JA_Simulation):
         np.random.shuffle(new_population_L[n_half_fit_family:n_half_rand_fitfamily, 0]) # shuffle the specific section
         np.random.shuffle(new_population_R[n_half_fit_family:n_half_rand_fitfamily, 0])
         print(new_population_L[n_half_fit_family:n_half_rand_fitfamily, 0:4])
-        new_population_L = new_population_L[np.argsort([new_population_L[:, 0]])]   # sort poplist according to shuffling
-        new_population_R = new_population_R[np.argsort([new_population_R[:, 0]])]
+        new_population_L = new_population_L[np.argsort(new_population_L[:, 0])]   # sort poplist according to shuffling
+        new_population_R = new_population_R[np.argsort(new_population_R[:, 0])]
         print(new_population_L[n_half_fit_family:n_half_rand_fitfamily, 0:4])
 
         # Reset enumeration and fitness (except first two agents)

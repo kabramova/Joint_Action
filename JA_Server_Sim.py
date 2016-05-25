@@ -31,3 +31,7 @@ ja.run_evolution(generations=number_of_generations)
 # print("Sound_Cond:", sa2.condition,", popsize:", sa2.pop_size,", Gen:", sa2.generation)
 # sa2.print_best(5)
 # # print(np.round(sa2.pop_list[0:50,0:2],2))
+
+
+
+
