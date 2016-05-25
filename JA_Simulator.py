@@ -44,7 +44,7 @@ class JA_Simulation:
         env_range = self.environment.env_range
 
         global h
-        h = self.knoblin.h
+        h = self.knoblin_L.h # == self.knoblin_R.h
 
 
     def reset_neural_system(self):

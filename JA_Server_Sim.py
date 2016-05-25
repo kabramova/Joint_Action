@@ -5,22 +5,22 @@ from JA_Evolution import *
 audicon = audio_condition_request()
 number_of_generations = generation_request()
 
-sa = SA_Evolution(auditory_condition=audicon)
+ja = JA_Evolution(auditory_condition=audicon, pop_size=17)
 
 filename = filename_request()
 
 if isinstance(filename, str):
-    sa.reimplement_population(filename=filename, Plot=False)
+    ja.reimplement_population(filename=filename, Plot=False)
     print("...")
     print("File is successfully implemented")
 
-if audicon != sa.condition:
+if audicon != ja.condition:
     print("...")
     print("Note: Initial Sound Condition differs from the one in implemented file!")
     print("...")
 
-print("Run Evolution for {} Generations in Sound Condition={}".format(number_of_generations, sa.condition))
-sa.run_evolution(generations=number_of_generations)
+print("Run Evolution for {} Generations in Sound Condition={}".format(number_of_generations, ja.condition))
+ja.run_evolution(generations=number_of_generations)
 
 
 # # Reimplement and Plot

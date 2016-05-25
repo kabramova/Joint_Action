@@ -1,7 +1,7 @@
 from JA_Simulator import *
 import pickle
 
-class SA_Evolution(JA_Simulation):
+class JA_Evolution(JA_Simulation):
 
     def __init__(self, auditory_condition, pop_size=111):
 
@@ -27,7 +27,7 @@ class SA_Evolution(JA_Simulation):
          :return: list of agents
          '''
 
-        poplist = np.zeros((pop_size, np.size(self.genome) + 2))
+        poplist = np.zeros((pop_size, self.genome_R.size + 2))  # self.genome_R.size == self.genome_L.size
 
         for i in range(pop_size):
             poplist[i, 0] = i + 1                                           # enumerate the list
@@ -75,7 +75,6 @@ class SA_Evolution(JA_Simulation):
         Theta   = genome_string[A + G + T + X:A + G + T + X + C]
         Tau     = genome_string[A + G + T + X + C:A + G + T + X + C + U]
 
-        # TODO: check whether the implementation works without "self."knoblin_L/R
         knoblin.W = np.reshape(W, (knoblin.N, knoblin.N))
         knoblin.WM = WM
         knoblin.WV = WV
@@ -116,11 +115,13 @@ class SA_Evolution(JA_Simulation):
 
     def _run_population(self):
 
+        first_runs = False
+
         for i, string_L in enumerate(self.pop_list_L):
 
             string_R = self.pop_list_R[i,:]
 
-            if string_L[1] == 0 or string_R == 0:  # run only if fitness is no evaluated yet
+            if string_L[1] == 0 or string_R[1] == 0:  # run only if fitness is no evaluated yet
                 genome_L = string_L[2:]
                 genome_R = string_R[2:]
                 self.knoblin_L = Knoblin()
@@ -130,9 +131,16 @@ class SA_Evolution(JA_Simulation):
 
                 # Run all trials an save fitness in pop_list:
                 ticker = 10
-                if i%ticker == 2:  # ignores the two first spots in pop_list, since they run already.
-                    fill = i+ticker if i < self.pop_size-ticker else self.pop_size
-                    print("Generation {}: Run trials for Agents {}-{}".format(self.generation, i-1, fill-2))
+                if i%ticker == 0 or i < 10:  # this way because it ignores the two first spots in pop_list, since they run already.
+                    if i%ticker == 0:
+                        fill = i+ticker if i <= self.pop_size-ticker else self.pop_size
+                        first_runs = True
+                        print("Generation {}: Run trials for Agents {}-{}".format(self.generation, i + 1, fill))
+                    if i < 10 and first_runs == False:
+                        fill = ticker
+                        first_runs = True
+                        print("Fitness of first agents were already evaluated")
+                        print("Generation {}: Run trials for Agents {}-{}".format(self.generation, i + 1, fill))
 
                 fitness = self.run_trials()
                 self.pop_list_L[i, 1] = fitness
@@ -379,5 +387,8 @@ class SA_Evolution(JA_Simulation):
 
 
     def print_best(self, n=5):
+        print(">> Left Agent(s):")
+        print(self.pop_list_L[0:n,0:3], "\n")
+        print(">> Right Agent(s):")
+        print(self.pop_list_R[0:n,0:3])
 
-        print(self.pop_list[0:n,0:3])

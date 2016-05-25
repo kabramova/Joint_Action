@@ -103,6 +103,8 @@ class SA_Evolution(SA_Simulation):
 
     def _run_population(self):
 
+        first_runs = False
+
         for i, string in enumerate(self.pop_list):
             if string[1] == 0:  # run only if fitness is no evaluated yet
                 genome = string[2:]
@@ -111,9 +113,17 @@ class SA_Evolution(SA_Simulation):
 
                 # Run all trials an save fitness in pop_list:
                 ticker = 10
-                if i%ticker == 2:  # ignores the two first spots in pop_list, since they run already.
-                    fill = i+ticker if i < self.pop_size-ticker else self.pop_size
-                    print("Generation {}: Run trials for Agents {}-{}".format(self.generation, i-1, fill-2))
+                if i % ticker == 0 or i < 10:  # this way because it ignores the two first spots in pop_list, since they run already.
+                    if i % ticker == 0:
+                        fill = i + ticker if i <= self.pop_size - ticker else self.pop_size
+                        first_runs = True
+                        print("Generation {}: Run trials for Agents {}-{}".format(self.generation, i + 1, fill))
+                    if i < 10 and first_runs == False:
+                        fill = ticker
+                        first_runs = True
+                        print("Fitness of first agents were already evaluated")
+                        print("Generation {}: Run trials for Agents {}-{}".format(self.generation, i + 1, fill))
+
 
                 self.pop_list[i, 1] = self.run_trials()
 
@@ -354,5 +364,5 @@ class SA_Evolution(SA_Simulation):
 
 
     def print_best(self, n=5):
-
+        print(">> {} best agent(s):".format(n))
         print(np.round(self.pop_list[0:n,0:4],3))
