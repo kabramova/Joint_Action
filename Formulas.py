@@ -224,11 +224,13 @@ def generation_request():
     return number_of_generations
 
 
-def filename_request():
+def filename_request(single_or_joint):
     found = 0
 
+    assert single_or_joint in ["single","joint"], 'Wrong input: Either "single" or "joint"'
+
     for file in os.listdir():
-        if file.find("sound") != -1:
+        if file.find("sound") != -1 and file.find(single_or_joint) != -1:
             count = 0
             found += 1
             No = False

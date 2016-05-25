@@ -180,13 +180,13 @@ class JA_Simulation:
         ## PLOT and save current state of the system:
         # Create Folder for images:
         time = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-        os.makedirs("./Animation/{}.Animation.Sound_{}.{}_trial".format(time,self.condition,trial))
+        os.makedirs("./Animation/{}.Animation.Sound_{}.{}_trial".format(time, self.condition, trial))
 
         ticker = 10  # just plot every 10th (x-th) state.
         counter_img = 0
         counter_sec = 0
 
-        for i in np.arange(0,self.simlength,ticker):
+        for i in np.arange(0,self.simlength, ticker):
 
         # For Fast Trials: with a simlength of 2789 the resulting gif-animation is approx. 11sec long (25frames/sec)
         # & for Slow Trials: with a simlength of 3635.

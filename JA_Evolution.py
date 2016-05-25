@@ -17,7 +17,6 @@ class JA_Evolution(JA_Simulation):
         self.pop_list_L = self.__create_pop_list(pop_size, "left")
         self.pop_list_R = self.__create_pop_list(pop_size, "right")
 
-        # TODO: Possible L-R distinction, here as well:
         self.filename = ""
 
 
@@ -135,12 +134,12 @@ class JA_Evolution(JA_Simulation):
                     if i%ticker == 0:
                         fill = i+ticker if i <= self.pop_size-ticker else self.pop_size
                         first_runs = True
-                        print("Generation {}: Run trials for Agents {}-{}".format(self.generation, i + 1, fill))
+                        print("Generation {}: Run trials for Agent Pair {}-{}".format(self.generation, i + 1, fill))
                     if i < 10 and first_runs == False:
                         fill = ticker
                         first_runs = True
-                        print("Fitness of first agents were already evaluated")
-                        print("Generation {}: Run trials for Agents {}-{}".format(self.generation, i + 1, fill))
+                        print("Fitness of first agent pairs was already evaluated")
+                        print("Generation {}: Run trials for Agent Pair {}-{}".format(self.generation, i + 1, fill))
 
                 fitness = self.run_trials()
                 self.pop_list_L[i, 1] = fitness
@@ -312,14 +311,13 @@ class JA_Evolution(JA_Simulation):
 
         new_population_L[:, 0] = range(1, self.pop_size + 1) # enumerate list (1 to ...)
         new_population_R[:, 0] = range(1, self.pop_size + 1)
-        #TODO: 3 following print()s are here for testing
-        print(new_population_L[n_half_fit_family:n_half_rand_fitfamily, 0:4])
+
         np.random.shuffle(new_population_L[n_half_fit_family:n_half_rand_fitfamily, 0]) # shuffle the specific section
         np.random.shuffle(new_population_R[n_half_fit_family:n_half_rand_fitfamily, 0])
-        print(new_population_L[n_half_fit_family:n_half_rand_fitfamily, 0:4])
+
         new_population_L = new_population_L[np.argsort(new_population_L[:, 0])]   # sort poplist according to shuffling
         new_population_R = new_population_R[np.argsort(new_population_R[:, 0])]
-        print(new_population_L[n_half_fit_family:n_half_rand_fitfamily, 0:4])
+
 
         # Reset enumeration and fitness (except first two agents)
         new_population_L[:, 0] = range(1, self.pop_size+1)
@@ -329,7 +327,6 @@ class JA_Evolution(JA_Simulation):
 
         self.pop_list_L = new_population_L
         self.pop_list_R = new_population_R
-
 
 
     def run_evolution(self, generations, mutation_var=.02):
@@ -367,21 +364,21 @@ class JA_Evolution(JA_Simulation):
             print("Time passed to evolve Generation {}: {} [h:m:s]".format(i, duration))
             print("Estimated time to evolve Generation {}-{}: {} [h:m:s]".format(i + 1, generations, rest_duration))
 
-        # TODO: >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         # Save in external file:
         if save:
-            self.filename = "Gen{}-{}.popsize{}.mut{}.sound_cond={}.JA.single(Fitness{})".format(self.generation - generations + 1,
+            self.filename = "Gen{}-{}.popsize{}.mut{}.sound_cond={}.JA.joint(Fitness{})".format(self.generation - generations + 1,
                                                                                                  self.generation,
                                                                                                  self.pop_size,
                                                                                                  mutation_var,
                                                                                                  self.condition,
-                                                                                                 np.round(self.pop_list[0,1],2))
+                                                                                                 np.round(self.pop_list_L[0,1],2)) # == pop_list_L[0,1]
 
-            pickle.dump(self.pop_list, open('Poplist.{}'.format(self.filename), 'wb'))
+            pickle.dump(self.pop_list_L, open('Poplist_L.{}'.format(self.filename), 'wb'))
+            pickle.dump(self.pop_list_R, open('Poplist_R.{}'.format(self.filename), 'wb'))
             pickle.dump(np.round(Fitness_progress, 2), open('Fitness_progress.{}'.format(self.filename), 'wb'))
 
-            print('Evolution terminated. pop_list saved \n'
-                  '(Filename: "Poplist.{}")'.format(self.filename))
+            print('Evolution terminated. pop_lists saved \n'
+                  '(Filename: "Poplist_...{}")'.format(self.filename))
         else:
             print('Evolution terminated. \n'
                   '(Caution: pop_list is not saved in external file)')
@@ -389,25 +386,26 @@ class JA_Evolution(JA_Simulation):
 
     def reimplement_population(self, filename=None, Plot=False):
 
+        assert filename.find("joint") != -1, "Wrong file! The file needs to be from the JOINT condition"
+
         if filename is None:
             if self.filename == "":
                 raise ValueError("No file to reimplement")
             else:
-                print("Reimplements its own pop_list file")
+                print("Reimplements its own pop_list files")
         else:
             self.filename = filename
 
         # Reimplement: pop_list, condition, Generation
-        self.pop_list = pickle.load(open('Poplist.{}'.format(self.filename), 'rb'))
-        self.pop_size = self.pop_list.shape[0]
+        self.pop_list_L = pickle.load(open('Poplist_L.{}'.format(self.filename), 'rb'))
+        self.pop_list_R = pickle.load(open('Poplist_R.{}'.format(self.filename), 'rb'))
+        self.pop_size = self.pop_list_L.shape[0] # == self.pop_list_R.shape[0]
 
         assert self.filename.find("False") != -1 or self.filename.find("True") != -1, "Condition is unknown (please add to filename (if known)"
         self.condition = False if self.filename.find("False") != -1 and self.filename.find("True") == -1 else True
 
         fitness_progress = pickle.load(open('Fitness_progress.{}'.format(self.filename), 'rb'))
         self.generation = int(fitness_progress[-1, 0])
-
-        # self.setup(trial_speed="fast") # Trial speed is arbitrary. This command is needed to globally announce variables
 
         if Plot:
 
@@ -423,7 +421,7 @@ class JA_Evolution(JA_Simulation):
             # Here we plot the trajectory of the best agent:
             self.plot_pop_list()
             self.print_best(n=1)
-            print("Animation of best agent is saved")
+            print("Animation of best agent pair is saved")
 
 
     def plot_pop_list(self, n_knoblins=1):
@@ -436,8 +434,11 @@ class JA_Evolution(JA_Simulation):
 
                     self.target.velocity *= init_target_direction
 
-                    self.implement_genome(genome_string=self.pop_list[i,2:])
+                    self.implement_genome(genome_string=self.pop_list_L[i,2:], side="left")
+                    self.implement_genome(genome_string=self.pop_list_R[i,2:], side="right")
 
+                    direction = "left" if init_target_direction == - 1 else "right"
+                    print("Create Animation of {} trial and initial Target direction to the {}".format(trial_speed ,direction))
                     self.run_and_plot()  # include reset of the neural system
 
 

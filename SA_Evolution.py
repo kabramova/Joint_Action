@@ -320,6 +320,8 @@ class SA_Evolution(SA_Simulation):
 
     def reimplement_population(self, filename=None, Plot=False):
 
+        assert filename.find("single") != -1, "Wrong file! The file needs to be from the SINGLE condition"
+
         if filename is None:
             if self.filename == "":
                 raise ValueError("No file to reimplement")
@@ -369,6 +371,8 @@ class SA_Evolution(SA_Simulation):
 
                     self.implement_genome(genome_string=self.pop_list[i,2:])
 
+                    direction = "left" if init_target_direction == - 1 else "right"
+                    print("Create Animation of {} trial and initial Target direction to the {}".format(trial_speed, direction))
                     self.run_and_plot()  # include reset of the neural system
 
 
