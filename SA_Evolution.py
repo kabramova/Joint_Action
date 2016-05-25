@@ -297,7 +297,7 @@ class SA_Evolution(SA_Simulation):
             duration = end_timer - start_timer
             rest_duration = duration*(generations-(i+1))
             print("Time passed to evolve Generation {}: {} [h:m:s]".format(i, duration))
-            print("Estimated time to evolve Generation {}-{}: {} [h:m:s]".format(i+1,generations, rest_duration))
+            print("Estimated time to evolve the rest {} Generations: {} [h:m:s]".format(generations-(i+1), rest_duration))
 
         # Save in external file:
         if save:

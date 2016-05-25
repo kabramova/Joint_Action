@@ -358,7 +358,7 @@ class Evolution(Simulate):
             duration = end_timer - start_timer
             rest_duration = duration * (Generations - (i + 1))
             print("Time passed to evolve Generation {}: {} [h:m:s]".format(i, duration))
-            print("Estimated time to evolve Generation {}-{}: {} [h:m:s]".format(i + 1, Generations, rest_duration))
+            print("Estimated time to evolve the rest {} Generations: {} [h:m:s]".format(Generations-(i + 1), rest_duration))
 
 
         # Save in external file:
