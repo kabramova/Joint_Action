@@ -20,6 +20,7 @@ if audicon != ja.condition:
 print("Run Evolution for {} Generations in Sound Condition={}".format(number_of_generations, ja.condition))
 ja.run_evolution(generations=number_of_generations)
 
+#TODO: SAVE files in bin Evolution.py, SA_Evolution, JA_Evolution seperately.
 
 # # Reimplement and Plot
 # ja2 = JA_Evolution(auditory_condition=True)
