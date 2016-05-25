@@ -162,43 +162,51 @@ class JA_Evolution(JA_Simulation):
                             ("U", self.knoblin_L.Tau.size)])
         return gens
 
-    # TODO: >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
     def _reproduction(self, mutation_var=.02):
         '''
-        Combination of asexual (fitness proportionate selection (fps)) sexual reproduction
+        Combination of asexual (fitness proportionate selection (fps)) and sexual reproduction
             Minimal population size = 10
-            1) Takes the two best agents and copy them in new population.
-            2) Based on pop_size, creates 2-10 children (parents: two best agents)
+            1) Takes the two best agents (couple) and copy them in new population lists.
+            2) Based on pop_size, creates 2-10 children pairs (parents: two best pairs)
                 - Since step 1) we have a chance of genetic crossover of 100%.
                 - we use whole sections of the genome for the crossover (e.g. all W, or all Thetas)
                 - 20% of population size and max. 10
-            3) Fitness proportionate selection of 30% (+ 1/2 fill up)
-            4) Fill with randomly created agents, 30% (+ 1/2 fill up)
-            5) All but the first two best agents will fall under a mutation with a variance of .02 (default)
+            3) Fitness proportionate selection of 40% (+ 1/2 fill up)
+            4) Fill with randomly created agents, 20% (+ 1/2 fill up)
+            5) All but the first two best agent-pairs will fall under a mutation with a variance of .02 (default)
                 - time constant: τ (tau) in range [1, 10]
                 - weights: w (weights of interneurons, sensory and motor neurons) in range [-13, 13]
                 - bias: θ (theta) in range [-13, 13]
+            6) Shuffle half of the agents of step 3) and step4) in each list
+                - this creates new pairs with former good agents
+                - successful agents will have new partners.
+                - The partners will be either other successful agents from other list [step 3)] or random new partners [step 4)]
 
         :param mutation_var: 0.02 by default, turned out to be better.
         :return: self.pop_list = repopulated list (new_population)
         '''
 
+
         gens = self.gen_code()
 
-        new_population = np.zeros(self.pop_list.shape)
+        new_population_L = np.zeros(self.pop_list_L.shape)
+        new_population_R = np.zeros(self.pop_list_R.shape)
 
 
         # 1) Takes the two best agents and copy them in new population.
         n_parents = 2
-        new_population[0:n_parents,:] = copy.copy(self.pop_list[(0,1),:])
+        new_population_L[0:n_parents,:] = copy.copy(self.pop_list_L[(0,1),:])
+        new_population_R[0:n_parents,:] = copy.copy(self.pop_list_R[(0,1),:])
 
         # 2) Based on pop_size, creates 2-10 children (parents: two best agents)
         n_children = int(np.round(self.pop_size*0.2) if np.round(self.pop_size*0.2) < 10 else 10)
 
         for n in range(n_children):
-            new_population[2+n,2:] = copy.copy(self.pop_list[0,2:])
+            new_population_L[2+n,2:] = copy.copy(self.pop_list_L[0,2:])
+            new_population_R[2+n,2:] = copy.copy(self.pop_list_R[0,2:])
 
-            ## Crossover of a whole genome section of the second parent:
+            ## Crossover of a whole genome section of the second parent-pair:
             choice = np.random.choice([gen for gen in gens])  # Random choice of a section in genome
 
             index = 0  # indexing the section in whole genome string
@@ -208,29 +216,32 @@ class JA_Evolution(JA_Simulation):
                     break
             index += 2  # leaves the number and fitness of agent out (new_population[:,(0,1)])
 
-            new_population[2+n, (index - gens[choice]):index] = copy.copy(self.pop_list[1, (index - gens[choice]):index])  # crossover from second parent
+            # crossover from second parent pair
+            new_population_L[2+n, (index - gens[choice]):index] = copy.copy(self.pop_list_L[1, (index - gens[choice]):index])
+            new_population_R[2+n, (index - gens[choice]):index] = copy.copy(self.pop_list_R[1, (index - gens[choice]):index])
 
 
-        # 3) Fitness proportionate selection of 30% (+ 1/2 fill up)
+        # 3) Fitness proportionate selection of 40% (+ 1/2 fill up)
 
         # Define the number of agents via fps & via random instantiation
         n_family = n_parents + n_children
-        n_fps    = int(np.round(self.pop_size*0.3))
-        n_random = int(np.round(self.pop_size*0.3))
+        n_fps    = int(np.round(self.pop_size*0.4))
+        n_random = int(np.round(self.pop_size*0.2))
 
         if (self.pop_size - (n_family + n_fps + n_random))!= 0:
             rest = self.pop_size - (n_family + n_fps + n_random) # rest has to be filled up
-            if rest%2>0:  # if rest is odd
-                n_fps += int((rest+1)/2)
-                n_random += int((rest-1)/2)
-            else:         # if rest is even
-                n_fps += int(rest/2)
-                n_random += int(rest/2)
+
+            odd = 1 if rest%2>0 else 0  # if rest is odd(1) else even(0)
+            n_fps += int((rest+odd)/2)
+            n_random += int((rest-odd)/2)
+
 
         # Algorithm for fitness proportionate selection:
         # (Source: http://stackoverflow.com/questions/298301/roulette-wheel-selection-algorithm/320788#320788)
 
-        fitness = copy.copy(self.pop_list[:, 1])
+
+        assert self.pop_list_L[:,1]==self.pop_list_R[:,1], "Fitness of each partner must be the same"
+        fitness = copy.copy(self.pop_list_L[:, 1])  # == self.pop_list_R[:, 1]
         fitness = 1 - normalize(fitness)  # sign is correct, apparently
 
         total_fitness = sum(fitness)
@@ -240,22 +251,26 @@ class JA_Evolution(JA_Simulation):
 
         for n in range(n_family, n_family+n_fps):   # or range(n_family, self.pop_size-n_random-1)
             r = np.random.random()        # random sample of continuous uniform distribution [0,1)
-
-            for (i, individual) in enumerate(self.pop_list):
+            for (i, individual_L) in enumerate(self.pop_list_L):
+                individual_R = self.pop_list_R[i,:]
                 if r <= probs[i]:
-                    new_population[n, :] = individual
+                    new_population_L[n, :] = individual_L
+                    new_population_R[n, :] = individual_R
                     break
 
-
-        # 4) Fill with randomly created agents, 30% (+ 1/2 fill up)
+        # 4) Fill with randomly created agents, 20% (+ 1/2 fill up)
         n_fitfamily = n_family + n_fps
         for n in range(n_fitfamily, n_fitfamily+n_random):
-            self.knoblin = Knoblin()                                    # Create random new agent
-            self.genome = self.create_genome(Knoblin = self.knoblin)    # ... and its genome
-            new_population[n, 2:] = self.genome.transpose()
+            self.knoblin_L = Knoblin()                                      # Create random new agents
+            self.knoblin_R = Knoblin()
+            self.genome_L = self.create_genome(Knoblin = self.knoblin_L)    # ... and their genomes
+            self.genome_R = self.create_genome(Knoblin = self.knoblin_R)
+            new_population_L[n, 2:] = self.genome_L.transpose()
+            new_population_R[n, 2:] = self.genome_R.transpose()
 
 
-        # 5) All but the first two best agents will fall under a mutation with a variance of .02 (default)
+
+        # 5) All but the first two best agent pairs will fall under a mutation with a variance of .02 (default)
 
         AGTXC = sum(gens.values()) - gens["U"]  # sum of all gen-sizes, except Tau
         U = gens["U"]  # == self.knoblin.Tau.size
@@ -264,22 +279,37 @@ class JA_Evolution(JA_Simulation):
 
         for i in range(n_parents, n_fitfamily):  # we start with the 3rd agent and end with the agents via fps, rest is random, anyways.
 
-            mutation_AGTXC = np.random.normal(mu, sigma, AGTXC)
-            mutation_U = np.random.normal(mu, sigma, U)
+            mutation_AGTXC_L = np.random.normal(mu, sigma, AGTXC)
+            mutation_AGTXC_R = np.random.normal(mu, sigma, AGTXC)
+            mutation_U_L = np.random.normal(mu, sigma, U)
+            mutation_U_R = np.random.normal(mu, sigma, U)
 
-            AGTXC_mutated = new_population[i, 2: AGTXC+2] + mutation_AGTXC
 
-            AGTXC_mutated[AGTXC_mutated > self.knoblin.W_RANGE[1]] = self.knoblin.W_RANGE[1]  # Replace values beyond the range with max.range
-            AGTXC_mutated[AGTXC_mutated < self.knoblin.W_RANGE[0]] = self.knoblin.W_RANGE[0]  # ... or min.range (T_RANGE = W.RANGE =[-13, 13])
+            AGTXC_mutated_L = new_population_L[i, 2: AGTXC+2] + mutation_AGTXC_L
+            AGTXC_mutated_R = new_population_R[i, 2: AGTXC+2] + mutation_AGTXC_R
 
-            new_population[i, 2: AGTXC+2] = AGTXC_mutated
+            AGTXC_mutated_L[AGTXC_mutated_L > self.knoblin_L.W_RANGE[1]] = self.knoblin_L.W_RANGE[1]  # Replace values beyond the range with max.range
+            AGTXC_mutated_L[AGTXC_mutated_L < self.knoblin_L.W_RANGE[0]] = self.knoblin_L.W_RANGE[0]  # ... or min.range (T_RANGE = W.RANGE =[-13, 13])
+            AGTXC_mutated_R[AGTXC_mutated_R > self.knoblin_R.W_RANGE[1]] = self.knoblin_R.W_RANGE[1]
+            AGTXC_mutated_R[AGTXC_mutated_R < self.knoblin_R.W_RANGE[0]] = self.knoblin_R.W_RANGE[0]
 
-            U_mutated = new_population[i, (AGTXC + 2):] + mutation_U
+            new_population_L[i, 2: AGTXC+2] = AGTXC_mutated_L
+            new_population_R[i, 2: AGTXC+2] = AGTXC_mutated_R
 
-            U_mutated[U_mutated > self.knoblin.TAU_RANGE[1]] = self.knoblin.TAU_RANGE[1]  # Replace values beyond the range with max.range
-            U_mutated[U_mutated < self.knoblin.TAU_RANGE[0]] = self.knoblin.TAU_RANGE[0]  # ... or min.range (TAU_RANGE = [1, 10])
+            U_mutated_L = new_population_L[i, (AGTXC + 2):] + mutation_U_L
+            U_mutated_R = new_population_R[i, (AGTXC + 2):] + mutation_U_R
 
-            new_population[i, (AGTXC + 2):] = U_mutated
+            U_mutated_L[U_mutated_L > self.knoblin_L.TAU_RANGE[1]] = self.knoblin_L.TAU_RANGE[1]  # Replace values beyond the range with max.range
+            U_mutated_L[U_mutated_L < self.knoblin_L.TAU_RANGE[0]] = self.knoblin_L.TAU_RANGE[0]  # ... or min.range (TAU_RANGE = [1, 10])
+            U_mutated_R[U_mutated_R > self.knoblin_R.TAU_RANGE[1]] = self.knoblin_R.TAU_RANGE[1]  # Replace values beyond the range with max.range
+            U_mutated_R[U_mutated_R < self.knoblin_R.TAU_RANGE[0]] = self.knoblin_R.TAU_RANGE[0]  # ... or min.range (TAU_RANGE = [1, 10])
+
+            new_population_L[i, (AGTXC + 2):] = U_mutated_L
+            new_population_R[i, (AGTXC + 2):] = U_mutated_R
+
+        # TODO: >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        #TODO shuffle:
+        # 6) Shuffle all, besides of children and parents
 
 
         # Reset enumeration and fitness (except first two agents)

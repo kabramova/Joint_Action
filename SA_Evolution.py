@@ -142,7 +142,7 @@ class SA_Evolution(SA_Simulation):
 
     def _reproduction(self, mutation_var=.02):
         '''
-        Combination of asexual (fitness proportionate selection (fps)) sexual reproduction
+        Combination of asexual (fitness proportionate selection (fps)) and sexual reproduction
             Minimal population size = 10
             1) Takes the two best agents and copy them in new population.
             2) Based on pop_size, creates 2-10 children (parents: two best agents)
