@@ -526,3 +526,19 @@ finish2 = datetime.datetime.now()
 print(finish-start)
 print("")
 print(finish2-start2)
+
+
+
+# Sort Matrix according to a section of a column after shuffling:
+
+pop_list = np.reshape(np.arange(0,100),(10,10))
+pop_list[:,0] = range(1,11)
+pop_list[:,1] = range(1,11)
+print(pop_list)
+ss = 3
+se = 9
+print(pop_list[ss:se,:])
+
+np.random.shuffle(pop_list[ss:se,1])
+print(pop_list)
+pop_list[np.argsort([pop_list[:,1]])]

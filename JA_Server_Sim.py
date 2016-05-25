@@ -5,7 +5,7 @@ from JA_Evolution import *
 audicon = audio_condition_request()
 number_of_generations = generation_request()
 
-ja = JA_Evolution(auditory_condition=audicon, pop_size=17)
+ja = JA_Evolution(auditory_condition=audicon, pop_size=55)
 
 filename = filename_request()
 

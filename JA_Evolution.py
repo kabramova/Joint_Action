@@ -269,7 +269,6 @@ class JA_Evolution(JA_Simulation):
             new_population_R[n, 2:] = self.genome_R.transpose()
 
 
-
         # 5) All but the first two best agent pairs will fall under a mutation with a variance of .02 (default)
 
         AGTXC = sum(gens.values()) - gens["U"]  # sum of all gen-sizes, except Tau
@@ -307,16 +306,31 @@ class JA_Evolution(JA_Simulation):
             new_population_L[i, (AGTXC + 2):] = U_mutated_L
             new_population_R[i, (AGTXC + 2):] = U_mutated_R
 
-        # TODO: >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-        #TODO shuffle:
-        # 6) Shuffle all, besides of children and parents
 
+        # 6) Shuffle half of the agents of step 3) and step4) in each list
+        n_half_fit_family = n_family + int(np.round(n_fps/2))
+        n_half_rand_fitfamily =  n_fitfamily + int(np.round(n_random/2,2))
+
+        new_population_L[:, 0] = range(1, self.pop_size + 1) # enumerate list (1 to ...)
+        new_population_R[:, 0] = range(1, self.pop_size + 1)
+        #TODO: 3 following print()s are here for testing
+        print(new_population_L[n_half_fit_family:n_half_rand_fitfamily, 0:4])
+        np.random.shuffle(new_population_L[n_half_fit_family:n_half_rand_fitfamily, 0]) # shuffle the specific section
+        np.random.shuffle(new_population_R[n_half_fit_family:n_half_rand_fitfamily, 0])
+        print(new_population_L[n_half_fit_family:n_half_rand_fitfamily, 0:4])
+        new_population_L = new_population_L[np.argsort([new_population_L[:, 0]])]   # sort poplist according to shuffling
+        new_population_R = new_population_R[np.argsort([new_population_R[:, 0]])]
+        print(new_population_L[n_half_fit_family:n_half_rand_fitfamily, 0:4])
 
         # Reset enumeration and fitness (except first two agents)
-        new_population[:, 0] = range(1, self.pop_size+1)
-        new_population[n_parents:, 1] = 0
+        new_population_L[:, 0] = range(1, self.pop_size+1)
+        new_population_R[:, 0] = range(1, self.pop_size+1)
+        new_population_L[n_parents:, 1] = 0
+        new_population_R[n_parents:, 1] = 0
 
-        self.pop_list = new_population
+        self.pop_list_L = new_population_L
+        self.pop_list_R = new_population_R
+
 
 
     def run_evolution(self, generations, mutation_var=.02):
@@ -337,7 +351,9 @@ class JA_Evolution(JA_Simulation):
             # Evaluate fitness of each member
             self._run_population()
 
-            Fitness_progress[i, 1:] = np.round(self.pop_list[0:5, 1], 2) # saves fitness progress for the five best agents
+
+            # saves fitness progress for the five best agents
+            Fitness_progress[i, 1:] = np.round(self.pop_list_L[0:5, 1], 2)  # == self.pop_list_R
 
             self.generation += 1
 
@@ -352,6 +368,7 @@ class JA_Evolution(JA_Simulation):
             print("Time passed to evolve Generation {}: {} [h:m:s]".format(i, duration))
             print("Estimated time to evolve Generation {}-{}: {} [h:m:s]".format(i + 1, generations, rest_duration))
 
+        # TODO: >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         # Save in external file:
         if save:
             self.filename = "Gen{}-{}.popsize{}.mut{}.sound_cond={}.JA.single(Fitness{})".format(self.generation - generations + 1,
