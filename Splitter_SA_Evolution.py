@@ -403,7 +403,9 @@ class SA_Evolution(SA_Simulation):
                 print("Estimated time to evolve the rest {} Generations: {} [h:m:s]".format(generations-(i+1), rest_duration))
 
         # Remove last file out of dictionary
+        # TODO: this must be smoother:
         if os.path.isfile("Poplist_Splitter{}.Generation.{}.npy".format(n_cpu, self.generation-1)):
+            os.wait(5)
             os.remove("Poplist_Splitter{}.Generation.{}.npy".format(n_cpu, self.generation - 1))
 
         # Save in external file:
