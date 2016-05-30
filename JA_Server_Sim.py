@@ -22,6 +22,13 @@ ja.run_evolution(generations=number_of_generations)
 
 #TODO: SAVE files in bin Evolution.py, SA_Evolution, JA_Evolution seperately.
 
+#TODO: Analysis:
+# - Behaviour compare with paper
+# - analysis of strategy.
+# - analysis William Beer 2015 (p. 8)
+# - Attractor space
+# - Statistic for meaningful difference between sound off/on (run evolution n-times, for x-Generations)
+
 # # Reimplement and Plot
 # ja2 = JA_Evolution(auditory_condition=True)
 # print("Sound_Cond:", ja2.condition,", Popsize:", ja2.pop_size,", Gen:", ja2.generation)
@@ -31,7 +38,3 @@ ja.run_evolution(generations=number_of_generations)
 # ja2.print_best(5)
 # # print(np.round(ja2.pop_list_L[0:50,0:2],2))
 # # print(np.round(ja2.pop_list_R[0:50,0:2],2))
-
-
-
-
