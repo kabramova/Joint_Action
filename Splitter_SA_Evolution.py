@@ -405,7 +405,7 @@ class SA_Evolution(SA_Simulation):
         # Remove last file out of dictionary
         # TODO: this must be smoother:
         if os.path.isfile("Poplist_Splitter{}.Generation.{}.npy".format(n_cpu, self.generation-1)):
-            os.wait(5)
+            time.sleep(5)
             os.remove("Poplist_Splitter{}.Generation.{}.npy".format(n_cpu, self.generation - 1))
 
         # Save in external file:
