@@ -404,9 +404,25 @@ class SA_Evolution(SA_Simulation):
 
         # Remove last file out of dictionary
         # TODO: this must be smoother:
+
+        np.save("Splitter{}.DONE.npy".format(splitter), splitter)
+
+        if splitter == n_cpu:
+            counter = 0
+            while counter != n_cpu:
+                for split_count in range(1, n_cpu+1):
+                    if not os.path.isfile("Splitter{}.DONE.npy".format(split_count)):
+                        time.sleep(1)
+                    else:
+                        counter += 1
+
+        # TODO: remove after test, only keep os.remove
         if os.path.isfile("Poplist_Splitter{}.Generation.{}.npy".format(n_cpu, self.generation-1)):
-            time.sleep(5)
             os.remove("Poplist_Splitter{}.Generation.{}.npy".format(n_cpu, self.generation - 1))
+        else:
+            print("File does not exsist:")
+            print("Poplist_Splitter{}.Generation.{}.npy".format(n_cpu, self.generation - 1))
+
 
         # Save in external file:
         if save and (splitter == n_cpu or splitter == False):
