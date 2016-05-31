@@ -521,9 +521,9 @@ class JA_Evolution(JA_Simulation):
                                                                                                  self.condition,
                                                                                                  np.round(self.pop_list_L[0,1],2)) # == pop_list_L[0,1]
 
-            pickle.dump(self.pop_list_L, open('Poplist_L.{}'.format(self.filename), 'wb'))
-            pickle.dump(self.pop_list_R, open('Poplist_R.{}'.format(self.filename), 'wb'))
-            pickle.dump(np.round(Fitness_progress, 2), open('Fitness_progress.{}'.format(self.filename), 'wb'))
+            pickle.dump(self.pop_list_L, open('./poplists/Poplist_L.{}'.format(self.filename), 'wb'))
+            pickle.dump(self.pop_list_R, open('./poplists/Poplist_R.{}'.format(self.filename), 'wb'))
+            pickle.dump(np.round(Fitness_progress, 2), open('./poplists/Fitness_progress.{}'.format(self.filename), 'wb'))
 
             print('Evolution terminated. pop_lists saved \n'
                   '(Filename: "Poplist_...{}")'.format(self.filename))
@@ -547,14 +547,14 @@ class JA_Evolution(JA_Simulation):
             self.filename = filename
 
         # Reimplement: pop_list, condition, Generation
-        self.pop_list_L = pickle.load(open('Poplist_L.{}'.format(self.filename), 'rb'))
-        self.pop_list_R = pickle.load(open('Poplist_R.{}'.format(self.filename), 'rb'))
+        self.pop_list_L = pickle.load(open('./poplists/Poplist_L.{}'.format(self.filename), 'rb'))
+        self.pop_list_R = pickle.load(open('./poplists/Poplist_R.{}'.format(self.filename), 'rb'))
         self.pop_size = self.pop_list_L.shape[0] # == self.pop_list_R.shape[0]
 
         assert self.filename.find("False") != -1 or self.filename.find("True") != -1, "Condition is unknown (please add to filename (if known)"
         self.condition = False if self.filename.find("False") != -1 and self.filename.find("True") == -1 else True
 
-        fitness_progress = pickle.load(open('Fitness_progress.{}'.format(self.filename), 'rb'))
+        fitness_progress = pickle.load(open('./poplists/Fitness_progress.{}'.format(self.filename), 'rb'))
         self.generation = int(fitness_progress[-1, 0])
 
         if Plot:

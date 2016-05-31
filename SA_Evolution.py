@@ -440,8 +440,8 @@ class SA_Evolution(SA_Simulation):
                                                                                                  np.round(self.pop_list[0,1],2))
 
 
-            pickle.dump(self.pop_list, open('Poplist.{}'.format(self.filename), 'wb'))
-            pickle.dump(np.round(Fitness_progress, 2), open('Fitness_progress.{}'.format(self.filename), 'wb'))
+            pickle.dump(self.pop_list, open('./poplists/Poplist.{}'.format(self.filename), 'wb'))
+            pickle.dump(np.round(Fitness_progress, 2), open('./poplists/Fitness_progress.{}'.format(self.filename), 'wb'))
 
             print('Evolution terminated. pop_list saved \n'
                   '(Filename: "Poplist.{}")'.format(self.filename))
@@ -465,13 +465,13 @@ class SA_Evolution(SA_Simulation):
             self.filename = filename
 
         # Reimplement: pop_list, condition, Generation
-        self.pop_list = pickle.load(open('Poplist.{}'.format(self.filename), 'rb'))
+        self.pop_list = pickle.load(open('./poplists/Poplist.{}'.format(self.filename), 'rb'))
         self.pop_size = self.pop_list.shape[0]
 
         assert self.filename.find("False") != -1 or self.filename.find("True") != -1, "Condition is unknown (please add to filename (if known)"
         self.condition = False if self.filename.find("False") != -1 and self.filename.find("True") == -1 else True
 
-        fitness_progress = pickle.load(open('Fitness_progress.{}'.format(self.filename), 'rb'))
+        fitness_progress = pickle.load(open('./poplists/Fitness_progress.{}'.format(self.filename), 'rb'))
         self.generation = int(fitness_progress[-1, 0])
 
         # self.setup(trial_speed="fast") # Trial speed is arbitrary. This command is needed to globally announce variables

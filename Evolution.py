@@ -367,8 +367,8 @@ class Evolution(Simulate):
             self.filename = "sim{}.mut{}.Gen{}-{}_CT={}.fps={}".format(self.simlength, mutation_var, self.Generation - Generations + 1,
                                                                        self.Generation, complex_trials,fit_prop_sel)
 
-            pickle.dump(self.pop_list,                open('Poplist.{}'.format(self.filename), 'wb'))
-            pickle.dump(np.round(Fitness_progress,2), open('Fitness_progress.{}'.format(self.filename), 'wb'))
+            pickle.dump(self.pop_list,                open('./poplists/Poplist.{}'.format(self.filename), 'wb'))
+            pickle.dump(np.round(Fitness_progress,2), open('./poplists/Fitness_progress.{}'.format(self.filename), 'wb'))
 
             print('Evolution terminated. pop_list saved \n'
                   '(Filename: "Poplist.{}")'.format(self.filename))
@@ -386,11 +386,11 @@ class Evolution(Simulate):
 
 
         # Reimplement: pop_list, simlength, Generation
-        self.pop_list        = pickle.load(open('Poplist.{}'.format(Filename),          'rb'))
+        self.pop_list        = pickle.load(open('./poplists/Poplist.{}'.format(Filename),          'rb'))
 
         self.simlength       = int(Filename[Filename.find('m')+1 : Filename.find('.')])  # depends on filename
 
-        Fitness_progress     = pickle.load(open('Fitness_progress.{}'.format(Filename), 'rb'))
+        Fitness_progress     = pickle.load(open('./poplists/Fitness_progress.{}'.format(Filename), 'rb'))
         self.Generation      = int(Fitness_progress[-1,0])
 
 
