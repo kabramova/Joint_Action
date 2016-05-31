@@ -419,6 +419,8 @@ class SA_Evolution(SA_Simulation):
         # TODO: remove after test, only keep os.remove
         if os.path.isfile("Poplist_Splitter{}.Generation.{}.npy".format(n_cpu, self.generation-1)):
             os.remove("Poplist_Splitter{}.Generation.{}.npy".format(n_cpu, self.generation - 1))
+            for split_count in range(1,n_cpu+1):
+                os.remove("Splitter{}.DONE.npy".format(split_count))
         else:
             print("File does not exsist:")
             print("Poplist_Splitter{}.Generation.{}.npy".format(n_cpu, self.generation - 1))
