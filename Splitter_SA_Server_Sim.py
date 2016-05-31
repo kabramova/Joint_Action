@@ -15,7 +15,7 @@ if split == False:
     filename = filename_request("single")
 else:
     audicon = False             # if splitter is used, these values must be pre-given, here in python file
-    number_of_generations = 10
+    number_of_generations = 3
     filename = "Gen1501-2000.popsize111.mut0.02.sound_cond=False.JA.single(Fitness6.73)"
     print("Splitter {} started!".format(split))
 
