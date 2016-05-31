@@ -25,19 +25,22 @@ else: # if splitter is used, these values must be pre-given, here in python file
     if split == 6:
         print("Run Evolution for {} Generations in Sound Condition={}".format(number_of_generations, audicon))
 
+
 sa = SA_Evolution(auditory_condition=audicon)
 
-if isinstance(filename, str):
-    sa.reimplement_population(filename=filename, Plot=False)
-    print("...")
-    print("File is successfully implemented")
 
-if audicon != sa.condition:
-    print("...")
-    print("Note: Initial Sound Condition differs from the one in implemented file!")
-    print("...")
+if split == False or split == n_cpu:
+    if isinstance(filename, str):
+        sa.reimplement_population(filename=filename, Plot=False)
+        print("...")
+        print("File is successfully implemented")
 
-    print("Run Evolution for {} Generations in Sound Condition={}".format(number_of_generations, sa.condition))
+    if audicon != sa.condition:
+        print("...")
+        print("Note: Initial Sound Condition differs from the one in implemented file!")
+        print("...")
+
+        print("Run Evolution for {} Generations in Sound Condition={}".format(number_of_generations, sa.condition))
 
 
 # RUN:
