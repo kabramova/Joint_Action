@@ -22,8 +22,6 @@ else: # if splitter is used, these values must be pre-given, here in python file
     number_of_generations = 1000
     filename = "Gen1501-2000.popsize111.mut0.02.sound_cond=False.JA.single(Fitness6.73)"
     print("Splitter {} started!".format(split))
-    if split == 6:
-        print("Run Evolution for {} Generations in Sound Condition={}".format(number_of_generations, audicon))
 
 
 sa = SA_Evolution(auditory_condition=audicon)
@@ -40,7 +38,7 @@ if split == False or split == n_cpu:
         print("Note: Initial Sound Condition differs from the one in implemented file!")
         print("...")
 
-        print("Run Evolution for {} Generations in Sound Condition={}".format(number_of_generations, sa.condition))
+    print("Run Evolution for {} Generations in Sound Condition={}".format(number_of_generations, audicon))
 
 
 # RUN:
