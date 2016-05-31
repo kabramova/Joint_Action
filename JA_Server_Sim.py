@@ -6,6 +6,8 @@ from JA_Evolution import *
 
 #TODO: Solve: ..._request()'s issue with xargs
 
+#TODO: funzt nog niet
+
 n_cpu = 6
 
 if len(sys.argv) > 1 and sys.argv[1].isdigit():
@@ -28,12 +30,13 @@ else: # if splitter is used, these values must be pre-given, here in python file
 
 ja = JA_Evolution(auditory_condition=audicon, pop_size=55)
 
+if isinstance(filename, str):
+    ja.reimplement_population(filename=filename, Plot=False)
+
 
 if split == False or split == n_cpu:
-    if isinstance(filename, str):
-        ja.reimplement_population(filename=filename, Plot=False)
-        print("...")
-        print("File is successfully implemented")
+    print("...")
+    print("File is successfully implemented")
 
     if audicon != ja.condition:
         print("...")
