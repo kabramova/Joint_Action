@@ -20,7 +20,7 @@ if split == False:
 else: # if splitter is used, these values must be pre-given, here in python file
     audicon = False
     number_of_generations = 1000
-    filename = "Gen501-1000.popsize111.mut0.02.sound_cond=True.JA.single(Fitness6.45)"
+    filename = "Gen1501-2000.popsize111.mut0.02.sound_cond=False.JA.single(Fitness6.73)"
     print("Splitter {} started!".format(split))
     if split == 6:
         print("Run Evolution for {} Generations in Sound Condition={}".format(number_of_generations, audicon))
