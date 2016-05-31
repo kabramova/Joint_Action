@@ -410,14 +410,12 @@ class SA_Evolution(SA_Simulation):
         if splitter == n_cpu:
             counter = 0
             while counter != n_cpu:
+                counter = 0
                 for split_count in range(1, n_cpu+1):
-                    counter = 0
                     if not os.path.isfile("Splitter{}.DONE.npy".format(split_count)):
                         time.sleep(1)
                     else:
                         counter += 1
-
-
 
         # TODO: remove after test, only keep os.remove
             if os.path.isfile("Poplist_Splitter{}.Generation.{}.npy".format(n_cpu, self.generation-1)):
