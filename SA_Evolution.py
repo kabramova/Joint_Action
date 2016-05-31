@@ -162,8 +162,7 @@ class SA_Evolution(SA_Simulation):
                         if i < 10 and first_runs == False:
                             fill = ticker
                             first_runs = True
-                            print("Fitness of first agents were already evaluated")
-                            print("Splitter{}: Generation {}: Run trials for Agents {}-{}".format(splitter, self.generation, i + 1, fill))
+                            print("Splitter{}: Generation {}: Run trials for Agents {}-{} (Fitness of first agents were already evaluated)".format(splitter, self.generation, i + 1, fill))
 
                     self.pop_list[i, 1] = self.run_trials()
 

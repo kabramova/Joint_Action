@@ -6,8 +6,6 @@ from JA_Evolution import *
 
 #TODO: Solve: ..._request()'s issue with xargs
 
-#TODO: funzt nog niet
-
 n_cpu = 6
 
 if len(sys.argv) > 1 and sys.argv[1].isdigit():
@@ -23,7 +21,7 @@ if split == False:
 else: # if splitter is used, these values must be pre-given, here in python file
     audicon = False
     number_of_generations = 1000
-    filename = "Gen501-1000.popsize55.mut0.02.sound_cond=False.JA.joint(Fitness6.1)"
+    filename = "Gen501-1000.popsize55.mut0.02.sound_cond=True.JA.joint(Fitness7.15)"
     print("Splitter {} started!".format(split))
 
 

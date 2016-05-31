@@ -27,7 +27,6 @@ else: # if splitter is used, these values must be pre-given, here in python file
 sa = SA_Evolution(auditory_condition=audicon)
 
 
-
 if isinstance(filename, str):
     sa.reimplement_population(filename=filename, Plot=False)
 
