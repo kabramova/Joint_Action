@@ -112,41 +112,140 @@ class JA_Evolution(JA_Simulation):
         return fitness
 
 
-    def _run_population(self):
+    def _run_population(self, splitter=False):
 
         first_runs = False
 
-        for i, string_L in enumerate(self.pop_list_L):
+        if splitter==False:
+            for i, string_L in enumerate(self.pop_list_L):
 
-            string_R = self.pop_list_R[i,:]
+                string_R = self.pop_list_R[i,:]
 
-            if string_L[1] == 0 or string_R[1] == 0:  # run only if fitness is no evaluated yet
-                genome_L = string_L[2:]
-                genome_R = string_R[2:]
-                self.knoblin_L = Knoblin()
-                self.knoblin_R = Knoblin()
-                self.implement_genome(genome_string=genome_L, side="left")
-                self.implement_genome(genome_string=genome_R, side="right")
+                if string_L[1] == 0 or string_R[1] == 0:  # run only if fitness is no evaluated yet
+                    genome_L = string_L[2:]
+                    genome_R = string_R[2:]
+                    self.knoblin_L = Knoblin()
+                    self.knoblin_R = Knoblin()
+                    self.implement_genome(genome_string=genome_L, side="left")
+                    self.implement_genome(genome_string=genome_R, side="right")
 
-                # Run all trials an save fitness in pop_list:
-                ticker = 10
-                if i%ticker == 0 or i < 10:  # this way because it ignores the two first spots in pop_list, since they run already.
-                    if i%ticker == 0:
-                        fill = i+ticker if i <= self.pop_size-ticker else self.pop_size
-                        first_runs = True
-                        print("Generation {}: Run trials for Agent Pair {}-{}".format(self.generation, i + 1, fill))
-                    if i < 10 and first_runs == False:
-                        fill = ticker
-                        first_runs = True
-                        print("Fitness of first agent pairs was already evaluated")
-                        print("Generation {}: Run trials for Agent Pair {}-{}".format(self.generation, i + 1, fill))
+                    # Run all trials an save fitness in pop_list:
+                    ticker = 10
+                    if i%ticker == 0 or i < 10:  # this way because it ignores the two first spots in pop_list, since they run already.
+                        if i%ticker == 0:
+                            fill = i+ticker if i <= self.pop_size-ticker else self.pop_size
+                            first_runs = True
+                            print("Generation {}: Run trials for Agent Pair {}-{}".format(self.generation, i + 1, fill))
+                        if i < 10 and first_runs == False:
+                            fill = ticker
+                            first_runs = True
+                            print("Fitness of first agent pairs was already evaluated")
+                            print("Generation {}: Run trials for Agent Pair {}-{}".format(self.generation, i + 1, fill))
 
-                fitness = self.run_trials()
-                self.pop_list_L[i, 1] = fitness
-                self.pop_list_R[i, 1] = fitness
+                    fitness = self.run_trials()
+                    self.pop_list_L[i, 1] = fitness
+                    self.pop_list_R[i, 1] = fitness
 
-        self.pop_list_L = copy.copy(mat_sort(self.pop_list_L, index=1))     # sorts the pop_list, best agents on top
-        self.pop_list_R = copy.copy(mat_sort(self.pop_list_R, index=1))     # sorts the pop_list, best agents on top
+            self.pop_list_L = copy.copy(mat_sort(self.pop_list_L, index=1))     # sorts the pop_list, best agents on top
+            self.pop_list_R = copy.copy(mat_sort(self.pop_list_R, index=1))     # sorts the pop_list, best agents on top
+
+        # If Splitter is active:
+        if not isinstance(splitter, bool):
+
+            n_cpu = 6  # in principal this could be adapted to the number of Processors on the server(s)
+
+            split_size = int(self.pop_list_L.shape[0] / n_cpu)      # == self.pop_list_R.shape[0]
+            rest = self.pop_list_L.shape[0] - split_size * n_cpu
+            split_size = split_size + rest if splitter == 1 else split_size  # first cpu can calculate more. This ballance out the effect,
+                                                                             # that first two Knoblins dont have to be computer (if Generation > 0)
+
+            if splitter == 1:
+                start = 0
+            else:
+                start = split_size * (splitter - 1) + rest
+
+            end = split_size * splitter + rest
+
+            for i in range(start, end):
+                string_L = self.pop_list_L[i, :]
+                string_R = self.pop_list_R[i, :]
+
+                if string_L[1] == 0 or string_R[1] == 0:  # run only if fitness is no evaluated yet
+                    genome_L = string_L[2:]
+                    genome_R = string_R[2:]
+                    self.knoblin_L = Knoblin()
+                    self.knoblin_R = Knoblin()
+                    self.implement_genome(genome_string=genome_L, side="left")
+                    self.implement_genome(genome_string=genome_R, side="right")
+
+                    # Run all trials an save fitness in pop_list:
+                    ticker = 10
+                    if i % ticker == 0 or i < 10:  # this way because it ignores the two first spots in pop_list, since they run already.
+                        if i % ticker == 0:
+                            fill = i + ticker if i <= self.pop_size - ticker else self.pop_size
+                            first_runs = True
+                            print("Splitter{}: Generation {}: Run trials for Agent Pair {}-{}".format(splitter, self.generation, i + 1, fill))
+                        if i < 10 and first_runs == False:
+                            fill = ticker
+                            first_runs = True
+                            print("Fitness of first agent pairs was already evaluated")
+                            print("Splitter{}: Generation {}: Run trials for Agent Pair {}-{}".format(splitter, self.generation, i + 1, fill))
+
+                    fitness = self.run_trials()
+                    self.pop_list_L[i, 1] = fitness
+                    self.pop_list_R[i, 1] = fitness
+
+            # Save splitted Files now:
+            if splitter < n_cpu:
+                np.save("./temp/Poplist_part_L.{}.Generation.{}.npy".format(splitter, self.generation), self.pop_list_L[range(start, end), :])
+                np.save("./temp/Poplist_part_R.{}.Generation.{}.npy".format(splitter, self.generation), self.pop_list_R[range(start, end), :])
+
+            # Check for last splitter, whether all files are there:
+            if splitter == n_cpu:  # = max number of splitters
+
+                count = 0
+                while count != n_cpu - 1:
+                    count = 0
+
+                    for n in range(1, n_cpu):
+                        if os.path.isfile("./temp/Poplist_part_L.{}.Generation.{}.npy".format(n, self.generation)) \
+                                and os.path.isfile("./temp/Poplist_part_R.{}.Generation.{}.npy".format(n, self.generation)):
+                            count += 1
+                            if count == n_cpu - 1:
+                                print("All {} files of Generation {} exist".format(n_cpu - 1, self.generation))
+
+                    time.sleep(1) # wait 1sec before back in the loop
+
+                # Last splitter integrates all files again:
+                for save_counter in range(1, n_cpu):
+                    split_size = int(self.pop_list_L.shape[0] / n_cpu)
+                    split_size = split_size + rest if save_counter == 1 else split_size
+                    if save_counter == 1:
+                        start = 0
+                    else:
+                        start = split_size * (save_counter - 1) + rest
+
+                    end = split_size * save_counter + rest
+
+                    poplist_part_L = np.load("./temp/Poplist_part_L.{}.Generation.{}.npy".format(save_counter, self.generation))
+                    poplist_part_R = np.load("./temp/Poplist_part_R.{}.Generation.{}.npy".format(save_counter, self.generation))
+
+                    self.pop_list_L[range(start, end), :] = poplist_part_L  # or self.pop_list[start:end]
+                    self.pop_list_R[range(start, end), :] = poplist_part_R
+
+                print("All splitted poplist_parts successfully implemented")
+                # Remove files out of dictionary
+                for rm in range(1, n_cpu):
+                    os.remove("./temp/Poplist_part_L.{}.Generation.{}.npy".format(rm, self.generation))
+                    os.remove("./temp/Poplist_part_R.{}.Generation.{}.npy".format(rm, self.generation))
+
+                if os.path.isfile("./temp/Poplist_L_Splitter{}.Generation.{}.npy".format(n_cpu, self.generation - 1))\
+                        and os.path.isfile("./temp/Poplist_R_Splitter{}.Generation.{}.npy".format(n_cpu, self.generation - 1)):
+                    os.remove("./temp/Poplist_L_Splitter{}.Generation.{}.npy".format(n_cpu, self.generation - 1))
+                    os.remove("./temp/Poplist_R_Splitter{}.Generation.{}.npy".format(n_cpu, self.generation - 1))
+
+                self.pop_list_L = copy.copy(mat_sort(self.pop_list_L, index=1))  # sorts the pop_list, best agents on top
+                self.pop_list_R = copy.copy(mat_sort(self.pop_list_R, index=1))
 
 
     def gen_code(self):
@@ -329,43 +428,92 @@ class JA_Evolution(JA_Simulation):
         self.pop_list_R = new_population_R
 
 
-    def run_evolution(self, generations, mutation_var=.02):
+    def run_evolution(self, generations, mutation_var=.02, splitter=False):
 
-        save = save_request()
+        if splitter == False:
+            save = save_request()
+            print("No Splitter is used")
+        else:
+            save = True
+
+        n_cpu = 6
 
         # Run evolution:
-        Fitness_progress = np.zeros((generations, 6))
+        if splitter == n_cpu or splitter == False:
+            Fitness_progress = np.zeros((generations, 6))
+
 
         for i in range(generations):
 
-            start_timer = datetime.datetime.now().replace(microsecond=0)
+            if splitter == n_cpu or splitter == False:
+                start_timer = datetime.datetime.now().replace(microsecond=0)
 
             # Create new Generation
-            if i != 0:
+            if i != 0: # and (splitter == n_cpu or splitter == False):
                 self._reproduction(mutation_var)
 
             # Evaluate fitness of each member
-            self._run_population()
+            self._run_population(splitter=splitter)
 
+            # Saves Poplists for the last split
+            if splitter == n_cpu: # These files will be automatically deleted in _run_popoulation()
+                np.save("./temp/Poplist_L_Splitter{}.Generation.{}.npy".format(splitter, self.generation), self.pop_list_L)
+                np.save("./temp/Poplist_R_Splitter{}.Generation.{}.npy".format(splitter, self.generation), self.pop_list_R)
 
-            # saves fitness progress for the five best agents
-            Fitness_progress[i, 1:] = np.round(self.pop_list_L[0:5, 1], 2)  # == self.pop_list_R
+            # The Other scripts wait for the united poplist version from the last splitter
+            if splitter < n_cpu and not isinstance(splitter, bool):
+                while True:
+                    if not os.path.isfile("./temp/Poplist_L_Splitter{}.Generation.{}.npy".format(n_cpu, self.generation))\
+                            or not os.path.isfile("./temp/Poplist_R_Splitter{}.Generation.{}.npy".format(n_cpu, self.generation)):
+                        time.sleep(1)
+                    else:
+                        break
 
+                # Implement the united Poplists
+                self.pop_list_L = np.load("./temp/Poplist_L_Splitter{}.Generation.{}.npy".format(n_cpu, self.generation))
+                self.pop_list_R = np.load("./temp/Poplist_R_Splitter{}.Generation.{}.npy".format(n_cpu, self.generation))
+
+            # Updated Generation counter:
             self.generation += 1
 
-            Fitness_progress[i, 0] = self.generation
+            # Saves fitness progress for the five best agents:
+            if splitter == n_cpu or splitter == False:
+                Fitness_progress[i, 1:] = np.round(self.pop_list_L[0:5, 1], 2)  # == self.pop_list_R
+                Fitness_progress[i, 0] = self.generation
+                print("Generation {}: Fitness (5 best Agents): {}".format(self.generation, Fitness_progress[i, 1:]))
 
-            print("Generation {}: Fitness (5 best Agents): {}".format(self.generation, Fitness_progress[i, 1:]))
+                # Estimate Duration of Evolution
+                end_timer = datetime.datetime.now().replace(microsecond=0)
+                duration = end_timer - start_timer
+                rest_duration = duration * (generations - (i + 1))
+                print("Time passed to evolve Generation {}: {} [h:m:s]".format(i, duration))
+                print("Estimated time to evolve the rest {} Generations: {} [h:m:s]".format(generations-(i + 1), rest_duration))
 
-            # Estimate Duration of Evolution
-            end_timer = datetime.datetime.now().replace(microsecond=0)
-            duration = end_timer - start_timer
-            rest_duration = duration * (generations - (i + 1))
-            print("Time passed to evolve Generation {}: {} [h:m:s]".format(i, duration))
-            print("Estimated time to evolve the rest {} Generations: {} [h:m:s]".format(generations-(i + 1), rest_duration))
+        # Remove remaining temporary files out of dictionary
+
+        np.save("./temp/Splitter{}.DONE.npy".format(splitter), splitter)  # First each script has to show that it is done
+
+        if splitter == n_cpu:  # Check whether all scripts are done
+            counter = 0
+            while counter != n_cpu:
+                counter = 0
+                for split_count in range(1, n_cpu + 1):
+                    if not os.path.isfile("./temp/Splitter{}.DONE.npy".format(split_count)):
+                        time.sleep(.2)
+                    else:
+                        counter += 1
+
+            # Remove
+            os.remove("./temp/Poplist_L_Splitter{}.Generation.{}.npy".format(n_cpu, self.generation - 1))
+            os.remove("./temp/Poplist_R_Splitter{}.Generation.{}.npy".format(n_cpu, self.generation - 1))
+
+            for split_count in range(1, n_cpu + 1):
+                os.remove("./temp/Splitter{}.DONE.npy".format(split_count))
+
+
 
         # Save in external file:
-        if save:
+        if save and (splitter == n_cpu or splitter == False):
             self.filename = "Gen{}-{}.popsize{}.mut{}.sound_cond={}.JA.joint(Fitness{})".format(self.generation - generations + 1,
                                                                                                  self.generation,
                                                                                                  self.pop_size,
@@ -379,6 +527,8 @@ class JA_Evolution(JA_Simulation):
 
             print('Evolution terminated. pop_lists saved \n'
                   '(Filename: "Poplist_...{}")'.format(self.filename))
+        elif splitter < n_cpu and not isinstance(splitter, bool):
+            print("Splitter {} terminated".format(splitter))
         else:
             print('Evolution terminated. \n'
                   '(Caution: pop_list is not saved in external file)')
