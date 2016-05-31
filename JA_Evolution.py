@@ -139,8 +139,7 @@ class JA_Evolution(JA_Simulation):
                         if i < 10 and first_runs == False:
                             fill = ticker
                             first_runs = True
-                            print("Fitness of first agent pairs was already evaluated")
-                            print("Generation {}: Run trials for Agent Pair {}-{}".format(self.generation, i + 1, fill))
+                            print("Generation {}: Run trials for Agent Pair {}-{} (Fitness of first agent pairs was already evaluated)".format(self.generation, i + 1, fill))
 
                     fitness = self.run_trials()
                     self.pop_list_L[i, 1] = fitness
