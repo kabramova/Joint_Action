@@ -18,7 +18,8 @@ if split == False:
     filename = filename_request("single")
 
 else: # if splitter is used, these values must be pre-given, here in python file
-    audicon = True               # manually adjust
+    # Manually adjust the following parameters:
+    audicon = True
     number_of_generations = 500
     filename = None # ""
     print("Splitter {} started!".format(split))

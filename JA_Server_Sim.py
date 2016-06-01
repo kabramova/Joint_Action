@@ -19,14 +19,15 @@ if split == False:
     filename = filename_request("joint")
 
 else: # if splitter is used, these values must be pre-given, here in python file
-    audicon = False
-    number_of_generations = 1000
-    filename = "Gen1001-2000.popsize55.mut0.02.sound_cond=False.JA.joint(Fitness6.1)"
+    # Manually adjust the following parameters:
+    audicon = True
+    number_of_generations = 500
+    filename = [] # ""
     print("Splitter {} started!".format(split))
 
 
-
 ja = JA_Evolution(auditory_condition=audicon, pop_size=55)
+
 
 if isinstance(filename, str):
     ja.reimplement_population(filename=filename, Plot=False)
@@ -36,9 +37,9 @@ if isinstance(filename, str):
             print("Note: Initial Sound Condition differs from the one in implemented file!")
             print("...")
 
-    print("Run Evolution for {} Generations in Sound Condition={}".format(number_of_generations, audicon))
 
 # RUN:
+print("Run Evolution for {} Generations in Sound Condition={}".format(number_of_generations, audicon))
 ja.run_evolution(generations=number_of_generations, splitter=split)
 
 # # Reimplement and Plot
