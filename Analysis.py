@@ -74,34 +74,45 @@ neural_state = sr[4]
 sr[5].shape  # knoblin.I
 neural_input = sr[5]
 
-#TODO: Turn plots, probably with zdir="x,y,u" and shift
-# Info: http://matplotlib.org/mpl_toolkits/mplot3d/tutorial.html
 
+# Info: http://matplotlib.org/mpl_toolkits/mplot3d/tutorial.html
 fig = plt.figure("GRAPH B")
 ax = fig.add_subplot(111, projection='3d')
 for i in range(neural_state.shape[1]):
-    plt.plot(xs = range(neural_state.shape[0]), ys = neural_state[:,i], zs=i+1)
-    plt.plot(xs = range(neural_input.shape[0]), ys = neural_input[:,i], zs=i+1, alpha=0.0)
+    ax.plot(xs = range(neural_state.shape[0]), zs = neural_state[:,i], ys=np.repeat(i+1,neural_state.shape[0]))
+    ax.plot(xs = range(neural_input.shape[0]), zs = neural_input[:,i], ys=np.repeat(i+1,neural_state.shape[0]), alpha=0.0)
 # plt.plot(neural_input, alpha=0.3)
 plt.savefig("./graphs/GRAPH B (Neural Activity) [WiP]")
 plt.close(fig)
 
+
 fig_b = plt.figure("GRAPH B_b")
 ax = fig_b.add_subplot(111, projection='3d')
 for i in range(neural_state.shape[1]):
-    plt.plot(xs = range(neural_state.shape[0]), ys = neural_state[:,i], zs=i+1, alpha=0.3)
-    plt.plot(xs = range(neural_input.shape[0]), ys = neural_input[:,i], zs=i+1)
+    ax.plot(xs = range(neural_state.shape[0]), zs = neural_state[:,i], ys=np.repeat(i+1,neural_state.shape[0]), alpha=0.3)
+    ax.plot(xs = range(neural_input.shape[0]), zs = neural_input[:,i], ys=np.repeat(i+1,neural_state.shape[0]))
 plt.savefig("./graphs/GRAPH B_b (Neural Activity) [WiP]")
 plt.close(fig_b)
 
 
-#TODO: Maybe Wireframe:
+
+# TODO: Contour plots
+fig_b = plt.figure("GRAPH B_b")
+ax = fig_b.add_subplot(111, projection='3d')
+for i in range(neural_state.shape[1]):
+    ax.counter(X = range(neural_state.shape[0]), Z = neural_state[:,i], Y=i+1, alpha=0.3)
+    ax.counter(X = range(neural_input.shape[0]), Z = neural_input[:,i], Y=i+1)
+plt.savefig("./graphs/GRAPH B_b (Neural Activity) [WiP]")
+plt.close(fig_b)
+
+
+# TODO: Maybe Wireframe:
 fig = plt.figure("GRAPH B")
 ax = fig.add_subplot(111, projection='3d')
 for i in range(neural_state.shape[1]):
-    Axes3D.plot_wireframe(X = range(neural_state.shape[0]), Y = neural_state[:,i], Z=i+1)
+    ax.plot_wireframe(X = range(neural_state.shape[0]), Z = neural_state[:,i], Y=i+1)
 # plt.plot(neural_input, alpha=0.3)
-plt.savefig("./graphs/GRAPH B (Neural Activity) [WiP]")
+plt.savefig("./graphs/GRAPH B (Neural Activity) WIRE [WiP]")
 plt.close(fig)
 
 
