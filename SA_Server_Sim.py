@@ -18,13 +18,14 @@ if split == False:
     filename = filename_request("single")
 
 else: # if splitter is used, these values must be pre-given, here in python file
-    audicon = False
-    number_of_generations = 1000
-    filename = "Gen1501-2000.popsize111.mut0.02.sound_cond=False.JA.single(Fitness6.73)"
+    audicon = True               # manually adjust
+    number_of_generations = 500
+    filename = None # ""
     print("Splitter {} started!".format(split))
 
 
 sa = SA_Evolution(auditory_condition=audicon)
+
 
 if isinstance(filename, str):
     sa.reimplement_population(filename=filename, Plot=False)
@@ -34,10 +35,9 @@ if isinstance(filename, str):
             print("Note: Initial Sound Condition differs from the one in implemented file!")
             print("...")
 
-    print("Run Evolution for {} Generations in Sound Condition={}".format(number_of_generations, audicon))
-
 
 # RUN:
+print("Run Evolution for {} Generations in Sound Condition={}".format(number_of_generations, audicon))
 sa.run_evolution(generations=number_of_generations, splitter=split)
 
 
