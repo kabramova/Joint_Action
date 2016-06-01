@@ -14,8 +14,8 @@ if condition == "single":
     sa = SA_Evolution(auditory_condition=audicon)
     if isinstance(filename, str):
        sa_performance = sa.reimplement_population(filename=filename, Plot=True)
-        # sa_performance[0-3] are the different trials
-       # ja_performance[0-3][0-5] = fitness[0], trajectories[1], keypress[2], sounds[3], neural_state[4], neural_input_L[5]
+       # sa_performance[0-3] are the different trials
+       # sa_performance[0-3][0-5] = fitness[0], trajectories[1], keypress[2], sounds[3], neural_state[4], neural_input_L[5]
 
 if condition == "joint":
     ja = JA_Evolution(auditory_condition=audicon, pop_size=55)
