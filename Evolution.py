@@ -62,11 +62,11 @@ class Evolution(Simulate):
 
         W, WM, WV, Theta, Tau = genome_string[:A], genome_string[A:A+G], genome_string[A+G:A+G+T], genome_string[A+G+T:A+G+T+C], genome_string[A+G+T+C:A+G+T+C+U]
 
-        self.agent.W      = np.reshape(W, (self.agent.N, self.agent.N))
-        self.agent.WM     = WM
-        self.agent.WV     = WV
-        self.agent.Theta  = Theta
-        self.agent.Tau    = Tau
+        self.agent.W      = np.matrix(np.reshape(W,     (self.agent.N, self.agent.N)))
+        self.agent.WM     = np.matrix(np.reshape(WM,    (G, 1)))
+        self.agent.WV     = np.matrix(np.reshape(WV,    (T, 1)))
+        self.agent.Theta  = np.matrix(np.reshape(Theta, (C, 1)))
+        self.agent.Tau    = np.matrix(np.reshape(Tau,   (U, 1)))
 
         # Update the self.genome:
         if not isinstance(genome_string, np.matrix):
@@ -364,8 +364,8 @@ class Evolution(Simulate):
         # Save in external file:
         if save:
 
-            self.filename = "sim{}.mut{}.Gen{}-{}_CT={}.fps={}".format(self.simlength, mutation_var, self.Generation - Generations + 1,
-                                                                       self.Generation, complex_trials,fit_prop_sel)
+            self.filename = "sim{}.mut{}.Gen{}-{}(Fitness {})".format(self.simlength, mutation_var, self.Generation - Generations + 1,
+                                                                       self.Generation, np.round(self.pick_best()[:,1],2))
 
             pickle.dump(self.pop_list,                open('./poplists/Poplist.{}'.format(self.filename), 'wb'))
             pickle.dump(np.round(Fitness_progress,2), open('./poplists/Fitness_progress.{}'.format(self.filename), 'wb'))
