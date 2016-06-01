@@ -27,7 +27,7 @@ if condition == "joint":
 
 
 len(sa_performance)
-sa_performance[3]
+sa_performance[3][0]
 
 
 
