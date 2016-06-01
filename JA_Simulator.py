@@ -121,8 +121,11 @@ class JA_Simulation:
 
         positions = np.zeros((self.simlength,2))
         keypress = np.zeros((self.simlength,2))
-        if self.condition ==True:
-            sounds = np.zeros((self.simlength,2))
+        sounds = np.zeros((self.simlength,2))
+        neural_state_L = np.zeros((self.simlength, self.knoblin_L.N))
+        neural_state_R = np.zeros((self.simlength, self.knoblin_R.N))
+        neural_input_L = np.zeros((self.simlength, self.knoblin_L.N))
+        neural_input_R = np.zeros((self.simlength, self.knoblin_R.N))
 
         print("Sound condition:\t {} \n"
               "Trial speed:\t {}".format(self.condition, trial))
@@ -152,6 +155,10 @@ class JA_Simulation:
             # 5) Update agents' neural systems
             self.knoblin_L.next_state()
             self.knoblin_R.next_state()
+            neural_state_L[i,:] = self.knoblin_L.Y.transpose()
+            neural_state_R[i,:] = self.knoblin_R.Y.transpose()
+            neural_input_L[i,:] = self.knoblin_L.I.transpose()
+            neural_input_R[i,:] = self.knoblin_R.I.transpose()
 
             # 6) Agents react:
             if self.knoblin_L.timer_motor_l <= 0 or self.knoblin_L.timer_motor_r <= 0 or self.knoblin_R.timer_motor_l <= 0 or self.knoblin_R.timer_motor_r <= 0:
@@ -173,9 +180,12 @@ class JA_Simulation:
 
         output.append(positions)
         output.append(keypress)
-        if self.condition == True:
-            output.append(sounds)
-        print("Output contains fitness[0], trajectories[1], keypress[2] and sounds[3](if applicable)")
+        output.append(sounds)
+        output.append(neural_state_L)
+        output.append(neural_state_R)
+        output.append(neural_input_L)
+        output.append(neural_input_R)
+        # print("Output contains fitness[0], trajectories[1], keypress[2], sounds[3], neural_state_L[4], neural_state_L[5], neural_input_L[6], neural_input_L[7]")
 
         ## PLOT and save current state of the system:
         # Create Folder for images:

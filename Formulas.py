@@ -228,9 +228,9 @@ def generation_request():
 def filename_request(single_or_joint):
     found = 0
 
-    assert single_or_joint in ["Single/","Joint/"], 'Wrong input: Either "Single/" or "Joint/"'
+    assert single_or_joint in ["single","joint"], 'Wrong input: Either "single" or "joint"'
 
-    for file in os.listdir('poplists/{}'.format(single_or_joint)):
+    for file in os.listdir('poplists/{}/'.format(single_or_joint)):
         if file.find("sound") != -1 and file.find(single_or_joint) != -1:
             count = 0
             found += 1
@@ -260,6 +260,24 @@ def filename_request(single_or_joint):
     if found > 0:
         print("No file was selected \n".format(found))
     print(">> New evolution will be started")
+
+
+def single_or_joint_request():
+
+    single_or_joint = input("Analysis for '(s)ingle' or '(j)oint':")
+
+    if single_or_joint.find("S") != -1 or single_or_joint.find("s") != -1:
+        output = "single"
+    elif single_or_joint.find("J") != -1 or single_or_joint.find("j") != -1:
+        output = "joint"
+    else:
+        raise ValueError("Input must be either '(s)ingle' or '(j)oint'")
+
+    print("Condition is:", output)
+    return output
+
+
+
 
 
 # Timers:

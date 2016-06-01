@@ -66,12 +66,12 @@ class SA_Evolution(SA_Simulation):
         Theta   = genome_string[A + G + T + X:A + G + T + X + C]
         Tau     = genome_string[A + G + T + X + C:A + G + T + X + C + U]
 
-        self.knoblin.W = np.reshape(W, (self.knoblin.N, self.knoblin.N))
-        self.knoblin.WM = WM
-        self.knoblin.WV = WV
-        self.knoblin.WA = WA
-        self.knoblin.Theta = Theta
-        self.knoblin.Tau = Tau
+        self.knoblin.W =  np.matrix(np.reshape(W, (self.knoblin.N, self.knoblin.N)))
+        self.knoblin.WM = np.matrix(np.reshape(WM, (G, 1)))
+        self.knoblin.WV = np.matrix(np.reshape(WV, (T, 1)))
+        self.knoblin.WA = np.matrix(np.reshape(WA, (X, 1)))
+        self.knoblin.Theta = np.matrix(np.reshape(Theta, (C,1)))
+        self.knoblin.Tau = np.matrix(np.reshape(Tau, (U,1)))
 
         # Update the self.genome:
         if not isinstance(genome_string, np.matrix):
@@ -86,6 +86,8 @@ class SA_Evolution(SA_Simulation):
 
         for trial_speed in ["slow", "fast"]:
             for init_target_direction in [-1, 1]:  # left(-1) or right(1)
+
+                self.reset_neural_system()
 
                 self.setup(trial_speed=trial_speed)
                 self.target.velocity *= init_target_direction
@@ -409,8 +411,8 @@ class SA_Evolution(SA_Simulation):
 
 
         # Remove remaining temporary files out of dictionary
-
-        np.save("./temp/SA_Splitter{}.DONE.cond{}.npy".format(splitter, self.condition), splitter) # First each script has to show that it is done
+        if not isinstance(splitter, bool):
+            np.save("./temp/SA_Splitter{}.DONE.cond{}.npy".format(splitter, self.condition), splitter) # First each script has to show that it is done
 
         if splitter == n_cpu: # Check whether all scripts are done
             counter = 0
@@ -438,8 +440,8 @@ class SA_Evolution(SA_Simulation):
                                                                                                  np.round(self.pop_list[0,1],2))
 
 
-            pickle.dump(self.pop_list, open('./poplists/Poplist.{}'.format(self.filename), 'wb'))
-            pickle.dump(np.round(Fitness_progress, 2), open('./poplists/Fitness_progress.{}'.format(self.filename), 'wb'))
+            pickle.dump(self.pop_list, open('./poplists/single/Poplist.{}'.format(self.filename), 'wb'))
+            pickle.dump(np.round(Fitness_progress, 2), open('./poplists/single/Fitness_progress.{}'.format(self.filename), 'wb'))
 
             print('Evolution terminated. pop_list saved \n'
                   '(Filename: "Poplist.{}")'.format(self.filename))
@@ -463,14 +465,17 @@ class SA_Evolution(SA_Simulation):
             self.filename = filename
 
         # Reimplement: pop_list, condition, Generation
-        self.pop_list = pickle.load(open('./poplists/Poplist.{}'.format(self.filename), 'rb'))
+        self.pop_list = pickle.load(open('./poplists/single/Poplist.{}'.format(self.filename), 'rb'))
         self.pop_size = self.pop_list.shape[0]
 
         assert self.filename.find("False") != -1 or self.filename.find("True") != -1, "Condition is unknown (please add to filename (if known)"
         self.condition = False if self.filename.find("False") != -1 and self.filename.find("True") == -1 else True
 
-        fitness_progress = pickle.load(open('./poplists/Fitness_progress.{}'.format(self.filename), 'rb'))
+        fitness_progress = pickle.load(open('./poplists/single/Fitness_progress.{}'.format(self.filename), 'rb'))
         self.generation = int(fitness_progress[-1, 0])
+
+        print(">> ...")
+        print(">> File is successfully implemented")
 
         # self.setup(trial_speed="fast") # Trial speed is arbitrary. This command is needed to globally announce variables
 
@@ -486,26 +491,39 @@ class SA_Evolution(SA_Simulation):
             plt.close()
 
             # Here we plot the trajectory of the best agent:
-            self.plot_pop_list()
+            output = self.plot_pop_list(knoblin_nr=1)
             self.print_best(n=1)
             print("Animation of best agent is saved")
 
+            # Output contains fitness[0], trajectories[1], keypress[2] and sounds[3], neural_state[4], neural_input_L[5]
+            return output
 
-    def plot_pop_list(self, n_knoblins=1):
 
-        for i in range(n_knoblins):
-            for trial_speed in ["slow", "fast"]:
-                for init_target_direction in [-1, 1]:  # left(-1) or right(1)
+    def plot_pop_list(self, knoblin_nr=1):
 
-                    self.setup(trial_speed=trial_speed)
+        output = []
+        # count = 0
 
-                    self.target.velocity *= init_target_direction
+        for trial_speed in ["slow", "fast"]:
+            for init_target_direction in [-1, 1]:  # left(-1) or right(1)
 
-                    self.implement_genome(genome_string=self.pop_list[i,2:])
+                self.setup(trial_speed=trial_speed)
 
-                    direction = "left" if init_target_direction == - 1 else "right"
-                    print("Create Animation of {} trial and initial Target direction to the {}".format(trial_speed, direction))
-                    self.run_and_plot()  # include reset of the neural system
+                self.target.velocity *= init_target_direction
+
+                self.implement_genome(genome_string=self.pop_list[knoblin_nr-1,2:])
+
+                direction = "left" if init_target_direction == - 1 else "right"
+                print("Create Animation of {} trial and initial Target direction to the {}".format(trial_speed, direction))
+                output.append(self.run_and_plot())   # include reset of the neural system
+                # output[count] = self.run_and_plot()
+                # count += 1
+
+        print("Output contains fitness[0], trajectories[1], keypress[2] and sounds[3], "
+              "neural_state[4], neural_input_L[5]")
+        return output
+
+
 
 
     def print_best(self, n=5):

@@ -16,7 +16,7 @@ else:
 if split == False:
     audicon = audio_condition_request()
     number_of_generations = generation_request()
-    filename = filename_request("Joint/")
+    filename = filename_request("joint")
 
 else: # if splitter is used, these values must be pre-given, here in python file
     audicon = False
@@ -30,16 +30,11 @@ ja = JA_Evolution(auditory_condition=audicon, pop_size=55)
 
 if isinstance(filename, str):
     ja.reimplement_population(filename=filename, Plot=False)
-
-
-if split == False or split == n_cpu:
-    print("...")
-    print("File is successfully implemented")
-
-    if audicon != ja.condition:
-        print("...")
-        print("Note: Initial Sound Condition differs from the one in implemented file!")
-        print("...")
+    if split == False or split == n_cpu:
+        if audicon != ja.condition:
+            print("...")
+            print("Note: Initial Sound Condition differs from the one in implemented file!")
+            print("...")
 
     print("Run Evolution for {} Generations in Sound Condition={}".format(number_of_generations, audicon))
 
