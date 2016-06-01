@@ -39,7 +39,7 @@ if isinstance(filename, str):
 
 
 # RUN:
-print("Run Evolution for {} Generations in Sound Condition={}".format(number_of_generations, audicon))
+print("Run Evolution for {} Generations in Joint Condition and Sound Condition={}".format(number_of_generations, audicon))
 ja.run_evolution(generations=number_of_generations, splitter=split)
 
 # # Reimplement and Plot
