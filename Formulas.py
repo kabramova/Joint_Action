@@ -228,9 +228,9 @@ def generation_request():
 def filename_request(single_or_joint):
     found = 0
 
-    assert single_or_joint in ["single","joint"], 'Wrong input: Either "single" or "joint"'
+    assert single_or_joint in ["Single/","Joint/"], 'Wrong input: Either "Single/" or "Joint/"'
 
-    for file in os.listdir('poplists'):
+    for file in os.listdir('poplists/{}'.format(single_or_joint)):
         if file.find("sound") != -1 and file.find(single_or_joint) != -1:
             count = 0
             found += 1

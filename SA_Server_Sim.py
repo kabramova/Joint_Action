@@ -15,7 +15,7 @@ else:
 if split == False:
     audicon = audio_condition_request()
     number_of_generations = generation_request()
-    filename = filename_request("single")
+    filename = filename_request("Single/")
 
 else: # if splitter is used, these values must be pre-given, here in python file
     audicon = False

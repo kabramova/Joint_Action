@@ -16,12 +16,12 @@ else:
 if split == False:
     audicon = audio_condition_request()
     number_of_generations = generation_request()
-    filename = filename_request("joint")
+    filename = filename_request("Joint/")
 
 else: # if splitter is used, these values must be pre-given, here in python file
     audicon = False
     number_of_generations = 1000
-    filename = "Gen501-1000.popsize55.mut0.02.sound_cond=True.JA.joint(Fitness7.15)"
+    filename = "Gen1001-2000.popsize55.mut0.02.sound_cond=True.JA.joint(Fitness7.15)"
     print("Splitter {} started!".format(split))
 
 
