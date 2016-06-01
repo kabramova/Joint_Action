@@ -111,8 +111,9 @@ class SA_Simulation:
 
         positions = np.zeros((self.simlength,2))
         keypress = np.zeros((self.simlength,2))
-        if self.condition ==True:
-            sounds = np.zeros((self.simlength,2))
+        sounds = np.zeros((self.simlength,2))
+        neural_state = np.zeros((self.simlength,self.knoblin.N))
+        neural_input = np.zeros((self.simlength,self.knoblin.N))
 
         print("Sound condition:\t {} \n"
               "Trial speed:\t {}".format(self.condition, trial))
@@ -139,6 +140,8 @@ class SA_Simulation:
 
             # 5) Update agent's neural system
             self.knoblin.next_state()
+            neural_state[i, :] = self.knoblin.Y.transpose()
+            neural_input[i, :] = self.knoblin.I.transpose()
 
             # print("State of Neurons:\n", self.knoblin.Y)
 
@@ -158,9 +161,11 @@ class SA_Simulation:
 
         output.append(positions)
         output.append(keypress)
-        if self.condition == True:
-            output.append(sounds)
-        print("Output contains fitness[0], trajectories[1], keypress[2] and sounds[3](if applicable)")
+        output.append(sounds)
+        output.append(neural_state)
+        output.append(neural_input)
+
+        # print("Output contains fitness[0], trajectories[1], keypress[2] and sounds[3], neural_state[4], neural_input_L[5]")
 
 
         ## PLOT and save current state of the system:
