@@ -63,7 +63,7 @@ class Evolution(Simulate):
         W, WM, WV, Theta, Tau = genome_string[:A], genome_string[A:A+G], genome_string[A+G:A+G+T], genome_string[A+G+T:A+G+T+C], genome_string[A+G+T+C:A+G+T+C+U]
 
         self.agent.W      = np.matrix(np.reshape(W,     (self.agent.N, self.agent.N)))
-        self.agent.WM     = np.matrix(np.reshape(WM,    (G, 1)))
+        self.agent.WM     = np.matrix(np.reshape(WM,    (G, 1)))    # for poplists before 1.June take the reshape out.
         self.agent.WV     = np.matrix(np.reshape(WV,    (T, 1)))
         self.agent.Theta  = np.matrix(np.reshape(Theta, (C, 1)))
         self.agent.Tau    = np.matrix(np.reshape(Tau,   (U, 1)))
