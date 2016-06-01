@@ -360,7 +360,6 @@ class SA_Evolution(SA_Simulation):
 
         n_cpu = 6
 
-
         # Run evolution:
         if splitter == n_cpu or splitter == False:
             Fitness_progress = np.zeros((generations, 6))

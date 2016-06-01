@@ -20,7 +20,7 @@ if split == False:
 
 else: # if splitter is used, these values must be pre-given, here in python file
     # Manually adjust the following parameters:
-    audicon = True
+    audicon = False
     number_of_generations = 500
     filename = [] # ""
     print("Splitter {} started!".format(split))
