@@ -26,13 +26,13 @@ class JA_Evolution(JA_Simulation):
          :return: list of agents
          '''
 
-        poplist = np.zeros((pop_size, self.genome_R.size + 2))  # self.genome_R.size == self.genome_L.size
+        poplist = np.zeros((pop_size, self.genome_R.size + 2))  # self.genome_R.size is self.genome_L.size
 
         for i in range(pop_size):
             poplist[i, 0] = i + 1                                           # enumerate the list
             # poplist[i, 1]                                                 = fitness, is initially zero
-            poplist[i, 2:] = self.genome_L.transpose() if side=="left" else self.genome_R.transpose()  # the current genome will be stored
-            if side == "left":
+            poplist[i, 2:] = self.genome_L.transpose() if sideis"left" else self.genome_R.transpose()  # the current genome will be stored
+            if side is "left":
                 self.knoblin_L = Knoblin()                                  # Create new agent
                 self.genome_L = self.create_genome(Knoblin=self.knoblin_L)  # ... and its genome
             else: # its a bit redundant, but for the readability and comprehensibility
@@ -56,9 +56,9 @@ class JA_Evolution(JA_Simulation):
 
     def implement_genome(self, genome_string, side):
 
-        assert genome_string.size == self.genome_L.size and genome_string.size == self.genome_R.size, "Genome has not the right size"
+        assert genome_string.size is self.genome_L.size and genome_string.size is self.genome_R.size, "Genome has not the right size"
 
-        knoblin = self.knoblin_L if side == "left" else self.knoblin_R
+        knoblin = self.knoblin_L if side is "left" else self.knoblin_R
 
         A = knoblin.W.size
         G = knoblin.WM.size
@@ -86,9 +86,9 @@ class JA_Evolution(JA_Simulation):
         if not isinstance(genome_string, np.matrix):
             genome_string = np.matrix(genome_string).transpose()
 
-        if side == "left":
+        if side is "left":
             self.genome_L = genome_string
-        else:  # side == "right"
+        else:  # side is "right"
             self.genome_R = genome_string
 
 
@@ -119,13 +119,13 @@ class JA_Evolution(JA_Simulation):
 
         first_runs = False
 
-        if splitter==False:
+        if splitterisFalse:
             for i in range(self.pop_size):
 
                 string_L = copy.copy(self.pop_list_L[i,:])
                 string_R = copy.copy(self.pop_list_R[i,:])
 
-                if string_L[1] == 0 or string_R[1] == 0:  # run only if fitness is no evaluated yet
+                if string_L[1] is 0 or string_R[1] is 0:  # run only if fitness is no evaluated yet
                     genome_L = string_L[2:]
                     genome_R = string_R[2:]
                     self.knoblin_L = Knoblin()
@@ -135,12 +135,12 @@ class JA_Evolution(JA_Simulation):
 
                     # Run all trials an save fitness in pop_list:
                     ticker = 10
-                    if i%ticker == 0 or i < 10:  # this way because it ignores the two first spots in pop_list, since they run already.
-                        if i%ticker == 0:
+                    if i%ticker is 0 or i < 10:  # this way because it ignores the two first spots in pop_list, since they run already.
+                        if i%ticker is 0:
                             fill = i+ticker if i <= self.pop_size-ticker else self.pop_size
                             first_runs = True
                             print("Generation {}: Run trials for Agent Pair {}-{}".format(self.generation, i + 1, fill))
-                        if i < 10 and first_runs == False:
+                        if i < 10 and first_runs is False:
                             fill = ticker
                             first_runs = True
                             print("Generation {}: Run trials for Agent Pair {}-{} (Fitness of first agent pairs was already evaluated)".format(self.generation, i + 1, fill))
@@ -157,12 +157,12 @@ class JA_Evolution(JA_Simulation):
 
             n_cpu = 6  # in principal this could be adapted to the number of Processors on the server(s)
 
-            split_size = int(self.pop_list_L.shape[0] / n_cpu)      # == self.pop_list_R.shape[0]
+            split_size = int(self.pop_list_L.shape[0] / n_cpu)      # is self.pop_list_R.shape[0]
             rest = self.pop_list_L.shape[0] - split_size * n_cpu
-            split_size = split_size + rest if splitter == 1 else split_size  # first cpu can calculate more. This ballance out the effect,
+            split_size = split_size + rest if splitter is 1 else split_size  # first cpu can calculate more. This ballance out the effect,
                                                                              # that first two Knoblins dont have to be computer (if Generation > 0)
 
-            if splitter == 1:
+            if splitter is 1:
                 start = 0
             else:
                 start = split_size * (splitter - 1) + rest
@@ -173,7 +173,7 @@ class JA_Evolution(JA_Simulation):
                 string_L = self.pop_list_L[i, :]
                 string_R = self.pop_list_R[i, :]
 
-                if string_L[1] == 0 or string_R[1] == 0:  # run only if fitness is no evaluated yet
+                if string_L[1] is 0 or string_R[1] is 0:  # run only if fitness is no evaluated yet
                     genome_L = string_L[2:]
                     genome_R = string_R[2:]
                     self.knoblin_L = Knoblin()
@@ -183,12 +183,12 @@ class JA_Evolution(JA_Simulation):
 
                     # Run all trials an save fitness in pop_list:
                     ticker = 10
-                    if i % ticker == 0 or i < 10:  # this way because it ignores the two first spots in pop_list, since they run already.
-                        if i % ticker == 0:
+                    if i % ticker is 0 or i < 10:  # this way because it ignores the two first spots in pop_list, since they run already.
+                        if i % ticker is 0:
                             fill = i + ticker if i <= self.pop_size - ticker else self.pop_size
                             first_runs = True
                             print("Splitter{}: Generation {}: Run trials for Agent Pair {}-{}".format(splitter, self.generation, i + 1, fill))
-                        if i < 10 and first_runs == False:
+                        if i < 10 and first_runs is False:
                             fill = ticker
                             first_runs = True
                             print("Splitter{}: Generation {}: Run trials for Agent Pair {}-{} (Fitness of first agent pairs was already evaluated)".format(splitter, self.generation, i + 1, fill))
@@ -203,17 +203,17 @@ class JA_Evolution(JA_Simulation):
                 np.save("./temp/Poplist_part_R.{}.Generation.{}.cond{}.npy".format(splitter, self.generation, self.condition), self.pop_list_R[range(start, end), :])
 
             # Check for last splitter, whether all files are there:
-            if splitter == n_cpu:  # = max number of splitters
+            if splitter is n_cpu:  # = max number of splitters
 
                 count = 0
-                while count != n_cpu - 1:
+                while count is not n_cpu - 1:
                     count = 0
 
                     for n in range(1, n_cpu):
                         if os.path.isfile("./temp/Poplist_part_L.{}.Generation.{}.cond{}.npy".format(n, self.generation, self.condition)) \
                                 and os.path.isfile("./temp/Poplist_part_R.{}.Generation.{}.cond{}.npy".format(n, self.generation, self.condition)):
                             count += 1
-                            if count == n_cpu - 1:
+                            if count is n_cpu - 1:
                                 print("All {} files of Generation {} exist".format(n_cpu - 1, self.generation))
 
                     time.sleep(1) # wait 1sec before back in the loop
@@ -221,8 +221,8 @@ class JA_Evolution(JA_Simulation):
                 # Last splitter integrates all files again:
                 for save_counter in range(1, n_cpu):
                     split_size = int(self.pop_list_L.shape[0] / n_cpu)
-                    split_size = split_size + rest if save_counter == 1 else split_size
-                    if save_counter == 1:
+                    split_size = split_size + rest if save_counter is 1 else split_size
+                    if save_counter is 1:
                         start = 0
                     else:
                         start = split_size * (save_counter - 1) + rest
@@ -252,7 +252,7 @@ class JA_Evolution(JA_Simulation):
 
     def gen_code(self):
 
-        assert self.genome_L.size == self.genome_R.size, "Genomes of left and right Agent don't have the same size!"
+        assert self.genome_L.size is self.genome_R.size, "Genomes of left and right Agent don't have the same size!"
 
         gens = OrderedDict([("A", self.knoblin_L.W.size),       # could be also self.knoblin_R
                             ("G", self.knoblin_L.WM.size),
@@ -312,7 +312,7 @@ class JA_Evolution(JA_Simulation):
             index = 0  # indexing the section in whole genome string
             for gen in gens:
                 index += gens[gen]
-                if gen == choice:
+                if gen is choice:
                     break
             index += 2  # leaves the number and fitness of agent out (new_population[:,(0,1)])
 
@@ -328,7 +328,7 @@ class JA_Evolution(JA_Simulation):
         n_fps    = int(np.round(self.pop_size*0.4))
         n_random = int(np.round(self.pop_size*0.2))
 
-        if (self.pop_size - (n_family + n_fps + n_random))!= 0:
+        if (self.pop_size - (n_family + n_fps + n_random))is not 0:
             rest = self.pop_size - (n_family + n_fps + n_random) # rest has to be filled up
 
             odd = 1 if rest%2>0 else 0  # if rest is odd(1) else even(0)
@@ -339,8 +339,8 @@ class JA_Evolution(JA_Simulation):
         # Algorithm for fitness proportionate selection:
         # (Source: http://stackoverflow.com/questions/298301/roulette-wheel-selection-algorithm/320788#320788)
 
-        assert np.all(np.array([self.pop_list_L[:, 1] == self.pop_list_R[:, 1]]) == True), "Fitness of each partner must be the same"
-        fitness = copy.copy(self.pop_list_L[:, 1])  # == self.pop_list_R[:, 1]
+        assert np.all(np.array([self.pop_list_L[:, 1] is self.pop_list_R[:, 1]]) is True), "Fitness of each partner must be the same"
+        fitness = copy.copy(self.pop_list_L[:, 1])  # is self.pop_list_R[:, 1]
         fitness = 1 - normalize(fitness)  # sign is correct, apparently
 
         total_fitness = sum(fitness)
@@ -371,7 +371,7 @@ class JA_Evolution(JA_Simulation):
         # 5) All but the first two best agent pairs will fall under a mutation with a variance of .02 (default)
 
         AGTXC = sum(gens.values()) - gens["U"]  # sum of all gen-sizes, except Tau
-        U = gens["U"]  # == self.knoblin.Tau.size
+        U = gens["U"]  # is self.knoblin.Tau.size
 
         mu, sigma = 0, np.sqrt(mutation_var)  # mean and standard deviation
 
@@ -432,7 +432,7 @@ class JA_Evolution(JA_Simulation):
 
     def run_evolution(self, generations, mutation_var=.02, splitter=False):
 
-        if splitter == False:
+        if splitter is False:
             save = save_request()
             print("No Splitter is used")
         else:
@@ -441,24 +441,24 @@ class JA_Evolution(JA_Simulation):
         n_cpu = 6
 
         # Run evolution:
-        if splitter == n_cpu or splitter == False:
+        if splitter is n_cpu or splitter is False:
             Fitness_progress = np.zeros((generations, 6))
 
 
         for i in range(generations):
 
-            if splitter == n_cpu or splitter == False:
+            if splitter is n_cpu or splitter is False:
                 start_timer = datetime.datetime.now().replace(microsecond=0)
 
             # Create new Generation
-            if i != 0: # and (splitter == n_cpu or splitter == False):
+            if i is not 0: # and (splitter is n_cpu or splitter is False):
                 self._reproduction(mutation_var)
 
             # Evaluate fitness of each member
             self._run_population(splitter=splitter)
 
             # Saves Poplists for the last split
-            if splitter == n_cpu: # These files will be automatically deleted in _run_popoulation()
+            if splitter is n_cpu: # These files will be automatically deleted in _run_popoulation()
                 np.save("./temp/Poplist_L_Splitter{}.Generation.{}.cond{}.npy".format(splitter, self.generation, self.condition), self.pop_list_L)
                 np.save("./temp/Poplist_R_Splitter{}.Generation.{}.cond{}.npy".format(splitter, self.generation, self.condition), self.pop_list_R)
 
@@ -479,8 +479,8 @@ class JA_Evolution(JA_Simulation):
             self.generation += 1
 
             # Saves fitness progress for the five best agents:
-            if splitter == n_cpu or splitter == False:
-                Fitness_progress[i, 1:] = np.round(self.pop_list_L[0:5, 1], 2)  # == self.pop_list_R
+            if splitter is n_cpu or splitter is False:
+                Fitness_progress[i, 1:] = np.round(self.pop_list_L[0:5, 1], 2)  # is self.pop_list_R
                 Fitness_progress[i, 0] = self.generation
                 print("Generation {}: Fitness (5 best Agents): {}".format(self.generation, Fitness_progress[i, 1:]))
 
@@ -496,9 +496,9 @@ class JA_Evolution(JA_Simulation):
         if not isinstance(splitter,bool):
             np.save("./temp/JA_Splitter{}.DONE.cond{}.npy".format(splitter, self.condition), splitter)  # First each script has to show that it is done
 
-        if splitter == n_cpu:  # Check whether all scripts are done
+        if splitter is n_cpu:  # Check whether all scripts are done
             counter = 0
-            while counter != n_cpu:
+            while counter is not n_cpu:
                 counter = 0
                 for split_count in range(1, n_cpu + 1):
                     if not os.path.isfile("./temp/JA_Splitter{}.DONE.cond{}.npy".format(split_count, self.condition)):
@@ -516,13 +516,13 @@ class JA_Evolution(JA_Simulation):
 
 
         # Save in external file:
-        if save and (splitter == n_cpu or splitter == False):
+        if save and (splitter is n_cpu or splitter is False):
             self.filename = "Gen{}-{}.popsize{}.mut{}.sound_cond={}.JA.joint(Fitness{})".format(self.generation - generations + 1,
                                                                                                  self.generation,
                                                                                                  self.pop_size,
                                                                                                  mutation_var,
                                                                                                  self.condition,
-                                                                                                 np.round(self.pop_list_L[0,1],2)) # == pop_list_L[0,1]
+                                                                                                 np.round(self.pop_list_L[0,1],2)) # is pop_list_L[0,1]
 
             pickle.dump(self.pop_list_L, open('./poplists/joint/Poplist_L.{}'.format(self.filename), 'wb'))
             pickle.dump(self.pop_list_R, open('./poplists/joint/Poplist_R.{}'.format(self.filename), 'wb'))
@@ -539,10 +539,10 @@ class JA_Evolution(JA_Simulation):
 
     def reimplement_population(self, filename=None, Plot=False):
 
-        assert filename.find("joint") != -1, "Wrong file! The file needs to be from the JOINT condition"
+        assert filename.find("joint") is not -1, "Wrong file! The file needs to be from the JOINT condition"
 
         if filename is None:
-            if self.filename == "":
+            if self.filename is "":
                 raise ValueError("No file to reimplement")
             else:
                 print("Reimplements its own pop_list files")
@@ -552,10 +552,10 @@ class JA_Evolution(JA_Simulation):
         # Reimplement: pop_list, condition, Generation
         self.pop_list_L = pickle.load(open('./poplists/joint/Poplist_L.{}'.format(self.filename), 'rb'))
         self.pop_list_R = pickle.load(open('./poplists/joint/Poplist_R.{}'.format(self.filename), 'rb'))
-        self.pop_size = self.pop_list_L.shape[0] # == self.pop_list_R.shape[0]
+        self.pop_size = self.pop_list_L.shape[0] # is self.pop_list_R.shape[0]
 
-        assert self.filename.find("False") != -1 or self.filename.find("True") != -1, "Condition is unknown (please add to filename (if known)"
-        self.condition = False if self.filename.find("False") != -1 and self.filename.find("True") == -1 else True
+        assert self.filename.find("False") is not -1 or self.filename.find("True") is not -1, "Condition is unknown (please add to filename (if known)"
+        self.condition = False if self.filename.find("False") is not -1 and self.filename.find("True") is -1 else True
 
         fitness_progress = pickle.load(open('./poplists/joint/Fitness_progress.{}'.format(self.filename), 'rb'))
         self.generation = int(fitness_progress[-1, 0])
@@ -599,7 +599,7 @@ class JA_Evolution(JA_Simulation):
                 self.implement_genome(genome_string=self.pop_list_L[knoblin_nr-1,2:], side="left")
                 self.implement_genome(genome_string=self.pop_list_R[knoblin_nr-1,2:], side="right")
 
-                direction = "left" if init_target_direction == - 1 else "right"
+                direction = "left" if init_target_direction is - 1 else "right"
                 print("Create Animation of {} trial and initial Target direction to the {}".format(trial_speed ,direction))
                 output.append(self.run_and_plot())      # include reset of the neural system
                 # output[count] = self.run_and_plot()

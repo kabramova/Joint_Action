@@ -12,7 +12,7 @@ else:
     split = False
 
 
-if split == False:
+if split is False:
     audicon = audio_condition_request()
     number_of_generations = generation_request()
     filename = filename_request("single")
@@ -30,7 +30,7 @@ sa = SA_Evolution(auditory_condition=audicon)
 
 if isinstance(filename, str):
     sa.reimplement_population(filename=filename, Plot=False)
-    if split == False or split == n_cpu:
+    if split is False or split is n_cpu:
         if audicon != sa.condition:
             print("...")
             print("Note: Initial Sound Condition differs from the one in implemented file!")

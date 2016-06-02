@@ -50,7 +50,7 @@ class SA_Evolution(SA_Simulation):
 
     def implement_genome(self, genome_string):
 
-        assert genome_string.size == self.genome.size, "Genome has not the right size"
+        assert genome_string.size is self.genome.size, "Genome has not the right size"
 
         A = self.knoblin.W.size
         G = self.knoblin.WM.size
@@ -107,21 +107,21 @@ class SA_Evolution(SA_Simulation):
 
         first_runs = False
 
-        if splitter==False:
+        if splitterisFalse:
             for i, string in enumerate(self.pop_list):
-                if string[1] == 0:  # run only if fitness is no evaluated yet
+                if string[1] is 0:  # run only if fitness is no evaluated yet
                     genome = string[2:]
                     self.knoblin = Knoblin()
                     self.implement_genome(genome_string=genome)
 
                     # Run all trials an save fitness in pop_list:
                     ticker = 10
-                    if i % ticker == 0 or i < 10:  # this way because it ignores the two first spots in pop_list, since they run already.
-                        if i % ticker == 0:
+                    if i % ticker is 0 or i < 10:  # this way because it ignores the two first spots in pop_list, since they run already.
+                        if i % ticker is 0:
                             fill = i + ticker if i <= self.pop_size - ticker else self.pop_size
                             first_runs = True
                             print("Generation {}: Run trials for Agents {}-{}".format(self.generation, i + 1, fill))
-                        if i < 10 and first_runs == False:
+                        if i < 10 and first_runs is False:
                             fill = ticker
                             first_runs = True
                             print("Generation {}: Run trials for Agents {}-{} (Fitness of first agents were already evaluated)".format(self.generation, i + 1, fill))
@@ -138,9 +138,9 @@ class SA_Evolution(SA_Simulation):
 
             split_size = int(self.pop_list.shape[0]/n_cpu)
             rest = self.pop_list.shape[0] - split_size*n_cpu
-            split_size = split_size+rest if splitter == 1 else split_size   # first cpu can calculate more. This ballance out the effect,
+            split_size = split_size+rest if splitter is 1 else split_size   # first cpu can calculate more. This ballance out the effect,
                                                                             # that first two Knoblins dont have to be computer (if Generation > 0)
-            if splitter == 1:
+            if splitter is 1:
                 start = 0
             else:
                 start = split_size*(splitter-1)+rest
@@ -149,19 +149,19 @@ class SA_Evolution(SA_Simulation):
 
             for i in range(start, end):
                 string = self.pop_list[i,:]
-                if string[1] == 0:          # run only if fitness is no evaluated yet
+                if string[1] is 0:          # run only if fitness is no evaluated yet
                     genome = string[2:]
                     self.knoblin = Knoblin()
                     self.implement_genome(genome_string=genome)
 
                     # Run all trials an save fitness in pop_list:
                     ticker = 10
-                    if i % ticker == 0 or i < 10:  # this way because it ignores the two first spots in pop_list, since they run already.
-                        if i % ticker == 0:
+                    if i % ticker is 0 or i < 10:  # this way because it ignores the two first spots in pop_list, since they run already.
+                        if i % ticker is 0:
                             fill = i + ticker if i <= self.pop_size - ticker else self.pop_size
                             first_runs = True
                             print("Splitter{}: Generation {}: Run trials for Agents {}-{}".format(splitter, self.generation, i + 1, fill))
-                        if i < 10 and first_runs == False:
+                        if i < 10 and first_runs is False:
                             fill = ticker
                             first_runs = True
                             print("Splitter{}: Generation {}: Run trials for Agents {}-{} (Fitness of first agents were already evaluated)".format(splitter, self.generation, i + 1, fill))
@@ -174,16 +174,16 @@ class SA_Evolution(SA_Simulation):
                 # Here the code ends for splitter < 6
 
             # Check for last splitter, whether all files are there:
-            if splitter == n_cpu: # = max number of splitters
+            if splitter is n_cpu: # = max number of splitters
 
                 count = 0
-                while count != n_cpu-1:
+                while count is not n_cpu-1:
                     count = 0
 
                     for n in range(1, n_cpu):
                         if os.path.isfile("./temp/Poplist_part.{}.Generation.{}.cond{}.npy".format(n, self.generation, self.condition)):
                             count += 1
-                            if count == n_cpu-1:
+                            if count is n_cpu-1:
                                 print("All {} files of Generation {} exist".format(n_cpu-1, self.generation))
 
                     time.sleep(1)
@@ -191,8 +191,8 @@ class SA_Evolution(SA_Simulation):
                 # Last splitter integrates all files again:
                 for save_counter in range(1, n_cpu):
                     split_size = int(self.pop_list.shape[0] / n_cpu)
-                    split_size = split_size + rest if save_counter == 1 else split_size
-                    if save_counter == 1:
+                    split_size = split_size + rest if save_counter is 1 else split_size
+                    if save_counter is 1:
                         start = 0
                     else:
                         start = split_size * (save_counter - 1) + rest
@@ -265,7 +265,7 @@ class SA_Evolution(SA_Simulation):
             index = 0  # indexing the section in whole genome string
             for gen in gens:
                 index += gens[gen]
-                if gen == choice:
+                if gen is choice:
                     break
             index += 2  # leaves the number and fitness of agent out (new_population[:,(0,1)])
 
@@ -279,7 +279,7 @@ class SA_Evolution(SA_Simulation):
         n_fps    = int(np.round(self.pop_size*0.3))
         n_random = int(np.round(self.pop_size*0.3))
 
-        if (self.pop_size - (n_family + n_fps + n_random))!= 0:
+        if (self.pop_size - (n_family + n_fps + n_random)) is not 0:
             rest = self.pop_size - (n_family + n_fps + n_random) # rest has to be filled up
             if rest%2>0:  # if rest is odd
                 n_fps += int((rest+1)/2)
@@ -319,7 +319,7 @@ class SA_Evolution(SA_Simulation):
         # 5) All but the first two best agents will fall under a mutation with a variance of .02 (default)
 
         AGTXC = sum(gens.values()) - gens["U"]  # sum of all gen-sizes, except Tau
-        U = gens["U"]  # == self.knoblin.Tau.size
+        U = gens["U"]  # is self.knoblin.Tau.size
 
         mu, sigma = 0, np.sqrt(mutation_var)  # mean and standard deviation
 
@@ -352,7 +352,7 @@ class SA_Evolution(SA_Simulation):
 
     def run_evolution(self, generations, mutation_var=.02, splitter=False):
 
-        if splitter == False:
+        if splitter is False:
             save = save_request()
             print("No Splitter is used")
         else:
@@ -361,24 +361,24 @@ class SA_Evolution(SA_Simulation):
         n_cpu = 6
 
         # Run evolution:
-        if splitter == n_cpu or splitter == False:
+        if splitter is n_cpu or splitter is False:
             Fitness_progress = np.zeros((generations, 6))
 
 
         for i in range(generations):
 
-            if splitter == n_cpu or splitter == False:
+            if splitter is n_cpu or splitter is False:
                 start_timer = datetime.datetime.now().replace(microsecond=0)
 
             # Create new Generation
-            if i != 0: # and (splitter == n_cpu or splitter == False):
+            if i is not 0: # and (splitter is n_cpu or splitter is False):
                 self._reproduction(mutation_var)
 
             # Evaluate fitness of each member
             self._run_population(splitter=splitter)
 
             # Saves Poplist for the last split:
-            if splitter == n_cpu: # This file will be automatically deleted in _run_popoulation()
+            if splitter is n_cpu: # This file will be automatically deleted in _run_popoulation()
                 np.save("./temp/Poplist_Splitter{}.Generation.{}.cond{}.npy".format(splitter, self.generation, self.condition), self.pop_list)
 
             # The Other scripts wait for the united poplist version from the last splitter
@@ -396,7 +396,7 @@ class SA_Evolution(SA_Simulation):
             self.generation += 1
 
             # Saves fitness progress for the five best agents:
-            if splitter == n_cpu or splitter == False:
+            if splitter is n_cpu or splitter is False:
                 Fitness_progress[i, 1:] = np.round(self.pop_list[0:5, 1], 2)
                 Fitness_progress[i, 0] = self.generation
                 print("Generation {}: Fitness (5 best Agents): {}".format(self.generation, Fitness_progress[i, 1:]))
@@ -413,9 +413,9 @@ class SA_Evolution(SA_Simulation):
         if not isinstance(splitter, bool):
             np.save("./temp/SA_Splitter{}.DONE.cond{}.npy".format(splitter, self.condition), splitter) # First each script has to show that it is done
 
-        if splitter == n_cpu: # Check whether all scripts are done
+        if splitter is n_cpu: # Check whether all scripts are done
             counter = 0
-            while counter != n_cpu:
+            while counter is not n_cpu:
                 counter = 0
                 for split_count in range(1, n_cpu+1):
                     if not os.path.isfile("./temp/SA_Splitter{}.DONE.cond{}.npy".format(split_count, self.condition)):
@@ -430,7 +430,7 @@ class SA_Evolution(SA_Simulation):
 
 
         # Save in external file:
-        if save and (splitter == n_cpu or splitter == False):
+        if save and (splitter is n_cpu or splitter is False):
             self.filename = "Gen{}-{}.popsize{}.mut{}.sound_cond={}.JA.single(Fitness{})".format(self.generation - generations + 1,
                                                                                                  self.generation,
                                                                                                  self.pop_size,
@@ -453,10 +453,10 @@ class SA_Evolution(SA_Simulation):
 
     def reimplement_population(self, filename=None, Plot=False):
 
-        assert filename.find("single") != -1, "Wrong file! The file needs to be from the SINGLE condition"
+        assert filename.find("single") is not -1, "Wrong file! The file needs to be from the SINGLE condition"
 
         if filename is None:
-            if self.filename == "":
+            if self.filename is "":
                 raise ValueError("No file to reimplement")
             else:
                 print("Reimplements its own pop_list file")
@@ -467,8 +467,8 @@ class SA_Evolution(SA_Simulation):
         self.pop_list = pickle.load(open('./poplists/single/Poplist.{}'.format(self.filename), 'rb'))
         self.pop_size = self.pop_list.shape[0]
 
-        assert self.filename.find("False") != -1 or self.filename.find("True") != -1, "Condition is unknown (please add to filename (if known)"
-        self.condition = False if self.filename.find("False") != -1 and self.filename.find("True") == -1 else True
+        assert self.filename.find("False") is not -1 or self.filename.find("True") is not -1, "Condition is unknown (please add to filename (if known)"
+        self.condition = False if self.filename.find("False") is not -1 and self.filename.find("True") is -1 else True
 
         fitness_progress = pickle.load(open('./poplists/single/Fitness_progress.{}'.format(self.filename), 'rb'))
         self.generation = int(fitness_progress[-1, 0])
@@ -512,7 +512,7 @@ class SA_Evolution(SA_Simulation):
 
                 self.implement_genome(genome_string=self.pop_list[knoblin_nr-1,2:])
 
-                direction = "left" if init_target_direction == - 1 else "right"
+                direction = "left" if init_target_direction is - 1 else "right"
                 print("Create Animation of {} trial and initial Target direction to the {}".format(trial_speed, direction))
                 output.append(self.run_and_plot())   # include reset of the neural system
                 # output[count] = self.run_and_plot()
