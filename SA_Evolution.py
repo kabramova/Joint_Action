@@ -107,7 +107,7 @@ class SA_Evolution(SA_Simulation):
 
         first_runs = False
 
-        if splitterisFalse:
+        if splitter is False:
             for i, string in enumerate(self.pop_list):
                 if string[1] is 0:  # run only if fitness is no evaluated yet
                     genome = string[2:]

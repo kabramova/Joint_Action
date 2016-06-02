@@ -119,7 +119,7 @@ class JA_Evolution(JA_Simulation):
 
         first_runs = False
 
-        if splitterisFalse:
+        if splitter is False:
             for i in range(self.pop_size):
 
                 string_L = copy.copy(self.pop_list_L[i,:])
