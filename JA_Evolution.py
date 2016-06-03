@@ -451,7 +451,7 @@ class JA_Evolution(JA_Simulation):
                 start_timer = datetime.datetime.now().replace(microsecond=0)
 
             # Create new Generation
-            if i != 0: # and (splitter == n_cpu or splitter is False):
+            if self.generation > 0: # and (splitter == n_cpu or splitter is False):
                 self._reproduction(mutation_var)
 
             # Evaluate fitness of each member

@@ -371,7 +371,7 @@ class SA_Evolution(SA_Simulation):
                 start_timer = datetime.datetime.now().replace(microsecond=0)
 
             # Create new Generation
-            if i != 0: # and (splitter is n_cpu or splitter is False):
+            if self.generation > 0: # and (splitter is n_cpu or splitter is False):
                 self._reproduction(mutation_var)
 
             # Evaluate fitness of each member
