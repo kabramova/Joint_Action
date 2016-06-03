@@ -170,7 +170,7 @@ class SA_Evolution(SA_Simulation):
 
             # Save splitted Files now:
             if splitter < n_cpu:
-                np.save("./temp/Poplist_part.{}.Generation.{}.cond{}.npy".format(splitter, self.generation, self.condition), self.pop_list[range(start,end),:])
+                np.save("./temp/SA_Poplist_part.{}.Generation.{}.cond{}.npy".format(splitter, self.generation, self.condition), self.pop_list[range(start,end),:])
                 # Here the code ends for splitter < 6
 
             # Check for last splitter, whether all files are there:
@@ -181,7 +181,7 @@ class SA_Evolution(SA_Simulation):
                     count = 0
 
                     for n in range(1, n_cpu):
-                        if os.path.isfile("./temp/Poplist_part.{}.Generation.{}.cond{}.npy".format(n, self.generation, self.condition)):
+                        if os.path.isfile("./temp/SA_Poplist_part.{}.Generation.{}.cond{}.npy".format(n, self.generation, self.condition)):
                             count += 1
                             if count == n_cpu-1:
                                 print("All {} files of Generation {} exist".format(n_cpu-1, self.generation))
@@ -199,14 +199,14 @@ class SA_Evolution(SA_Simulation):
 
                     end = split_size * save_counter + rest
 
-                    poplist_part = np.load("./temp/Poplist_part.{}.Generation.{}.cond{}.npy".format(save_counter, self.generation, self.condition))
+                    poplist_part = np.load("./temp/SA_Poplist_part.{}.Generation.{}.cond{}.npy".format(save_counter, self.generation, self.condition))
 
                     self.pop_list[range(start, end),:] = poplist_part # or self.pop_list[start:end]
 
                 print("All splitted poplist_parts successfully implemented")
                 # Remove files out of dictionary
                 for rm in range(1, n_cpu):
-                    os.remove("./temp/Poplist_part.{}.Generation.{}.cond{}.npy".format(rm, self.generation, self.condition))
+                    os.remove("./temp/SA_Poplist_part.{}.Generation.{}.cond{}.npy".format(rm, self.generation, self.condition))
 
                 if os.path.isfile("./temp/Poplist_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu, self.generation-1, self.condition)):
                     os.remove("./temp/Poplist_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu, self.generation - 1, self.condition))

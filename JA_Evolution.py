@@ -199,8 +199,8 @@ class JA_Evolution(JA_Simulation):
 
             # Save splitted Files now:
             if splitter < n_cpu:
-                np.save("./temp/Poplist_part_L.{}.Generation.{}.cond{}.npy".format(splitter, self.generation, self.condition), self.pop_list_L[range(start, end), :])
-                np.save("./temp/Poplist_part_R.{}.Generation.{}.cond{}.npy".format(splitter, self.generation, self.condition), self.pop_list_R[range(start, end), :])
+                np.save("./temp/JA_Poplist_part_L.{}.Generation.{}.cond{}.npy".format(splitter, self.generation, self.condition), self.pop_list_L[range(start, end), :])
+                np.save("./temp/JA_Poplist_part_R.{}.Generation.{}.cond{}.npy".format(splitter, self.generation, self.condition), self.pop_list_R[range(start, end), :])
 
             # Check for last splitter, whether all files are there:
             if splitter == n_cpu:  # = max number of splitters
@@ -210,8 +210,8 @@ class JA_Evolution(JA_Simulation):
                     count = 0
 
                     for n in range(1, n_cpu):
-                        if os.path.isfile("./temp/Poplist_part_L.{}.Generation.{}.cond{}.npy".format(n, self.generation, self.condition)) \
-                                and os.path.isfile("./temp/Poplist_part_R.{}.Generation.{}.cond{}.npy".format(n, self.generation, self.condition)):
+                        if os.path.isfile("./temp/JA_Poplist_part_L.{}.Generation.{}.cond{}.npy".format(n, self.generation, self.condition)) \
+                                and os.path.isfile("./temp/JA_Poplist_part_R.{}.Generation.{}.cond{}.npy".format(n, self.generation, self.condition)):
                             count += 1
                             if count == n_cpu - 1:
                                 print("All {} files of Generation {} exist".format(n_cpu - 1, self.generation))
@@ -229,8 +229,8 @@ class JA_Evolution(JA_Simulation):
 
                     end = split_size * save_counter + rest
 
-                    poplist_part_L = np.load("./temp/Poplist_part_L.{}.Generation.{}.cond{}.npy".format(save_counter, self.generation, self.condition))
-                    poplist_part_R = np.load("./temp/Poplist_part_R.{}.Generation.{}.cond{}.npy".format(save_counter, self.generation, self.condition))
+                    poplist_part_L = np.load("./temp/JA_Poplist_part_L.{}.Generation.{}.cond{}.npy".format(save_counter, self.generation, self.condition))
+                    poplist_part_R = np.load("./temp/JA_Poplist_part_R.{}.Generation.{}.cond{}.npy".format(save_counter, self.generation, self.condition))
 
                     self.pop_list_L[range(start, end), :] = poplist_part_L  # or self.pop_list[start:end]
                     self.pop_list_R[range(start, end), :] = poplist_part_R
@@ -238,8 +238,8 @@ class JA_Evolution(JA_Simulation):
                 print("All splitted poplist_parts successfully implemented")
                 # Remove files out of dictionary
                 for rm in range(1, n_cpu):
-                    os.remove("./temp/Poplist_part_L.{}.Generation.{}.cond{}.npy".format(rm, self.generation, self.condition))
-                    os.remove("./temp/Poplist_part_R.{}.Generation.{}.cond{}.npy".format(rm, self.generation, self.condition))
+                    os.remove("./temp/JA_Poplist_part_L.{}.Generation.{}.cond{}.npy".format(rm, self.generation, self.condition))
+                    os.remove("./temp/JA_Poplist_part_R.{}.Generation.{}.cond{}.npy".format(rm, self.generation, self.condition))
 
                 if os.path.isfile("./temp/Poplist_L_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu, self.generation - 1, self.condition))\
                         and os.path.isfile("./temp/Poplist_R_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu, self.generation - 1, self.condition)):
