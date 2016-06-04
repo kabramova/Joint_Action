@@ -1,11 +1,11 @@
-from SA_Evolution import *
-from JA_Evolution import *
-
 import matplotlib
-matplotlib.use('MacOSX')
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 # Info: http://matplotlib.org/mpl_toolkits/mplot3d/tutorial.html
+
+from SA_Evolution import *
+from JA_Evolution import *
+
 
 '''
 TODO:
@@ -29,6 +29,8 @@ number_of_generations = 2
 filename = filename_request(condition)  # "joint" or "single"
 # filename = "Gen1001-2000.popsize55.mut0.02.sound_cond=False.JA.joint(Fitness6.1)"
 
+# TODO: check here, whether external file to this agents is available.
+
 if condition == "single":
     sa = SA_Evolution(auditory_condition=audicon)
     if isinstance(filename, str):
@@ -48,6 +50,7 @@ if condition == "joint":
 len(sa_performance)
 sa_performance[1][0] # Fitness for particular speed+direction trial
 
+# TODO: save .._performance in external file.
 
 ## Split in different Trials:
 sl = sa_performance[0] # speed: slow, initial target-direction: left
@@ -59,11 +62,11 @@ fr = sa_performance[3] # speed: fast, initial target-direction: right
 tracker = sr[1][:,0] # trajectories[1], tracker: tracs[:,0]
 target  = sr[1][:,1] # trajectories[1], target:  tracs[:,1]
 
-plt.figure("GRAPH A")
+fig_a = plt.figure("GRAPH A")
 plt.plot(tracker,'r', markersize=12, alpha=0.5)
 plt.plot(target, 'g')
 plt.savefig("./graphs/GRAPH A (POSITIONS) [WiP]")
-plt.close()
+plt.close(fig_a)
 
 ## GRAPH B:
 # neural_state[4]
@@ -76,47 +79,64 @@ neural_input = sr[5]
 
 
 # Info: http://matplotlib.org/mpl_toolkits/mplot3d/tutorial.html
-fig = plt.figure("GRAPH B")
-ax = fig.add_subplot(111, projection='3d')
+fig_b = plt.figure("GRAPH B")
+ax = fig_b.add_subplot(111, projection='3d')
 for i in range(neural_state.shape[1]):
     ax.plot(xs = range(neural_state.shape[0]), zs = neural_state[:,i], ys=np.repeat(i+1,neural_state.shape[0]))
     ax.plot(xs = range(neural_input.shape[0]), zs = neural_input[:,i], ys=np.repeat(i+1,neural_state.shape[0]), alpha=0.0)
 # plt.plot(neural_input, alpha=0.3)
 plt.savefig("./graphs/GRAPH B (Neural Activity) [WiP]")
-plt.close(fig)
+plt.close(fig_b)
 
 
-fig_b = plt.figure("GRAPH B_b")
-ax = fig_b.add_subplot(111, projection='3d')
+fig_b_b = plt.figure("GRAPH B_b")
+ax = fig_b_b.add_subplot(111, projection='3d')
 for i in range(neural_state.shape[1]):
     ax.plot(xs = range(neural_state.shape[0]), zs = neural_state[:,i], ys=np.repeat(i+1,neural_state.shape[0]), alpha=0.3)
     ax.plot(xs = range(neural_input.shape[0]), zs = neural_input[:,i], ys=np.repeat(i+1,neural_state.shape[0]))
 plt.savefig("./graphs/GRAPH B_b (Neural Activity) [WiP]")
-plt.close(fig_b)
-
-
-
-# TODO: Contour plots
-fig_b = plt.figure("GRAPH B_b")
-ax = fig_b.add_subplot(111, projection='3d')
-for i in range(neural_state.shape[1]):
-    ax.counter(X = range(neural_state.shape[0]), Z = neural_state[:,i], Y=i+1, alpha=0.3)
-    ax.counter(X = range(neural_input.shape[0]), Z = neural_input[:,i], Y=i+1)
-plt.savefig("./graphs/GRAPH B_b (Neural Activity) [WiP]")
-plt.close(fig_b)
+plt.close(fig_b_b)
 
 
 # TODO: Maybe Wireframe:
-fig = plt.figure("GRAPH B")
-ax = fig.add_subplot(111, projection='3d')
+fig_b_c = plt.figure("GRAPH B")
+ax = fig_b_c.add_subplot(111, projection='3d')
 for i in range(neural_state.shape[1]):
     ax.plot_wireframe(X = range(neural_state.shape[0]), Z = neural_state[:,i], Y=i+1)
 # plt.plot(neural_input, alpha=0.3)
-plt.savefig("./graphs/GRAPH B (Neural Activity) WIRE [WiP]")
-plt.close(fig)
+plt.savefig("./graphs/GRAPH B_C (Neural Activity) WIRE [WiP]")
+plt.close(fig_b_c)
+
+
+# TODO: Contour plots
+# fig_b_d = plt.figure("GRAPH B_b")
+# ax = fig_b_d.add_subplot(111, projection='3d')
+# for i in range(neural_state.shape[1]):
+#     ax.counter(X = range(neural_state.shape[0]), Z = neural_state[:,i], Y=i+1, alpha=0.3)
+#     ax.counter(X = range(neural_input.shape[0]), Z = neural_input[:,i], Y=i+1)
+# plt.savefig("./graphs/GRAPH B_b (Neural Activity) [WiP]")
+# plt.close(fig_b_d)
 
 
 ## GRAPH C:
 # keypress[2], sounds[3]
-sr[2]
-sr[3]
+fig_c = plt.figure("GRAPH C")
+for i in range(len(sr[2])):
+    if sr[2][i,0] == 1: # keypress left
+        plt.plot(i, sr[2][i,0]+1, 'gs', markersize=8)
+
+    if sr[2][i, 1] == 1:  # keypress right
+        plt.plot(i, sr[2][i, 0]-1, 'gs', markersize=8)
+
+for i in range(len(sr[3])):
+    if sr[3][i,0] == -1: # sound left
+        plt.plot(i, sr[3][i,0]+1, 'yo', markersize=12, alpha=0.3)
+
+    if sr[3][i, 1] == 1:  # sound right
+        plt.plot(i, sr[3][i, 0]-1, 'yo', markersize=12, alpha=0.3)
+
+plt.savefig("./graphs/GRAPH C (Keypress and Sound) [WiP]")
+plt.close(fig_c)
+
+
+
