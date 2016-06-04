@@ -365,7 +365,7 @@ class Evolution(Simulate):
         if save:
 
             self.filename = "sim{}.mut{}.Gen{}-{}(Fitness {})".format(self.simlength, mutation_var, self.Generation - Generations + 1,
-                                                                       self.Generation, np.round(self.pick_best()[:,1],2))
+                                                                       self.Generation, np.round(self.pop_list[0,1],2))
 
             pickle.dump(self.pop_list,                open('./poplists/Poplist.{}'.format(self.filename), 'wb'))
             pickle.dump(np.round(Fitness_progress,2), open('./poplists/Fitness_progress.{}'.format(self.filename), 'wb'))
