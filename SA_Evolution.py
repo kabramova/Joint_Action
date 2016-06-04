@@ -281,12 +281,11 @@ class SA_Evolution(SA_Simulation):
 
         if (self.pop_size - (n_family + n_fps + n_random)) != 0:
             rest = self.pop_size - (n_family + n_fps + n_random) # rest has to be filled up
-            if rest%2>0:  # if rest is odd
-                n_fps += int((rest+1)/2)
-                n_random += int((rest-1)/2)
-            else:         # if rest is even
-                n_fps += int(rest/2)
-                n_random += int(rest/2)
+
+            odd = 1 if rest%2>0 else 0 # if rest is odd(1) else even(0)
+            n_fps += int((rest+odd)/2)
+            n_random += int((rest-odd)/2)
+
 
         # Algorithm for fitness proportionate selection:
         # (Source: http://stackoverflow.com/questions/298301/roulette-wheel-selection-algorithm/320788#320788)
