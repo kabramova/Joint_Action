@@ -23,27 +23,42 @@ GRAPHS:
 
 # Setup Agent(s) to analyse:
 condition = single_or_joint_request()
-
 audicon = audio_condition_request()
-number_of_generations = 2
-filename = filename_request(condition)  # "joint" or "single"
-# filename = "Gen1001-2000.popsize55.mut0.02.sound_cond=False.JA.joint(Fitness6.1)"
 
-# TODO: check here, whether external file to this agents is available.
+load = load_request()
 
-if condition == "single":
-    sa = SA_Evolution(auditory_condition=audicon)
-    if isinstance(filename, str):
-       sa_performance = sa.reimplement_population(filename=filename, Plot=True)
-       # sa_performance[0-3] are the different trials
-       # sa_performance[0-3][0-5] = fitness[0], trajectories[1], keypress[2], sounds[3], neural_state[4], neural_input_L[5]
+if load is False:
+    filename = filename_request(condition)  # "joint" or "single"
+    # filename = "Gen1001-2000.popsize55.mut0.02.sound_cond=False.JA.joint(Fitness6.1)"
 
-if condition == "joint":
-    ja = JA_Evolution(auditory_condition=audicon, pop_size=55)
-    if isinstance(filename, str):
-        ja_performance = ja.reimplement_population(filename=filename, Plot=True)
-        # ja_performance[0-3] are the different trials
-        # ja_performance[0-3][0-7] = fitness[0], trajectories[1], keypress[2], sounds[3], neural_state_L[4], neural_state_L[5], neural_input_L[6], neural_input_L[7]
+    # TODO: check here, whether external file to this agents is available.
+
+    if condition == "single":
+        sa = SA_Evolution(auditory_condition=audicon)
+        if isinstance(filename, str):
+           sa_performance = sa.reimplement_population(filename=filename, Plot=True)
+           sa_performance = np.array(sa_performance, dtype=object)
+           np.save("./Analysis/single/sa_performance_cond{}_fitness{}".format(sa.condition, np.round(sa.pop_list[0, 1],2)), sa_performance)
+           # sa_performance[0-3] are the different trials
+           # sa_performance[0-3][0-5] = fitness[0], trajectories[1], keypress[2], sounds[3], neural_state[4], neural_input_L[5]
+
+    if condition == "joint":
+        ja = JA_Evolution(auditory_condition=audicon, pop_size=55)
+        if isinstance(filename, str):
+            ja_performance = ja.reimplement_population(filename=filename, Plot=True)
+            ja_performance = np.array(ja_performance, dtype=object)
+            np.save("./Analysis/joint/ja_performance_cond{}_fitness{}".format(ja.condition, np.round(ja.pop_list_L[0,1],2)), ja_performance)
+            # ja_performance[0-3] are the different trials
+            # ja_performance[0-3][0-7] = fitness[0], trajectories[1], keypress[2], sounds[3], neural_state_L[4], neural_state_L[5], neural_input_L[6], neural_input_L[7]
+
+
+if load is True:
+    if condition == "single":
+        sa_performance = load_file(condition, audicon)
+        print(">> File is loaded in sa_performance")
+    if condition == "joint":
+        ja_performance = load_file(condition, audicon)
+        print(">> File is loaded in ja_performance")
 
 
 
@@ -65,7 +80,7 @@ target  = sr[1][:,1] # trajectories[1], target:  tracs[:,1]
 fig_a = plt.figure("GRAPH A")
 plt.plot(tracker,'r', markersize=12, alpha=0.5)
 plt.plot(target, 'g')
-plt.savefig("./graphs/GRAPH A (POSITIONS) [WiP]")
+plt.savefig("./Analysis/graphs/GRAPH A (POSITIONS) [WiP]")
 plt.close(fig_a)
 
 ## GRAPH B:
@@ -85,7 +100,7 @@ for i in range(neural_state.shape[1]):
     ax.plot(xs = range(neural_state.shape[0]), zs = neural_state[:,i], ys=np.repeat(i+1,neural_state.shape[0]))
     ax.plot(xs = range(neural_input.shape[0]), zs = neural_input[:,i], ys=np.repeat(i+1,neural_state.shape[0]), alpha=0.0)
 # plt.plot(neural_input, alpha=0.3)
-plt.savefig("./graphs/GRAPH B (Neural Activity) [WiP]")
+plt.savefig("./Analysis/graphs/GRAPH B (Neural Activity) [WiP]")
 plt.close(fig_b)
 
 
@@ -94,7 +109,7 @@ ax = fig_b_b.add_subplot(111, projection='3d')
 for i in range(neural_state.shape[1]):
     ax.plot(xs = range(neural_state.shape[0]), zs = neural_state[:,i], ys=np.repeat(i+1,neural_state.shape[0]), alpha=0.3)
     ax.plot(xs = range(neural_input.shape[0]), zs = neural_input[:,i], ys=np.repeat(i+1,neural_state.shape[0]))
-plt.savefig("./graphs/GRAPH B_b (Neural Activity) [WiP]")
+plt.savefig("./Analysis/graphs/GRAPH B_b (Neural Activity) [WiP]")
 plt.close(fig_b_b)
 
 
@@ -104,7 +119,7 @@ ax = fig_b_c.add_subplot(111, projection='3d')
 for i in range(neural_state.shape[1]):
     ax.plot_wireframe(X = range(neural_state.shape[0]), Z = neural_state[:,i], Y=i+1)
 # plt.plot(neural_input, alpha=0.3)
-plt.savefig("./graphs/GRAPH B_C (Neural Activity) WIRE [WiP]")
+plt.savefig("./Analysis/graphs/GRAPH B_C (Neural Activity) WIRE [WiP]")
 plt.close(fig_b_c)
 
 
@@ -135,7 +150,7 @@ for i in range(len(sr[3])):
     if sr[3][i, 1] == 1:  # sound right
         plt.plot(i, sr[3][i, 0]-1, 'yo', markersize=12, alpha=0.3)
 
-plt.savefig("./graphs/GRAPH C (Keypress and Sound) [WiP]")
+plt.savefig("./Analysis/graphs/GRAPH C (Keypress and Sound) [WiP]")
 plt.close(fig_c)
 
 

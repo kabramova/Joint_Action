@@ -277,6 +277,68 @@ def single_or_joint_request():
     return output
 
 
+def load_request():
+
+    count = 0
+    while count != 3:
+        Input = input("Do you want to load a performance file ('(y)es'/'(n)o'):")
+
+        if Input in ["y", "Y", "yes", "Yes", "YES"]:
+            print("Loading a performance file")
+            return True
+
+        elif Input in ["n", "N", "no", "No", "NO"]:
+            print("Existing Poplist(s) will be evaluated and saved in performance file")
+            return False
+
+        else:
+            print("Input is not understood.\n"
+                  "Type either 'yes' or 'no'.\n"
+                  "{} more attempt(s)".format(2 - count))
+            count += 1
+
+    raise ValueError("Function stopped")
+
+
+def load_file(single_or_joint, audio_condition):
+
+    assert single_or_joint in ["single", "joint"], "Input not understood. single_or_joint must be either 'single' or 'joint'!"
+    assert audio_condition in [True, False], "Input not understood. audio_condition must be either True or False "
+
+    found = 0
+
+    for file in os.listdir("./Analysis/{}/".format(single_or_joint)):
+        if file.find("performance") != -1 and file.find(str(audio_condition)) != -1:
+            count = 0
+            found += 1
+            No = False
+
+            filename = file[file.find("sa"):] if file.find("sa") != -1 else file[file.find("ja"):]
+
+            while count != 3 and No is False:
+                file_request = input("{} \n Do you want to load this file ((y)es, (n)o:".format(filename))
+
+                if file_request in ["y", "Y", "yes", "Yes", "YES"]:
+                    print(">> File will be loaded")
+                    return np.load("./Analysis/{}/{}".format(single_or_joint, filename))
+
+                elif file_request in ["n", "N", "no", "No", "NO"]:
+                    print(">> Looking for further files")
+                    No = True
+
+                else:
+                    print("Input is not understood.\n"
+                          "Type either 'yes' or 'no' ({} more attempt(s))".format(2 - count))
+                    count += 1
+                    if count >= 3:
+                        raise ValueError("Function stopped, input is not understood")
+
+    print("There were {} file(s) to load".format(found))
+    if found > 0:
+        print("No file was selected \n".format(found))
+
+    raise ValueError("Evaluate recent poplist(s)")
+
 
 
 
