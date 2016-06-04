@@ -5,10 +5,10 @@ from Evolution import *
 e1 = Evolution(simlength=5000)
 
 # os.listdir('poplists')
-filename = ""      # Filename starts with "sim..."
+filename = "sim5000.mut0.02.Gen1-1000(Fitness [ 30.87  33.29])"      # Filename starts with "sim..."
 if filename != "" and isinstance(filename, str):
     e1.reimplement_population(Filename=filename, Plot=False)
-    print("Filename:", e1.filename)
+    print("File implemented:", e1.filename)
 
 n_gen = generation_request()
 

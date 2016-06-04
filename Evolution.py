@@ -393,6 +393,8 @@ class Evolution(Simulate):
         Fitness_progress     = pickle.load(open('./poplists/Fitness_progress.{}'.format(Filename), 'rb'))
         self.Generation      = int(Fitness_progress[-1,0])
 
+        self.filename = Filename
+
 
         if Plot:
 
