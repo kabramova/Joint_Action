@@ -206,6 +206,8 @@ class SA_Evolution(SA_Simulation):
                 print("All splitted poplist_parts successfully implemented")
                 # Remove files out of dictionary
                 for rm in range(1, n_cpu):
+                    #TODO: This might happen to early!
+                    time.sleep(1) # try different solution
                     os.remove("./temp/SA_Poplist_part.{}.Generation.{}.cond{}.npy".format(rm, self.generation, self.condition))
 
                 if os.path.isfile("./temp/Poplist_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu, self.generation-1, self.condition)):
