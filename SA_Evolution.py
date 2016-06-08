@@ -176,8 +176,7 @@ class SA_Evolution(SA_Simulation):
             # Check for last splitter, whether all files are there:
             if splitter == n_cpu: # = max number of splitters
 
-                count = 0
-                while count != n_cpu-1:
+                while True:
                     count = 0
 
                     for n in range(1, n_cpu):
@@ -185,8 +184,9 @@ class SA_Evolution(SA_Simulation):
                             count += 1
                             if count == n_cpu-1:
                                 print("All {} files of Generation {} exist".format(n_cpu-1, self.generation))
-
-                    time.sleep(1)
+                                break
+                            else:
+                                time.sleep(1)
 
                 # Last splitter integrates all files again:
                 for save_counter in range(1, n_cpu):
@@ -199,7 +199,9 @@ class SA_Evolution(SA_Simulation):
 
                     end = split_size * save_counter + rest
 
-                    poplist_part = np.load("./temp/SA_Poplist_part.{}.Generation.{}.cond{}.npy".format(save_counter, self.generation, self.condition))
+                    poplist_part = np.load("./temp/SA_Poplist_part.{}.Generation.{}.cond{}.npy".format(save_counter,
+                                                                                                       self.generation,
+                                                                                                       self.condition))
 
                     self.pop_list[range(start, end),:] = poplist_part # or self.pop_list[start:end]
 
@@ -208,10 +210,16 @@ class SA_Evolution(SA_Simulation):
                 for rm in range(1, n_cpu):
                     #TODO: This might happen to early!
                     time.sleep(1) # try different solution
-                    os.remove("./temp/SA_Poplist_part.{}.Generation.{}.cond{}.npy".format(rm, self.generation, self.condition))
+                    os.remove("./temp/SA_Poplist_part.{}.Generation.{}.cond{}.npy".format(rm,
+                                                                                          self.generation,
+                                                                                          self.condition))
 
-                if os.path.isfile("./temp/Poplist_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu, self.generation-1, self.condition)):
-                    os.remove("./temp/Poplist_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu, self.generation - 1, self.condition))
+                if os.path.isfile("./temp/Poplist_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu,
+                                                                                              self.generation-1,
+                                                                                              self.condition)):
+                    os.remove("./temp/Poplist_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu,
+                                                                                          self.generation - 1,
+                                                                                          self.condition))
 
                 self.pop_list = copy.copy(mat_sort(self.pop_list, index=1)) # sorts the pop_list, best agents on top
 
@@ -380,18 +388,24 @@ class SA_Evolution(SA_Simulation):
 
             # Saves Poplist for the last split:
             if splitter == n_cpu: # This file will be automatically deleted in _run_popoulation()
-                np.save("./temp/Poplist_Splitter{}.Generation.{}.cond{}.npy".format(splitter, self.generation, self.condition), self.pop_list)
+                np.save("./temp/Poplist_Splitter{}.Generation.{}.cond{}.npy".format(splitter,
+                                                                                    self.generation,
+                                                                                    self.condition), self.pop_list)
 
             # The Other scripts wait for the united poplist version from the last splitter
             if splitter < n_cpu and not isinstance(splitter, bool):
                 while True:
-                    if not os.path.isfile("./temp/Poplist_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu, self.generation, self.condition)):
+                    if not os.path.isfile("./temp/Poplist_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu,
+                                                                                                      self.generation,
+                                                                                                      self.condition)):
                         time.sleep(1)
                     else:
                         break
 
                 # Implement the united Poplist
-                self.pop_list = np.load("./temp/Poplist_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu, self.generation, self.condition))
+                self.pop_list = np.load("./temp/Poplist_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu,
+                                                                                                    self.generation,
+                                                                                                    self.condition))
 
             # Updated Generation counter:
             self.generation += 1
@@ -426,6 +440,7 @@ class SA_Evolution(SA_Simulation):
 
             # Remove
             os.remove("./temp/Poplist_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu, self.generation - 1, self.condition))
+
             for split_count in range(1,n_cpu+1):
                 os.remove("./temp/SA_Splitter{}.DONE.cond{}.npy".format(split_count, self.condition))
 
@@ -522,8 +537,6 @@ class SA_Evolution(SA_Simulation):
         print("Output contains fitness[0], trajectories[1], keypress[2] and sounds[3], "
               "neural_state[4], neural_input_L[5]")
         return output
-
-
 
 
     def print_best(self, n=5):
