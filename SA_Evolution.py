@@ -176,7 +176,8 @@ class SA_Evolution(SA_Simulation):
             # Check for last splitter, whether all files are there:
             if splitter == n_cpu: # = max number of splitters
 
-                while True:
+                count = 0
+                while count != n_cpu-1:
                     count = 0
 
                     for n in range(1, n_cpu):
@@ -185,8 +186,8 @@ class SA_Evolution(SA_Simulation):
                             if count == n_cpu-1:
                                 print("All {} files of Generation {} exist".format(n_cpu-1, self.generation))
                                 break
-                            else:
-                                time.sleep(1)
+
+                    time.sleep(1)
 
                 # Last splitter integrates all files again:
                 for save_counter in range(1, n_cpu):
