@@ -87,8 +87,13 @@ for trial in trials:
     target  = trial[1][:,1] # trajectories[1], target:  tracs[:,1]
 
     fig_a = plt.figure("GRAPH A, Trial {}".format(trial_name))
-    plt.plot(tracker,'r', markersize=12, alpha=0.5)
-    plt.plot(target, 'g')
+    plt.ylim(-20.5, 20.5)
+    plt.plot(tracker,'r', markersize=12, alpha=0.5, label="Tracker")
+    plt.plot(target, 'g', label="Target")
+    plt.legend()
+    plt.title("Target and Tracker Position over time")
+    plt.xlabel("Timesteps")
+    plt.ylabel("Position")
     plt.savefig("./{}/{} GRAPH A (POSITIONS) Trial {}  [WiP]".format(folder, condition, trial_name))
     plt.close(fig_a)
 
@@ -108,7 +113,10 @@ for trial in trials:
     for i in range(neural_state.shape[1]):
         ax.plot(xs = range(neural_state.shape[0]), zs = neural_state[:,i], ys=np.repeat(i+1,neural_state.shape[0]))
         ax.plot(xs = range(neural_input.shape[0]), zs = neural_input[:,i], ys=np.repeat(i+1,neural_state.shape[0]), alpha=0.0)
-    # plt.plot(neural_input, alpha=0.3)
+    # ax.set_title("Neural activation through trial")
+    ax.set_xlabel('Timesteps')
+    ax.set_ylabel('Neurons')
+    ax.set_zlabel('Activation')
     plt.savefig("./{}/{} GRAPH B (Neural Activity) Trial {}  [WiP]".format(folder, condition, trial_name))
     plt.close(fig_b)
 
@@ -116,8 +124,13 @@ for trial in trials:
     fig_b_b = plt.figure("GRAPH B_b, Trial {}".format(trial_name))
     ax = fig_b_b.add_subplot(111, projection='3d')
     for i in range(neural_state.shape[1]):
-        ax.plot(xs = range(neural_state.shape[0]), zs = neural_state[:,i], ys=np.repeat(i+1,neural_state.shape[0]), alpha=0.3)
+        # ax.plot(xs = range(neural_state.shape[0]), zs = neural_state[:,i], ys=np.repeat(i+1,neural_state.shape[0]),
+        #         alpha=0.1)
         ax.plot(xs = range(neural_input.shape[0]), zs = neural_input[:,i], ys=np.repeat(i+1,neural_state.shape[0]))
+    ax.set_title("Neural Input")
+    ax.set_xlabel('Timesteps')
+    ax.set_ylabel('Neurons')
+    ax.set_zlabel('weighted Input')
     plt.savefig("./{}/{} GRAPH B_b (Neural Activity) Trial {}  [WiP]".format(folder, condition, trial_name))
     plt.close(fig_b_b)
 
