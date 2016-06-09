@@ -5,7 +5,7 @@ from Evolution import *
 e1 = Evolution(simlength=5000)
 
 # os.listdir('poplists')
-filename = "sim5000.mut0.02.Gen1001-2000(Fitness 29.61)"      # Filename starts with "sim..."
+filename = "sim5000.mut0.02.Gen2001-3000(Fitness 27.97)"      # Filename starts with "sim..."
 if filename != "" and isinstance(filename, str):
     e1.reimplement_population(Filename=filename, Plot=False)
     print("File implemented:", e1.filename)
