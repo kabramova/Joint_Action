@@ -1,4 +1,5 @@
 import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 # Info: http://matplotlib.org/mpl_toolkits/mplot3d/tutorial.html
@@ -77,6 +78,8 @@ folder = "./Analysis/graphs/{}_{}_{}".format(condition, audicon, fitness)
 if not os.path.exists(folder):
     os.mkdir(folder)
 
+# trial = trials[0]
+
 # TODO: adapt graphs to joint condition (if needed)
 for trial in trials:
     index += 1
@@ -91,9 +94,10 @@ for trial in trials:
     plt.plot(tracker,'r', markersize=12, alpha=0.5, label="Tracker")
     plt.plot(target, 'g', label="Target")
     plt.legend()
-    plt.title("Target and Tracker Position over time")
+    plt.title("Target and Tracker Positions")
     plt.xlabel("Timesteps")
     plt.ylabel("Position")
+
     plt.savefig("./{}/{} GRAPH A (POSITIONS) Trial {}  [WiP]".format(folder, condition, trial_name))
     plt.close(fig_a)
 
@@ -158,7 +162,8 @@ for trial in trials:
     ## GRAPH C:
     # keypress[2], sounds[3]
     fig_c = plt.figure("GRAPH C, Trial {}".format(trial_name))
-    plt.ylim(-1.1, 1.1)
+    plt.xlim(0, trial[2].shape[0])
+    plt.ylim(-2, 2)
 
     for i in range(len(trial[2])):
         if trial[2][i,0] == 1: # keypress left
@@ -169,10 +174,10 @@ for trial in trials:
 
     for i in range(len(trial[3])):
         if trial[3][i,0] == -1: # sound left
-            plt.plot(i, trial[3][i,0]+1, 'yo', markersize=12, alpha=0.3)
+            plt.plot(i, trial[3][i,0]+1, 'yo', markersize=9, alpha=0.1)
 
         if trial[3][i, 1] == 1:  # sound right
-            plt.plot(i, trial[3][i, 0]-1, 'yo', markersize=12, alpha=0.3)
+            plt.plot(i, trial[3][i, 0]-1, 'yo', markersize=9, alpha=0.1)
 
     plt.savefig("./{}/{} GRAPH C (Keypress and Sound) Trial {}  [WiP]".format(folder, condition, trial_name))
     plt.close(fig_c)

@@ -1,6 +1,6 @@
 from JointAction import *
 import matplotlib
-matplotlib.use('Agg')
+matplotlib.use('agg')
 import matplotlib.pyplot as plt
 
 
