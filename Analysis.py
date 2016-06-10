@@ -1,6 +1,7 @@
 import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
+import matplotlib.cm as cmx
 from mpl_toolkits.mplot3d import Axes3D
 # Info: http://matplotlib.org/mpl_toolkits/mplot3d/tutorial.html
 
@@ -82,8 +83,14 @@ if not os.path.exists(folder):
 
 # TODO: adapt graphs to joint condition (if needed)
 for trial in trials:
+
     index += 1
     trial_name = trial_names[index]
+
+    # Create Folder
+    current_folder = "{}/{}".format(folder, trial_name)
+    if not os.path.exists(current_folder):
+        os.mkdir(current_folder)
 
     ## GRAPH A:
     tracker = trial[1][:,0] # trajectories[1], tracker: tracs[:,0]
@@ -98,7 +105,7 @@ for trial in trials:
     plt.xlabel("Timesteps")
     plt.ylabel("Position")
 
-    plt.savefig("./{}/{} GRAPH A (POSITIONS) Trial {}  [WiP]".format(folder, condition, trial_name))
+    plt.savefig("./{}/{} GRAPH A (POSITIONS) Trial {}".format(current_folder, condition, trial_name))
     plt.close(fig_a)
 
     ## GRAPH B:
@@ -121,7 +128,7 @@ for trial in trials:
     ax.set_xlabel('Timesteps')
     ax.set_ylabel('Neurons')
     ax.set_zlabel('Activation')
-    plt.savefig("./{}/{} GRAPH B (Neural Activity) Trial {}  [WiP]".format(folder, condition, trial_name))
+    plt.savefig("./{}/{} GRAPH B (Neural Activity) Trial {}".format(current_folder, condition, trial_name))
     plt.close(fig_b)
 
 
@@ -135,7 +142,7 @@ for trial in trials:
     ax.set_xlabel('Timesteps')
     ax.set_ylabel('Neurons')
     ax.set_zlabel('weighted Input')
-    plt.savefig("./{}/{} GRAPH B_b (Neural Activity) Trial {}  [WiP]".format(folder, condition, trial_name))
+    plt.savefig("./{}/{} GRAPH B_b (Neural Activity) Trial {}".format(current_folder, condition, trial_name))
     plt.close(fig_b_b)
 
 
@@ -145,7 +152,7 @@ for trial in trials:
     # for i in range(neural_state.shape[1]):
     #     ax.plot_wireframe(X = range(neural_state.shape[0]), Z = neural_state[:,i], Y=i+1)
     # # plt.plot(neural_input, alpha=0.3)
-    # plt.savefig("./{}/{} GRAPH B_C (Neural Activity) WIRE Trial {}  [WiP]".format(folder, condition, trial_name))
+    # plt.savefig("./{}/{} GRAPH B_C (Neural Activity) WIRE Trial {}  [WiP]".format(current_folder, condition, trial_name))
     # plt.close(fig_b_c)
 
 
@@ -155,31 +162,36 @@ for trial in trials:
     # for i in range(neural_state.shape[1]):
     #     ax.counter(X = range(neural_state.shape[0]), Z = neural_state[:,i], Y=i+1, alpha=0.3)
     #     ax.counter(X = range(neural_input.shape[0]), Z = neural_input[:,i], Y=i+1)
-    # plt.savefig("./graphs/{} GRAPH B_b (Neural Activity) Trial {}  [WiP]".format(folder, condition, trial_name))
+    # plt.savefig("./graphs/{} GRAPH B_b (Neural Activity) Trial {}  [WiP]".format(current_folder, condition, trial_name))
     # plt.close(fig_b_d)
 
 
     ## GRAPH C:
     # keypress[2], sounds[3]
     fig_c = plt.figure("GRAPH C, Trial {}".format(trial_name))
-    plt.xlim(0, trial[2].shape[0])
-    plt.ylim(-2, 2)
+    plt.xlim(0, len(trial[2]))
+    plt.ylim(2, -2)
+    plt.xlabel("Timesteps")
+    plt.ylabel("Keypress")
+    plt.yticks([-1,1],["left", "right"])
+
+
+    for i in range(len(trial[3])):
+        if trial[3][i, 0] == -1:  # sound left
+            plt.plot(i, trial[3][i, 0] + 1, 'yo', markersize=9, alpha=0.05)
+
+        if trial[3][i, 1] == 1:  # sound right
+            plt.plot(i, trial[3][i, 0] - 1, 'yo', markersize=9, alpha=0.05)
+
 
     for i in range(len(trial[2])):
         if trial[2][i,0] == 1: # keypress left
-            plt.plot(i, trial[2][i,0]+1, 'gs', markersize=8)
+            plt.plot(i, trial[2][i,0]+1, 'bs', markersize=8)
 
         if trial[2][i, 1] == 1:  # keypress right
-            plt.plot(i, trial[2][i, 0]-1, 'gs', markersize=8)
+            plt.plot(i, trial[2][i, 0]-1, 'bs', markersize=8)
 
-    for i in range(len(trial[3])):
-        if trial[3][i,0] == -1: # sound left
-            plt.plot(i, trial[3][i,0]+1, 'yo', markersize=9, alpha=0.1)
-
-        if trial[3][i, 1] == 1:  # sound right
-            plt.plot(i, trial[3][i, 0]-1, 'yo', markersize=9, alpha=0.1)
-
-    plt.savefig("./{}/{} GRAPH C (Keypress and Sound) Trial {}  [WiP]".format(folder, condition, trial_name))
+    plt.savefig("./{}/{} GRAPH C (Keypress and Sound) Trial {}".format(current_folder, condition, trial_name))
     plt.close(fig_c)
 
 
@@ -189,42 +201,54 @@ for trial in trials:
     # target  = trial[1][:,1] # trajectories[1], target:  tracs[:,1]
 
     # for negative change of target position (left movement)
-    fig_d_left = plt.figure("GRAPH D left, Trial {}".format(trial_name))
+    fig_d_neg = plt.figure("GRAPH D delta-, Trial {}".format(trial_name))
 
     # Define boarders
-    plt.xlim(-20,1, 20,1)
-    plt.ylim(-20,1, 20,1)
+    plt.xlim(-20.5, 20.5)
+    plt.ylim(-20.5, 20.5)
+
+    # Label Axes, Title
+    plt.title("$\delta- position \ of \ Target$")
+    plt.xlabel("Position Target")
+    plt.ylabel("Position Tracker")
 
     for row in range(len(trial[2])):
-        #TODO: Here "L" and "R" plotten, instead of dots
         if trial[2][row, 0] == -1:     # left
             if target[row] < target[row-1]:  # check whether left movement
-                plt.plot(target[row], tracker[row], "bo")
+                plt.plot(target[row], tracker[row], marker=r"$ {} $".format("L"), markersize=10, markerfacecolor="blue")
         if trial[2][row, 1] == 1:      # right
             if target[row] < target[row - 1]:
-                plt.plot(target[row], tracker[row], "ro")
+                plt.plot(target[row], tracker[row], marker=r"$ {} $".format("R"), ms=10, mfc="red")
 
-            plt.savefig("./{}/{} GRAPH D Left (Keypress and Trajectories) Trial {}  [WiP]".format(folder, condition, trial_name))
+    plt.savefig("./{}/{} GRAPH D delta- (Keypress and Trajectories) Trial {}".format(current_folder,
+                                                                                     condition,
+                                                                                     trial_name))
 
     # for positive change of target position (right movement)
-    fig_d_right = plt.figure("GRAPH D right, Trial {}".format(trial_name))
+    fig_d_pos = plt.figure("GRAPH D delta+, Trial {}".format(trial_name))
 
     # Define boarders
-    plt.xlim(-20,1, 20,1)
-    plt.ylim(-20,1, 20,1)
+    plt.xlim(-20.5, 20.5)
+    plt.ylim(-20.5, 20.5)
+
+    # Label Axes, Title
+    plt.title("$\delta+ position \ of \ Target$")
+    plt.xlabel("Position Target")
+    plt.ylabel("Position Tracker")
 
     for row in range(len(trial[2])):
-        #TODO: Here "L" and "R" plotten, instead of dots
+
         if trial[2][row, 0] == -1:     # left
             if target[row] > target[row-1]:  # check whether right movement
-                plt.plot(target[row], tracker[row], "bo")
+                plt.plot(target[row], tracker[row], marker=r"$ {} $".format("L"), markersize=10, markerfacecolor="blue")
         if trial[2][row, 1] == 1:      # right
             if target[row] > target[row - 1]:
-                plt.plot(target[row], tracker[row], "ro")
+                plt.plot(target[row], tracker[row], marker=r"$ {} $".format("R"), ms=10, mfc="red")
 
-    plt.savefig("./{}/{} GRAPH D Right (Keypress and Trajectories) Trial {}  [WiP]".format(folder, condition, trial_name))
-    plt.close(fig_d_left)
-    plt.close(fig_d_right)
+    plt.savefig("./{}/{} GRAPH D delta+ (Keypress and Trajectories) Trial {}".format(current_folder, condition, trial_name))
+
+    plt.close(fig_d_neg)
+    plt.close(fig_d_pos)
 
 
     ## GRAPH E:
@@ -237,30 +261,54 @@ for trial in trials:
     # neural_input = trial[5]
 
 
-    # Plot Input-receptor Neuron 1, and out motor-neurons 4 & 6
+    # Plot Input-receptor Neuron 1, and output motor-neurons 4 & 6
     fig_e = plt.figure("GRAPH E, Trial {}".format(trial_name))
     ax = fig_e.add_subplot(111, projection='3d')
-    ax.plot(xs = neural_state[:,0], zs = neural_state[:,3], ys=neural_state[:,5])
-    #TODO: name axes!
 
-    plt.savefig("./{}/{} GRAPH E (Neural Activity of Neuron 1,4,6) Trial {}  [WiP]".format(folder,
-                                                                                           condition,
-                                                                                           trial_name))
+    # Label Axes, title
+    ax.set_title("States of Input-receptor Neuron 1, and output motor-neurons 4 & 6")
+    ax.set_xlabel('Neuron 4')
+    ax.set_ylabel('Neuron 6')
+    ax.set_zlabel('Neuron 1')
+
+    # Plot
+    ax.plot(xs = neural_state[:,3], ys=neural_state[:,5], zs = neural_state[:,0], color="red")
+
+    plt.savefig("./{}/{} GRAPH E (Neural Activity of Neuron 1,4,6) Trial {}".format(current_folder,
+                                                                                    condition,
+                                                                                    trial_name))
     plt.close(fig_e)
 
 
+
     # Plot average Neural-state and Trajectories (Target, Tracker)
+    average = [np.mean(i) for i in neural_state]
+
     fig_e_b = plt.figure("GRAPH E, Trial {}".format(trial_name))
     ax = fig_e_b.add_subplot(111, projection='3d')
-    # TODO: name axes! x,y should be from range_boarders (-20,20), colour it (red/blue) the higher/lower it gets
 
-    average = [np.mean(i) for i in neural_state]
-    ax.plot(xs=target,
-            ys=tracker,
-            zs=average)
+    # axes limits
+    ax.set_xlim(-20.5, 20.5)
+    ax.set_ylim(-20.5, 20.5)
 
+    # Label Axes, title
+    ax.set_title('Network excitation')
+    ax.set_xlabel('Target Position')
+    ax.set_ylabel('Tracker Position')
+    ax.set_zlabel('Average Neural State')
 
-    plt.savefig("./{}/{} GRAPH E_b (Average Neural Activity and trajectories) Trial {}  [WiP]".format(folder,
-                                                                                                      condition,
-                                                                                                      trial_name))
+    # set color
+    colorsMap = 'jet'
+    cm = plt.get_cmap(colorsMap)
+    cNorm = matplotlib.colors.Normalize(vmin=min(average), vmax=max(average))
+    scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=cm)
+
+    ax.scatter(xs=target, ys=tracker, zs=average, c=scalarMap.to_rgba(average), lw=0, s=1.5)
+
+    # scalarMap.set_array(average)
+    # fig_e_b.colorbar(scalarMap)
+
+    plt.savefig("./{}/{} GRAPH E_b (Network excitation and trajectories) Trial {}".format(current_folder,
+                                                                                          condition,
+                                                                                          trial_name))
     plt.close(fig_e_b)
