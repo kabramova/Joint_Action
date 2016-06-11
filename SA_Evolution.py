@@ -408,6 +408,8 @@ class SA_Evolution(SA_Simulation):
                         break
 
                 # Implement the united Poplist
+                # TODO: this leads sometimes to error message: fid.seek(-N, 1)  back-up OSError: [Errno 22] Invalid argument
+                time.sleep(splitter/10) # this is to prevent the splitter all trying to open the file in the same moment.
                 self.pop_list = np.load("./temp/Poplist_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu,
                                                                                                     self.generation,
                                                                                                     self.condition))
