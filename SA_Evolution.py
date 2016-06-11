@@ -3,7 +3,7 @@ import pickle
 
 class SA_Evolution(SA_Simulation):
 
-    def __init__(self, auditory_condition, pop_size=111):
+    def __init__(self, auditory_condition, pop_size=110):
 
         super(self.__class__, self).__init__(auditory_condition, simlength=2789) # self.knoblin, self.simlength, self.condition
 
@@ -136,8 +136,8 @@ class SA_Evolution(SA_Simulation):
 
             n_cpu = 6 # in principal this could be adapted to the number of Processors on the server(s)
 
-            split_size = int(self.pop_list.shape[0]/n_cpu)
-            rest = self.pop_list.shape[0] - split_size*n_cpu
+            split_size = int(self.pop_size/n_cpu)
+            rest = self.pop_size - split_size*n_cpu
             split_size = split_size+rest if splitter == 1 else split_size   # first cpu can calculate more. This ballance out the effect,
                                                                             # that first two Knoblins dont have to be computer (if Generation > 0)
             if splitter == 1:
@@ -149,6 +149,7 @@ class SA_Evolution(SA_Simulation):
 
             for i in range(start, end):
                 string = self.pop_list[i,:]
+
                 if string[1] == 0.0:          # run only if fitness is no evaluated yet
                     genome = string[2:]
                     self.knoblin = Knoblin()
@@ -185,13 +186,12 @@ class SA_Evolution(SA_Simulation):
                             count += 1
                             if count == n_cpu-1:
                                 print("All {} files of Generation {} exist".format(n_cpu-1, self.generation))
-                                break
 
                     time.sleep(1)
 
                 # Last splitter integrates all files again:
                 for save_counter in range(1, n_cpu):
-                    split_size = int(self.pop_list.shape[0] / n_cpu)
+                    split_size = int(self.pop_size / n_cpu)
                     split_size = split_size + rest if save_counter == 1 else split_size
                     if save_counter == 1:
                         start = 0
@@ -207,13 +207,13 @@ class SA_Evolution(SA_Simulation):
                     self.pop_list[range(start, end),:] = poplist_part # or self.pop_list[start:end]
 
                 print("All splitted poplist_parts successfully implemented")
+
                 # Remove files out of dictionary
                 for rm in range(1, n_cpu):
-                    #TODO: This might happen to early!
-                    time.sleep(1) # try different solution
                     os.remove("./temp/SA_Poplist_part.{}.Generation.{}.cond{}.npy".format(rm,
                                                                                           self.generation,
                                                                                           self.condition))
+                print("All former splitted poplist_parts deleted") # Test
 
                 if os.path.isfile("./temp/Poplist_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu,
                                                                                               self.generation-1,
@@ -221,6 +221,8 @@ class SA_Evolution(SA_Simulation):
                     os.remove("./temp/Poplist_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu,
                                                                                           self.generation - 1,
                                                                                           self.condition))
+
+                    print("Former Poplist deleted")  # Test
 
                 self.pop_list = copy.copy(mat_sort(self.pop_list, index=1)) # sorts the pop_list, best agents on top
 
@@ -393,6 +395,8 @@ class SA_Evolution(SA_Simulation):
                                                                                     self.generation,
                                                                                     self.condition), self.pop_list)
 
+                print("New Poplists is saved & ready to be implemented in other splitters") # test
+
             # The Other scripts wait for the united poplist version from the last splitter
             if splitter < n_cpu and not isinstance(splitter, bool):
                 while True:
@@ -407,6 +411,8 @@ class SA_Evolution(SA_Simulation):
                 self.pop_list = np.load("./temp/Poplist_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu,
                                                                                                     self.generation,
                                                                                                     self.condition))
+
+                print("New Poplists implemented by splitter {}".format(splitter))  # test
 
             # Updated Generation counter:
             self.generation += 1
@@ -428,6 +434,7 @@ class SA_Evolution(SA_Simulation):
         # Remove remaining temporary files out of dictionary
         if not isinstance(splitter, bool):
             np.save("./temp/SA_Splitter{}.DONE.cond{}.npy".format(splitter, self.condition), splitter) # First each script has to show that it == done
+            print("Splitter {} in Generation {} is DONE".format(splitter, self.generation-1))  # test
 
         if splitter == n_cpu: # Check whether all scripts are done
             counter = 0
@@ -439,14 +446,13 @@ class SA_Evolution(SA_Simulation):
                     else:
                         counter += 1
 
-            # Remove
-            os.remove("./temp/Poplist_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu, self.generation - 1, self.condition))
 
             for split_count in range(1,n_cpu+1):
                 os.remove("./temp/SA_Splitter{}.DONE.cond{}.npy".format(split_count, self.condition))
+            print("Done files removed") #test
 
 
-        # Save in external file:
+        # Save in external file: #TODO if server problem save this for each generation and delete old ones.
         if save and (splitter == n_cpu or not splitter):
             self.filename = "Gen{}-{}.popsize{}.mut{}.sound_cond={}.JA.single(Fitness{})".format(self.generation - generations + 1,
                                                                                                  self.generation,
@@ -466,6 +472,10 @@ class SA_Evolution(SA_Simulation):
         else:
             print('Evolution terminated. \n'
                   '(Caution: pop_list is not saved in external file)')
+
+        # Remove last Poplist out of /temp folder
+        if splitter == n_cpu:
+            os.remove("./temp/Poplist_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu, self.generation - 1, self.condition))
 
 
     def reimplement_population(self, filename=None, Plot=False):

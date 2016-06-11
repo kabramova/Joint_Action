@@ -3,7 +3,7 @@ import pickle
 
 class JA_Evolution(JA_Simulation):
 
-    def __init__(self, auditory_condition, pop_size=111):
+    def __init__(self, auditory_condition, pop_size=55):
 
         super(self.__class__, self).__init__(auditory_condition, simlength=2789) # self.knoblin, self.simlength, self.condition
 
@@ -157,8 +157,8 @@ class JA_Evolution(JA_Simulation):
 
             n_cpu = 6  # in principal this could be adapted to the number of Processors on the server(s)
 
-            split_size = int(self.pop_list_L.shape[0] / n_cpu)      # is self.pop_list_R.shape[0]
-            rest = self.pop_list_L.shape[0] - split_size * n_cpu
+            split_size = int(self.pop_size / n_cpu)      # is self.pop_list_R.shape[0]
+            rest = self.pop_size - split_size * n_cpu
             split_size = split_size + rest if splitter == 1 else split_size  # first cpu can calculate more. This ballance out the effect,
                                                                              # that first two Knoblins dont have to be computer (if Generation > 0)
 
@@ -220,7 +220,7 @@ class JA_Evolution(JA_Simulation):
 
                 # Last splitter integrates all files again:
                 for save_counter in range(1, n_cpu):
-                    split_size = int(self.pop_list_L.shape[0] / n_cpu)
+                    split_size = int(self.pop_size / n_cpu)
                     split_size = split_size + rest if save_counter == 1 else split_size
                     if save_counter == 1:
                         start = 0
@@ -236,6 +236,7 @@ class JA_Evolution(JA_Simulation):
                     self.pop_list_R[range(start, end), :] = poplist_part_R
 
                 print("All splitted poplist_parts successfully implemented")
+
                 # Remove files out of dictionary
                 for rm in range(1, n_cpu):
                     os.remove("./temp/JA_Poplist_part_L.{}.Generation.{}.cond{}.npy".format(rm, self.generation, self.condition))
@@ -506,9 +507,6 @@ class JA_Evolution(JA_Simulation):
                     else:
                         counter += 1
 
-            # Remove
-            os.remove("./temp/Poplist_L_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu, self.generation - 1, self.condition))
-            os.remove("./temp/Poplist_R_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu, self.generation - 1, self.condition))
 
             for split_count in range(1, n_cpu + 1):
                 os.remove("./temp/JA_Splitter{}.DONE.cond{}.npy".format(split_count, self.condition))
@@ -535,6 +533,14 @@ class JA_Evolution(JA_Simulation):
         else:
             print('Evolution terminated. \n'
                   '(Caution: pop_list is not saved in external file)')
+
+
+        # Remove last Poplists out of /temp folder
+        if splitter == n_cpu:
+            os.remove("./temp/Poplist_L_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu, self.generation - 1,
+                                                                                    self.condition))
+            os.remove("./temp/Poplist_R_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu, self.generation - 1,
+                                                                                    self.condition))
 
 
     def reimplement_population(self, filename=None, Plot=False):

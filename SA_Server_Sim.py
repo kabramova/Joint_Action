@@ -20,12 +20,12 @@ if not split: # is False
 else: # if splitter is used, these values must be pre-given, here in python file
     # Manually adjust the following parameters:
     audicon = False
-    number_of_generations = 250
+    number_of_generations = 2
     filename = "Gen501-1000.popsize111.mut0.02.sound_cond=False.JA.single(Fitness9.19)" # or None
     print("Splitter {} started!".format(split))
 
 
-sa = SA_Evolution(auditory_condition=audicon)
+sa = SA_Evolution(auditory_condition=audicon, pop_size=110)
 
 
 if isinstance(filename, str):
@@ -38,7 +38,8 @@ if isinstance(filename, str):
 
 
 # RUN:
-print("Run Evolution for {} Generations in Single Condition and Sound Condition={}".format(number_of_generations, sa.condition))
+if not split or split == n_cpu:
+    print("Run Evolution for {} Generations in Single Condition and Sound Condition={}".format(number_of_generations, sa.condition))
 sa.run_evolution(generations=number_of_generations, splitter=split)
 
 
