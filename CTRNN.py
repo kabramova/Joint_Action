@@ -16,7 +16,7 @@ class CTRNN:
         G     = 'gain' (makes neurons highly sensitive to their input, primarily for motor or sensory nodes)
                  Preferably g ∈ [1,5] & just > 1 for neurons connected to sensory input or motor output.
 
-        >>Note: Parameter_ranges all according to Agmon, Beer (2008)
+        >>Note: Parameter_ranges all according to Agmon, Beer (2013)
         >>Note: Courant-Friedrichs-Lewy Condition
         :return: output
         '''

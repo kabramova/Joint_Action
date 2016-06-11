@@ -384,3 +384,8 @@ for trial in trials:
                                                                                           condition,
                                                                                           trial_name))
     plt.close(fig_e_b)
+
+
+
+    ## GRAPH F:
+    # Dynamical Graph (Neural state y, df/dy)
