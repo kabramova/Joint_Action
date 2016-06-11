@@ -4,8 +4,6 @@ from JA_Evolution import *
 # Type in Terminal:
 #  cat args_splitter | xargs -L1 -P6 python3 JA_Server_Sim.py
 
-#TODO: Solve: ..._request()'s issue with xargs
-
 n_cpu = 6
 
 if len(sys.argv) > 1 and sys.argv[1].isdigit():
@@ -20,9 +18,9 @@ if not split: # is False
 
 else: # if splitter is used, these values must be pre-given, here in python file
     # Manually adjust the following parameters:
-    audicon = True
+    audicon = False
     number_of_generations = 1000
-    filename = "Gen4501-5500.popsize55.mut0.02.sound_cond=True.JA.joint(Fitness7.15)" # or None
+    filename = "Gen4501-5500.popsize55.mut0.02.sound_cond=False.JA.joint(Fitness6.33)" # or None
     print("Splitter {} started!".format(split))
 
 
