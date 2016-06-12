@@ -402,21 +402,25 @@ for trial in trials:
     #
     # plt.plot(meanY)
 
-#     DYDT = []
-#     Y = np.matrix(np.zeros((len(sa.knoblin.Y),1)))
-#     for i in np.arange(-20,21):
-#         tempY = np.matrix(np.zeros((len(sa.knoblin.Y),1)))
-#         tempY[0] = i
-#         Y = np.append(Y,tempY,1)
-#
-#     for i in range(Y.shape[1]):
-#         O = sigmoid(np.multiply(sa.knoblin.G, Y[:,i] + sa.knoblin.Theta))
-#         DYDT.append(np.multiply(1 / sa.knoblin.Tau, - Y[:,i] + np.dot(sa.knoblin.W, O) + sa.knoblin.I) * sa.knoblin.h)
-#
-#
-# for i in range(len(DYDT)):
-#     for j in range(len(sa.knoblin.Y)):
-#         plt.plot(i, DYDT[i][j], marker="o", ms=5., markeredgewidth=0.0, c=col[j])
+    DYDT = []
+    Y = np.matrix(np.zeros((len(sa.knoblin.Y),1)))
+    for i in np.arange(-20,21):
+        tempY = np.matrix(np.zeros((len(sa.knoblin.Y),1)))
+        tempY[0] = i
+        Y = np.append(Y,tempY,1)
+
+    for i in range(Y.shape[1]):
+        O = sigmoid(np.multiply(sa.knoblin.G, Y[:,i] + sa.knoblin.Theta))
+        DYDT.append(np.multiply(1 / sa.knoblin.Tau, - Y[:,i] + np.dot(sa.knoblin.W, O) + sa.knoblin.I) * sa.knoblin.h)
+
+
+    for i in range(len(DYDT)):
+        for j in range(len(sa.knoblin.Y)):
+            plt.plot(i, DYDT[i][j], marker="o", ms=5., markeredgewidth=0.0, c=col[j])
+
+
+
+
 
 
 

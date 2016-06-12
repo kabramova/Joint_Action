@@ -58,15 +58,16 @@ class CTRNN:
 
 '''
 
-n1 = CTRNN(1)
+for i in range(1):  # how many times to plot
+    n1 = CTRNN(8)   # network size
 
-state_matrixY = n1.Y
-for i in np.arange(1,2000):
-    n1.next_state()
-    state_matrixY = np.c_[state_matrixY, n1.Y]
+    state_matrixY = n1.Y
+    for i in np.arange(1,5000):
+        n1.next_state()
+        state_matrixY = np.c_[state_matrixY, n1.Y]
 
-plt.plot(np.arange(1,2000) ,state_matrixY[:,:-1].T)
-plt.title((r'$\frac{dy}{dt} = \frac{1}{\tau}(-y_i + \sum_{j=1}^N w_{ji}\sigma(g_j(y_j + \theta_j)) + I_i)$' + r'$ , N = {}$'.format(n1.N)))
+    plt.plot(np.arange(1,5000) ,state_matrixY[:,:-1].T)
+    plt.title((r'$\frac{dy}{dt} = \frac{1}{\tau}(-y_i + \sum_{j=1}^N w_{ji}\sigma(y_j + \theta_j) + I_i)$' + r'$ , N = {}$'.format(n1.N)))
 
 print("Tau:\n", np.round(n1.Tau,2),
       "\n \n weights:\n", np.round(n1.W,2),
