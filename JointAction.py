@@ -152,7 +152,7 @@ class Knoblin(CTRNN):
     def visual_input(self, position_tracker, position_target):  # optional: distance_to_border
         '''
         Currently we just take the position of the tracker and the position of the target as input (minimal design).
-        It's debatable, whether we want to tell the network directly, what the distance between Target and Agent is
+        It's debatable, whether we want to tell the network directly, what the distance between Target and Agent is.
 
         :param position_tracker, position_target: both information come from the class Tracker & class Target
         '''
@@ -163,11 +163,8 @@ class Knoblin(CTRNN):
         # print("Visual Input: \n", self.I[[self.N-1, 0, 1]])
 
 
-    def auditory_input(self, sound_input):  # optional: distance_to_border
+    def auditory_input(self, sound_input):
         '''
-        Currently we just take the position of the tracker and the position of the target as input (minimal design).
-        It's debatable, whether we want to tell the network directly, what the distance between Target and Agent is
-
         :param input: Tone(s) induced by left click and/or right click: coming from class Tracker.movement()
         '''
 
