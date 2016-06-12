@@ -93,7 +93,6 @@ col = ["royalblue", "tomato", "palegreen", "fuchsia", "gold", "darkviolet", "dar
 
 # trial = trials[0]
 
-# TODO: adapt graphs to joint condition (if needed)
 for trial in trials:
 
     index += 1
@@ -388,4 +387,39 @@ for trial in trials:
 
 
     ## GRAPH F:
-    # Dynamical Graph (Neural state y, df/dy)
+    # TODO: Dynamical Graph (Neural state y, df/dy)
+
+    # Y = []
+    # for i in range(sa.simlength*2):
+    #     Y.append(sa.knoblin.Y)
+    #     sa.knoblin.next_state()
+    #
+    # meanY = [np.mean(i) for i in Y]
+    #
+    # for i in range(sa.simlength*2):
+    #     for j in range(sa.knoblin.Y.shape[0]):
+    #         plt.plot(i,Y[i][j], marker="o", markeredgewidth=0.0, ms=1)
+    #
+    # plt.plot(meanY)
+
+#     DYDT = []
+#     Y = np.matrix(np.zeros((len(sa.knoblin.Y),1)))
+#     for i in np.arange(-20,21):
+#         tempY = np.matrix(np.zeros((len(sa.knoblin.Y),1)))
+#         tempY[0] = i
+#         Y = np.append(Y,tempY,1)
+#
+#     for i in range(Y.shape[1]):
+#         O = sigmoid(np.multiply(sa.knoblin.G, Y[:,i] + sa.knoblin.Theta))
+#         DYDT.append(np.multiply(1 / sa.knoblin.Tau, - Y[:,i] + np.dot(sa.knoblin.W, O) + sa.knoblin.I) * sa.knoblin.h)
+#
+#
+# for i in range(len(DYDT)):
+#     for j in range(len(sa.knoblin.Y)):
+#         plt.plot(i, DYDT[i][j], marker="o", ms=5., markeredgewidth=0.0, c=col[j])
+
+
+
+
+
+

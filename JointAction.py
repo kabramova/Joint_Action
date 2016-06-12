@@ -206,7 +206,7 @@ class Knoblin(CTRNN):
         if self.timer_motor_r > 0:
             self.timer_motor_r -= self.h
 
-        # TODO: Check threshold
+        # Threshold is arbitrary. Evolution should make use of any kind.
         threshold = 0           # Threshold for output
         activation = [0, 0]     # Activation is zero
 
@@ -235,9 +235,8 @@ class Jordan:
         if auditory_condition not in [True, False]: raise ValueError("Must be either True or False")
         self.condition = auditory_condition
 
-        # TODO: Environment range either [-20,20] or [0,40]
         # [-20,20] is a plausible Screen size (40cm) with a visual angle of approx. 28 degrees (check with angle_velo2())
-        self.env_range = [-20, 20]
+        self.env_range = [-20, 20] # Environment range either [-20,20] or [0,40]
 
         self.globalization()
 

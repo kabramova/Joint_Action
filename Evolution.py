@@ -416,8 +416,13 @@ class Evolution(Simulate):
         global n
         n = n_agents
         pos_target = self._set_target(position_agent=position_agent, complex=True)
+        col = ["royalblue", "tomato", "palegreen", "fuchsia",
+               "gold", "darkviolet", "darkslategray", "orange"]  # colors.cnames
+
 
         for i in range(n_agents):
+
+            col_count = 0
 
             plt.figure()
 
@@ -425,9 +430,9 @@ class Evolution(Simulate):
                 self.agent = CatchBot(position_agent = position_agent)
                 self.agent.position_target = tpos
                 self.implement_genome(self.pop_list[i,2:])
-                self.run_and_plot()
-                # TODO: plot the same colour as the assocciaed trajectory
-                plt.plot(tpos[0], tpos[1], 'ws')
+                self.run_and_plot(colour=col[col_count])
+                plt.plot(tpos[0], tpos[1], 's', c=col[col_count])
+                col_count += 1
 
             plt.plot(position_agent[0], position_agent[1], 'bo')
 

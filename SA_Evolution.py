@@ -454,7 +454,7 @@ class SA_Evolution(SA_Simulation):
             print("Done files removed") #test
 
 
-        # Save in external file: #TODO if server problem save this for each generation and delete old ones.
+        # Save in external file: # TODO if server problem save this for each generation and delete old ones.
         if save and (splitter == n_cpu or not splitter):
             self.filename = "Gen{}-{}.popsize{}.mut{}.sound_cond={}.JA.single(Fitness{})".format(self.generation - generations + 1,
                                                                                                  self.generation,
