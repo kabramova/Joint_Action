@@ -145,6 +145,7 @@ class Knoblin(CTRNN):
     def press_left(self):
             return -1
 
+
     def press_right(self):
             return 1
 
@@ -178,6 +179,7 @@ class Knoblin(CTRNN):
 
         # if any(i > 0 for i in sound_input):
         #     print("Auditory Input: \n", self.I[[self.N-2, 2, round(self.N / 2)]])
+
 
     def motor_output(self):
         '''
@@ -219,6 +221,23 @@ class Knoblin(CTRNN):
                 activation[1] = self.press_right()  # press() will only return something if timer == 0.
 
         return activation
+
+
+    def show_innards(self, rounds=False):
+        if not rounds:
+            print("Tau:\n", self.Tau,
+                  "\n \n weights:\n", self.W,
+                  "\n \n Motor weights:\n", self.WM,
+                  "\n \n Vision weights:\n", self.WV,
+                  "\n \n Audio weights:\n", self.WA,
+                  "\n \n Biases:\n", self.Theta)
+        else:
+            print("Tau:\n", np.round(self.Tau, 2),
+                  "\n \n weights:\n", np.round(self.W, 2),
+                  "\n \n Motor weights:\n", np.round(self.WM, 2),
+                  "\n \n Vision weights:\n", np.round(self.WV, 2),
+                  "\n \n Audio weights:\n", np.round(self.WA, 2),
+                  "\n \n Biases:\n", np.round(self.Theta, 2))
 
 
 
