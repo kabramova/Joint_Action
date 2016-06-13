@@ -19,9 +19,9 @@ if not split: # is False
 
 else: # if splitter is used, these values must be pre-given, here in python file
     # Manually adjust the following parameters:
-    audicon = True
-    number_of_generations = 1000
-    filename = "Gen3251-3750.popsize111.mut0.02.sound_cond=True.JA.single(Fitness7.28)" # or None
+    audicon = False
+    number_of_generations = 1250
+    filename = "1251-2250.popsize111.mut0.02.sound_cond=False.JA.single(Fitness7.67)" # or None
     print("Splitter {} started!".format(split))
 
 
