@@ -169,16 +169,27 @@ for trial in trials:
 
     fig_b_b = plt.figure("GRAPH B_b, Trial {}".format(trial_name))
     ax = fig_b_b.add_subplot(111, projection='3d')
-    for i in range(neural_input_L.shape[1]):
-        # ax.plot(xs = range(neural_state.shape[0]), zs = neural_state[:,i], ys=np.repeat(i+1,neural_state.shape[0]),
-        #         alpha=0.1)
-        ax.plot(xs = range(len(neural_input_L)), zs = neural_input_L[:,i], ys=np.repeat(i+1, len(neural_input_L)),
-                # ls="-.",
-                alpha=.5,
-                c=col[i])   # c=cmap(i**3))
 
-        ax.plot(xs=range(len(neural_input_R)), zs=neural_input_R[:, i], ys=np.repeat(i + 1, len(neural_input_R)),
-                c=col[i])  # c=cmap(i**3))
+    if condition=="join":
+        for i in range(neural_input_L.shape[1]):
+            # ax.plot(xs = range(neural_state.shape[0]), zs = neural_state[:,i], ys=np.repeat(i+1,neural_state.shape[0]),
+            #         alpha=0.1)
+            ax.plot(xs = range(len(neural_input_L)), zs = neural_input_L[:,i], ys=np.repeat(i+1, len(neural_input_L)),
+                    # ls="-.",
+                    alpha=.5,
+                    c=col[i])   # c=cmap(i**3))
+
+            ax.plot(xs=range(len(neural_input_R)), zs=neural_input_R[:, i], ys=np.repeat(i + 1, len(neural_input_R)),
+                    c=col[i])  # c=cmap(i**3))
+
+    if condition=="single":
+        for i in range(neural_input.shape[1]):
+            # ax.plot(xs = range(neural_state.shape[0]), zs = neural_state[:,i], ys=np.repeat(i+1,neural_state.shape[0]),
+            #         alpha=0.1)
+            ax.plot(xs=range(len(neural_input)), zs=neural_input[:, i], ys=np.repeat(i + 1, len(neural_input)),
+                    # ls="-.",
+                    c=col[i])  # c=cmap(i**3))
+
 
     ax.set_title("Neural Input")
     ax.set_xlabel('Timesteps')
@@ -402,21 +413,21 @@ for trial in trials:
     #
     # plt.plot(meanY)
 
-    DYDT = []
-    Y = np.matrix(np.zeros((len(sa.knoblin.Y),1)))
-    for i in np.arange(-20,21):
-        tempY = np.matrix(np.zeros((len(sa.knoblin.Y),1)))
-        tempY[0] = i
-        Y = np.append(Y,tempY,1)
-
-    for i in range(Y.shape[1]):
-        O = sigmoid(np.multiply(sa.knoblin.G, Y[:,i] + sa.knoblin.Theta))
-        DYDT.append(np.multiply(1 / sa.knoblin.Tau, - Y[:,i] + np.dot(sa.knoblin.W, O) + sa.knoblin.I) * sa.knoblin.h)
-
-
-    for i in range(len(DYDT)):
-        for j in range(len(sa.knoblin.Y)):
-            plt.plot(i, DYDT[i][j], marker="o", ms=5., markeredgewidth=0.0, c=col[j])
+    # DYDT = []
+    # Y = np.matrix(np.zeros((len(sa.knoblin.Y),1)))
+    # for i in np.arange(-20,21):
+    #     tempY = np.matrix(np.zeros((len(sa.knoblin.Y),1)))
+    #     tempY[0] = i
+    #     Y = np.append(Y,tempY,1)
+    #
+    # for i in range(Y.shape[1]):
+    #     O = sigmoid(np.multiply(sa.knoblin.G, Y[:,i] + sa.knoblin.Theta))
+    #     DYDT.append(np.multiply(1 / sa.knoblin.Tau, - Y[:,i] + np.dot(sa.knoblin.W, O) + sa.knoblin.I) * sa.knoblin.h)
+    #
+    #
+    # for i in range(len(DYDT)):
+    #     for j in range(len(sa.knoblin.Y)):
+    #         plt.plot(i, DYDT[i][j], marker="o", ms=5., markeredgewidth=0.0, c=col[j])
 
 
 
