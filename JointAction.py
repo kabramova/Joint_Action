@@ -252,7 +252,7 @@ class Jordan:
         self.condition = auditory_condition
 
         # [-20,20] is a plausible Screen size (40cm) with a visual angle of approx. 28 degrees (check with angle_velo2())
-        self.env_range = [-20, 20] # Environment range either [-20,20] or [0,40]
+        self.env_range = [-20, 20] # TODO: Environment range either [-20,20] or [0,40]
 
         self.globalization()
 

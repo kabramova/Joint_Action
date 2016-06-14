@@ -148,9 +148,7 @@ for trial in trials:
     if condition == "joint":
         for i in range(neural_state_L.shape[1]):
             ax.plot(xs=range(len(neural_state_L)), zs=neural_state_L[:, i], ys=np.repeat(i + 1, len(neural_state_L)),
-                    # ls="-.",
-                    alpha = .5,
-                    c=col[i]) # c=cmap(i**3))
+                    alpha = .5, c=col[i]) # c=cmap(i**3))
             ax.plot(xs=range(len(neural_state_R)), zs=neural_state_R[:, i], ys=np.repeat(i + 1, len(neural_state_R)),
                     c=col[i]) # c=cmap(i**3))
 
@@ -170,12 +168,14 @@ for trial in trials:
     fig_b_b = plt.figure("GRAPH B_b, Trial {}".format(trial_name))
     ax = fig_b_b.add_subplot(111, projection='3d')
 
-    if condition=="join":
+
+    if condition=="joint":
         for i in range(neural_input_L.shape[1]):
-            # ax.plot(xs = range(neural_state.shape[0]), zs = neural_state[:,i], ys=np.repeat(i+1,neural_state.shape[0]),
-            #         alpha=0.1)
+            '''
+            ax.plot(xs = range(neural_state.shape[0]), zs = neural_state[:,i], ys=np.repeat(i+1,neural_state.shape[0]),
+                alpha=0.1)
+            '''
             ax.plot(xs = range(len(neural_input_L)), zs = neural_input_L[:,i], ys=np.repeat(i+1, len(neural_input_L)),
-                    # ls="-.",
                     alpha=.5,
                     c=col[i])   # c=cmap(i**3))
 
@@ -190,33 +190,13 @@ for trial in trials:
                     # ls="-.",
                     c=col[i])  # c=cmap(i**3))
 
-
     ax.set_title("Neural Input")
     ax.set_xlabel('Timesteps')
     ax.set_ylabel('Neurons')
     ax.set_zlabel('weighted Input')
+
     plt.savefig("./{}/{} GRAPH B_b (Neural Activity) Trial {}".format(current_folder, condition, trial_name))
     plt.close(fig_b_b)
-
-
-    # TODO: Maybe Wireframe:
-    # fig_b_c = plt.figure("GRAPH B, Trial {}".format(trial_name))
-    # ax = fig_b_c.add_subplot(111, projection='3d')
-    # for i in range(neural_state.shape[1]):
-    #     ax.plot_wireframe(X = range(neural_state.shape[0]), Z = neural_state[:,i], Y=i+1)
-    # # plt.plot(neural_input, alpha=0.3)
-    # plt.savefig("./{}/{} GRAPH B_C (Neural Activity) WIRE Trial {}  [WiP]".format(current_folder, condition, trial_name))
-    # plt.close(fig_b_c)
-
-
-    # TODO: Contour plots
-    # fig_b_d = plt.figure("GRAPH B_b, Trial {}".format(trial_name))
-    # ax = fig_b_d.add_subplot(111, projection='3d')
-    # for i in range(neural_state.shape[1]):
-    #     ax.counter(X = range(neural_state.shape[0]), Z = neural_state[:,i], Y=i+1, alpha=0.3)
-    #     ax.counter(X = range(neural_input.shape[0]), Z = neural_input[:,i], Y=i+1)
-    # plt.savefig("./graphs/{} GRAPH B_b (Neural Activity) Trial {}  [WiP]".format(current_folder, condition, trial_name))
-    # plt.close(fig_b_d)
 
 
     ## GRAPH C:
@@ -403,7 +383,7 @@ for trial in trials:
     ax = fig_f.add_subplot(111, projection='3d')
 
     # axes limits
-    ax.set_zlim(-20.5, 20.5)
+    ax.set_zlim(-0.5, 40.5)
 
     # Label Axes, title
     ax.set_xlabel('Neuron 4')
@@ -411,31 +391,33 @@ for trial in trials:
     ax.set_zlabel('Distance Target-Tracker')
 
     # target-tracker: Distance
+    distance = np.abs(target-tracker)
+
     # Plot
     if condition == "single":
-        ax.plot(xs=neural_state[:, 3], ys=neural_state[:, 5], zs=target-tracker, color="darkviolet")
+        ax.plot(xs=neural_state[:, 3], ys=neural_state[:, 5], zs=distance, color="darkviolet")
 
         for row in range(len(trial[2])):
             if trial[2][row, 0] == -1:  # left press
-                ax.scatter(neural_state[row, 3], neural_state[row, 5], zs=(target-tracker)[row], marker=r"$ {} $".format("L"),
+                ax.scatter(neural_state[row, 3], neural_state[row, 5], zs=distance[row], marker=r"$ {} $".format("L"),
                          s=30, lw=0, c="blue")
             if trial[2][row, 1] == 1:   # right
-                plt.scatter(neural_state[row, 3], neural_state[row, 5], zs=(target-tracker)[row],
+                plt.scatter(neural_state[row, 3], neural_state[row, 5], zs=distance[row],
                          marker=r"$ {} $".format("R"), s=30, lw=0, c="red")
 
     if condition == "joint":
-        ax.plot(xs=neural_state_L[:, 3], ys=neural_state_L[:, 5], zs=target-tracker, color="royalblue",
+        ax.plot(xs=neural_state_L[:, 3], ys=neural_state_L[:, 5], zs=distance, color="royalblue",
                 label="Left Agent")
-        ax.plot(xs=neural_state_R[:, 3], ys=neural_state_R[:, 5], zs=target-tracker, color="fuchsia",
+        ax.plot(xs=neural_state_R[:, 3], ys=neural_state_R[:, 5], zs=distance, color="fuchsia",
                 label="Right Agent")
 
         for row in range(len(trial[2])):
             if trial[2][row, 0] == -1:  # left press
-                ax.scatter(neural_state_L[row, 3], neural_state_L[row, 5], zs=(target - tracker)[row],
+                ax.scatter(neural_state_L[row, 3], neural_state_L[row, 5], zs=distance[row],
                            marker=r"$ {} $".format("L"),
                            s=30, lw=0, c="blue")
             if trial[2][row, 1] == 1:  # right
-                plt.scatter(neural_state_R[row, 3], neural_state_R[row, 5], zs=(target - tracker)[row],
+                plt.scatter(neural_state_R[row, 3], neural_state_R[row, 5], zs=distance[row],
                             marker=r"$ {} $".format("R"), s=30, lw=0, c="red")
 
         ax.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0., fancybox=True)
