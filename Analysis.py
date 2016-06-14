@@ -397,7 +397,56 @@ for trial in trials:
 
 
 
-    ## GRAPH F:
+
+    # GRAPH F:
+    fig_f = plt.figure("GRAPH F, Motor Neurons, Target-Tracker Distance Trial {}".format(trial_name))
+    ax = fig_f.add_subplot(111, projection='3d')
+
+    # axes limits
+    ax.set_zlim(-20.5, 20.5)
+
+    # Label Axes, title
+    ax.set_xlabel('Neuron 4')
+    ax.set_ylabel('Neuron 6')
+    ax.set_zlabel('Distance Target-Tracker')
+
+    # target-tracker: Distance
+    # Plot
+    if condition == "single":
+        ax.plot(xs=neural_state[:, 3], ys=neural_state[:, 5], zs=target-tracker, color="darkviolet")
+
+        for row in range(len(trial[2])):
+            if trial[2][row, 0] == -1:  # left press
+                ax.scatter(neural_state[row, 3], neural_state[row, 5], zs=(target-tracker)[row], marker=r"$ {} $".format("L"),
+                         s=30, lw=0, c="blue")
+            if trial[2][row, 1] == 1:   # right
+                plt.scatter(neural_state[row, 3], neural_state[row, 5], zs=(target-tracker)[row],
+                         marker=r"$ {} $".format("R"), s=30, lw=0, c="red")
+
+    if condition == "joint":
+        ax.plot(xs=neural_state_L[:, 3], ys=neural_state_L[:, 5], zs=target-tracker, color="royalblue",
+                label="Left Agent")
+        ax.plot(xs=neural_state_R[:, 3], ys=neural_state_R[:, 5], zs=target-tracker, color="fuchsia",
+                label="Right Agent")
+
+        for row in range(len(trial[2])):
+            if trial[2][row, 0] == -1:  # left press
+                ax.scatter(neural_state_L[row, 3], neural_state_L[row, 5], zs=(target - tracker)[row],
+                           marker=r"$ {} $".format("L"),
+                           s=30, lw=0, c="blue")
+            if trial[2][row, 1] == 1:  # right
+                plt.scatter(neural_state_R[row, 3], neural_state_R[row, 5], zs=(target - tracker)[row],
+                            marker=r"$ {} $".format("R"), s=30, lw=0, c="red")
+
+        ax.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0., fancybox=True)
+
+    plt.savefig("./{}/{} GRAPH F (Motor Neuron Activity of Neuron 4,6 and Distance Target-Tracker) Trial {}".format(current_folder,
+                                                                                    condition,
+                                                                                    trial_name))
+
+    plt.close(fig_f)
+
+    ## GRAPH G:
     # TODO: Dynamical Graph (Neural state y, df/dy)
 
     # Y = []
