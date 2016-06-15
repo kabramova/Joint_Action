@@ -383,7 +383,7 @@ for trial in trials:
     ax = fig_f.add_subplot(111, projection='3d')
 
     # axes limits
-    ax.set_zlim(-0.5, 40.5)
+    ax.set_zlim(-20.5, 20.5)
 
     # Label Axes, title
     ax.set_xlabel('Neuron 4')
@@ -391,7 +391,7 @@ for trial in trials:
     ax.set_zlabel('Distance Target-Tracker')
 
     # target-tracker: Distance
-    distance = np.abs(target-tracker)
+    distance = target-tracker
 
     # Plot
     if condition == "single":
