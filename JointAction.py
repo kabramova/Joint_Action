@@ -157,6 +157,7 @@ class Knoblin(CTRNN):
 
         :param position_tracker, position_target: both information come from the class Tracker & class Target
         '''
+        # TODO: run with different input
         self.I[self.N-1] = self.WV[2] * position_tracker  # to left Neuron 8
         self.I[0] = np.sum(((self.WV[0] * position_tracker), (self.WV[1] * position_target))) # suppose to subtract the two inputs
         self.I[1] = self.WV[3] * position_target          # to right Neuron 2
