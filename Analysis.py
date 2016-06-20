@@ -93,6 +93,11 @@ col = ["royalblue", "tomato", "palegreen", "fuchsia", "gold", "darkviolet", "dar
 
 # trial = trials[0]
 
+# TODO: Save neural states in csv (choose specific trial, or all):
+# np.savetxt("neural_state_L.csv",ja_performance[0][4], delimiter=",")
+# np.savetxt("neural_state_R.csv",ja_performance[0][5], delimiter=",")
+
+
 for trial in trials:
 
     index += 1
@@ -165,6 +170,36 @@ for trial in trials:
     plt.close(fig_b)
 
 
+    # Leave input neurons out
+    fig_b_a = plt.figure("GRAPH B_a, Trial {}".format(trial_name))
+    ax = fig_b_a.add_subplot(111, projection='3d')
+    if condition == "single":
+        for i in [2,3,4,5,6]:
+            ax.plot(xs=range(neural_state.shape[0]), zs=neural_state[:, i], ys=np.repeat(i + 1, neural_state.shape[0]))
+            ax.plot(xs=range(neural_input.shape[0]), zs=neural_input[:, i], ys=np.repeat(i + 1, neural_state.shape[0]),
+                    alpha=0.0)
+
+    if condition == "joint":
+        for i in [2,3,4,5,6]:
+            ax.plot(xs=range(len(neural_state_L)), zs=neural_state_L[:, i], ys=np.repeat(i + 1, len(neural_state_L)),
+                    alpha=.5, c=col[i])  # c=cmap(i**3))
+            ax.plot(xs=range(len(neural_state_R)), zs=neural_state_R[:, i], ys=np.repeat(i + 1, len(neural_state_R)),
+                    c=col[i])  # c=cmap(i**3))
+
+            ax.plot(xs=range(len(neural_state_L)), zs=neural_input_L[:, i], ys=np.repeat(i + 1, len(neural_state_L)),
+                    alpha=0.0)
+            ax.plot(xs=range(len(neural_state_R)), zs=neural_input_R[:, i], ys=np.repeat(i + 1, len(neural_state_R)),
+                    alpha=0.0)
+
+    # ax.set_title("Neural activation through trial")
+    ax.set_xlabel('Timesteps')
+    ax.set_ylabel('Neurons')
+    ax.set_zlabel('Activation')
+    plt.savefig("./{}/{} GRAPH B_a (Neural Activity) Trial {}".format(current_folder, condition, trial_name))
+    plt.close(fig_b_a)
+
+
+    # Input
     fig_b_b = plt.figure("GRAPH B_b, Trial {}".format(trial_name))
     ax = fig_b_b.add_subplot(111, projection='3d')
 
