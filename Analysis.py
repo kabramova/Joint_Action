@@ -195,7 +195,7 @@ for trial in trials:
     ax.set_xlabel('Timesteps')
     ax.set_ylabel('Neurons')
     ax.set_zlabel('Activation')
-    plt.savefig("./{}/{} GRAPH B_a (Neural Activity) Trial {}".format(current_folder, condition, trial_name))
+    plt.savefig("./{}/{} GRAPH B_a (Neural Activity) without Input Neurons Trial {}".format(current_folder, condition, trial_name))
     plt.close(fig_b_a)
 
 
