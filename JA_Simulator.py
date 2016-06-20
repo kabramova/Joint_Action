@@ -196,7 +196,7 @@ class JA_Simulation:
         counter_img = 0
         counter_sec = 0
 
-        for i in np.arange(0,self.simlength, ticker):
+        for i in np.arange(0, self.simlength, ticker):
 
         # For Fast Trials: with a simlength of 2789 the resulting gif-animation is approx. 11sec long (25frames/sec)
         # & for Slow Trials: with a simlength of 3635.
@@ -207,15 +207,15 @@ class JA_Simulation:
             plt.plot(positions[i, 0], 0, 'ro', markersize=12, alpha=0.5)    # Tracker
             plt.plot(positions[i, 1], 0, 'go')                              # Target
 
-            if keypress[i, 0] == -1:
+            if any(keypress[i:i+9, 0] == -1):
                 plt.plot(-10, -4, 'bs', markersize=16)                      # keypress left
-            if keypress[i, 1] == 1:
+            if any(keypress[i:i+9, 0] == 1):
                 plt.plot( 10, -4, 'bs', markersize=16)                      # keypress right
 
             if self.condition==True:
-                if sounds[i,0] == 1:
+                if any(sounds[i:i+9, 0] == 1):
                     plt.plot(-10, -3.9, 'yo', markersize=24, alpha=0.3)       # sound left
-                if sounds[i, 1] == 1:
+                if any(sounds[i:i+9, 1] == 1):
                     plt.plot( 10, -3.9, 'yo', markersize=24, alpha=0.3)       # sound right
 
             # Define boarders
