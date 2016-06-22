@@ -35,22 +35,24 @@ if load is False:
     if condition == "single":
         sa = SA_Evolution(auditory_condition=audicon)
         if isinstance(filename, str):
-           sa_performance = sa.reimplement_population(filename=filename, Plot=True)
-           sa_performance = np.array(sa_performance, dtype=object)
-           fitness = np.round(sa.pop_list[0, 1],2)
-           np.save("./Analysis/single/sa_performance_cond{}_fitness{}".format(sa.condition, fitness), sa_performance)
-           # sa_performance[0-3] are the different trials
-           # sa_performance[0-3][0-5] = fitness[0], trajectories[1], keypress[2], sounds[3], neural_state[4], neural_input_L[5]
+            sa_performance = sa.reimplement_population(filename=filename, Plot=True)
+            sa_performance = np.array(sa_performance, dtype=object)
+            fitness = np.round(sa.pop_list[0, 1],2)
+            np.save("./Analysis/single/sa_performance_cond{}_fitness{}".format(sa.condition, fitness), sa_performance)
+            # sa_performance[0-3] are the different trials
+            # sa_performance[0-3][0-5] = fitness[0], trajectories[1], keypress[2], # sounds[3], neural_state[4],
+            # neural_input_L[5]
 
     if condition == "joint":
         ja = JA_Evolution(auditory_condition=audicon, pop_size=55)
         if isinstance(filename, str):
             ja_performance = ja.reimplement_population(filename=filename, Plot=True)
             ja_performance = np.array(ja_performance, dtype=object)
-            fitness = np.round(ja.pop_list_L[0,1],2)
+            fitness = np.round(ja.pop_list_L[0, 1], 2)
             np.save("./Analysis/joint/ja_performance_cond{}_fitness{}".format(ja.condition, fitness), ja_performance)
             # ja_performance[0-3] are the different trials
-            # ja_performance[0-3][0-7] = fitness[0], trajectories[1], keypress[2], sounds[3], neural_state_L[4], neural_state_R[5], neural_input_R[6], neural_input_L[7]
+            # ja_performance[0-3][0-7] = fitness[0], trajectories[1], keypress[2], sounds[3], neural_state_L[4],
+            # neural_state_R[5], neural_input_R[6], neural_input_L[7]
 
 
 # len(sa_performance)
@@ -59,18 +61,18 @@ if load is True:
     if condition == "single":
         sa_performance = load_file(condition, audicon)
         print(">> File is loaded in sa_performance")
-        fitness = np.round(np.mean([i[0] for i in sa_performance]),2) # Fitness over all trials
+        fitness = np.round(np.mean([i[0] for i in sa_performance]), 2)  # Fitness over all trials
     if condition == "joint":
         ja_performance = load_file(condition, audicon)
         print(">> File is loaded in ja_performance")
-        fitness = np.round(np.mean([i[0] for i in ja_performance]),2) # Fitness over all trials
+        fitness = np.round(np.mean([i[0] for i in ja_performance]), 2)  # Fitness over all trials
 
 
-## Split in different Trials:
-sl = sa_performance[0] if condition == "single" else ja_performance[0] # speed: slow, initial target-direction: left
-sr = sa_performance[1] if condition == "single" else ja_performance[1] # speed: slow, initial target-direction: right
-fl = sa_performance[2] if condition == "single" else ja_performance[2] # speed: fast, initial target-direction: left
-fr = sa_performance[3] if condition == "single" else ja_performance[3] # speed: fast, initial target-direction: right
+# Split in different Trials:
+sl = sa_performance[0] if condition == "single" else ja_performance[0]  # speed: slow, initial target-direction: left
+sr = sa_performance[1] if condition == "single" else ja_performance[1]  # speed: slow, initial target-direction: right
+fl = sa_performance[2] if condition == "single" else ja_performance[2]  # speed: fast, initial target-direction: left
+fr = sa_performance[3] if condition == "single" else ja_performance[3]  # speed: fast, initial target-direction: right
 
 trials = [sl, sr, fl, fr]
 trial_names = ["slowleft", "slowright", "fastleft", "fastright"]
@@ -80,11 +82,11 @@ folder = "./Analysis/graphs/{}_{}_{}".format(condition, audicon, fitness)
 if not os.path.exists(folder):
     os.mkdir(folder)
 
-## Colours:
+# Colours:
 # http://matplotlib.org/examples/color/colormaps_reference.html
 # cmap = plt.get_cmap("Paired")
 
-col = ["royalblue", "tomato", "palegreen", "fuchsia", "gold", "darkviolet", "darkslategray", "orange"] # colors.cnames
+col = ["royalblue", "tomato", "palegreen", "fuchsia", "gold", "darkviolet", "darkslategray", "orange"]  # colors.cnames
 
 # for i in range(8):
 #     plt.plot(2*i,1, marker="o", c=col[i])
@@ -108,13 +110,13 @@ for trial in trials:
     if not os.path.exists(current_folder):
         os.mkdir(current_folder)
 
-    ## GRAPH A:
-    tracker = trial[1][:,0] # trajectories[1], tracker: tracs[:,0]
-    target  = trial[1][:,1] # trajectories[1], target:  tracs[:,1]
+    # GRAPH A:
+    tracker = trial[1][:, 0]  # trajectories[1], tracker: tracs[:,0]
+    target = trial[1][:, 1]   # trajectories[1], target:  tracs[:,1]
 
     fig_a = plt.figure("GRAPH A, Trial {}".format(trial_name))
     plt.ylim(-20.5, 20.5)
-    plt.plot(tracker,'r', markersize=12, alpha=0.5, label="Tracker")
+    plt.plot(tracker, 'r', markersize=12, alpha=0.5, label="Tracker")
     plt.plot(target, 'g', label="Target")
     plt.legend()
     # plt.title("Target and Tracker Positions")
@@ -124,7 +126,7 @@ for trial in trials:
     plt.savefig("./{}/{} GRAPH A (POSITIONS) Trial {}".format(current_folder, condition, trial_name))
     plt.close(fig_a)
 
-    ## GRAPH B:
+    # GRAPH B:
     # Single: neural_state[4]
     # Single: neural_input_L[5]
     # trial[4].shape
@@ -169,18 +171,17 @@ for trial in trials:
     plt.savefig("./{}/{} GRAPH B (Neural Activity) Trial {}".format(current_folder, condition, trial_name))
     plt.close(fig_b)
 
-
-    # Leave input neurons out
+    # Leave input neurons out:
     fig_b_a = plt.figure("GRAPH B_a, Trial {}".format(trial_name))
     ax = fig_b_a.add_subplot(111, projection='3d')
     if condition == "single":
-        for i in [2,3,4,5,6]:
+        for i in [2, 3, 4, 5, 6]:
             ax.plot(xs=range(neural_state.shape[0]), zs=neural_state[:, i], ys=np.repeat(i + 1, neural_state.shape[0]))
             ax.plot(xs=range(neural_input.shape[0]), zs=neural_input[:, i], ys=np.repeat(i + 1, neural_state.shape[0]),
                     alpha=0.0)
 
     if condition == "joint":
-        for i in [2,3,4,5,6]:
+        for i in [2, 3, 4, 5, 6]:
             ax.plot(xs=range(len(neural_state_L)), zs=neural_state_L[:, i], ys=np.repeat(i + 1, len(neural_state_L)),
                     alpha=.5, c=col[i])  # c=cmap(i**3))
             ax.plot(xs=range(len(neural_state_R)), zs=neural_state_R[:, i], ys=np.repeat(i + 1, len(neural_state_R)),
@@ -195,16 +196,15 @@ for trial in trials:
     ax.set_xlabel('Timesteps')
     ax.set_ylabel('Neurons')
     ax.set_zlabel('Activation')
-    plt.savefig("./{}/{} GRAPH B_a (Neural Activity) without Input Neurons Trial {}".format(current_folder, condition, trial_name))
+    plt.savefig("./{}/{} GRAPH B_a (Neural Activity) without Input Neurons Trial {}".format(current_folder, condition,
+                                                                                            trial_name))
     plt.close(fig_b_a)
-
 
     # Input
     fig_b_b = plt.figure("GRAPH B_b, Trial {}".format(trial_name))
     ax = fig_b_b.add_subplot(111, projection='3d')
 
-
-    if condition=="joint":
+    if condition == "joint":
         for i in range(neural_input_L.shape[1]):
             '''
             ax.plot(xs = range(neural_state.shape[0]), zs = neural_state[:,i], ys=np.repeat(i+1,neural_state.shape[0]),
@@ -212,15 +212,15 @@ for trial in trials:
             '''
             ax.plot(xs = range(len(neural_input_L)), zs = neural_input_L[:,i], ys=np.repeat(i+1, len(neural_input_L)),
                     alpha=.5,
-                    c=col[i])   # c=cmap(i**3))
+                    c=col[i])  # c=cmap(i**3))
 
             ax.plot(xs=range(len(neural_input_R)), zs=neural_input_R[:, i], ys=np.repeat(i + 1, len(neural_input_R)),
                     c=col[i])  # c=cmap(i**3))
 
-    if condition=="single":
+    if condition == "single":
         for i in range(neural_input.shape[1]):
-            # ax.plot(xs = range(neural_state.shape[0]), zs = neural_state[:,i], ys=np.repeat(i+1,neural_state.shape[0]),
-            #         alpha=0.1)
+            # ax.plot(xs = range(neural_state.shape[0]), zs = neural_state[:,i],
+            # ys=np.repeat(i+1, neural_state.shape[0]), alpha=0.1)
             ax.plot(xs=range(len(neural_input)), zs=neural_input[:, i], ys=np.repeat(i + 1, len(neural_input)),
                     # ls="-.",
                     c=col[i])  # c=cmap(i**3))
@@ -233,16 +233,14 @@ for trial in trials:
     plt.savefig("./{}/{} GRAPH B_b (Neural Activity) Trial {}".format(current_folder, condition, trial_name))
     plt.close(fig_b_b)
 
-
-    ## GRAPH C:
+    # GRAPH C:
     # keypress[2], sounds[3]
     fig_c = plt.figure("GRAPH C, Trial {}".format(trial_name))
     plt.xlim(0, len(trial[2]))
     plt.ylim(2, -2)
     plt.xlabel("Timesteps")
     plt.ylabel("Keypress")
-    plt.yticks([-1,1],["left", "right"])
-
+    plt.yticks([-1, 1], ["left", "right"])
 
     for i in range(len(trial[3])):
         if trial[3][i, 0] == 1:  # sound left
@@ -251,9 +249,8 @@ for trial in trials:
         if trial[3][i, 1] == 1:  # sound right
             plt.plot(i, trial[3][i, 1], 'yo', markersize=16, alpha=0.05, lw=0)
 
-
     for i in range(len(trial[2])):
-        if trial[2][i,0] == -1: # keypress left
+        if trial[2][i, 0] == -1:  # keypress left
             plt.plot(i, trial[2][i, 0], 'bs', markersize=8)
 
         if trial[2][i, 1] == 1:  # keypress right
@@ -262,8 +259,7 @@ for trial in trials:
     plt.savefig("./{}/{} GRAPH C (Keypress and Sound) Trial {}".format(current_folder, condition, trial_name))
     plt.close(fig_c)
 
-
-    ## GRAPH D:
+    # GRAPH D:
     # keypress[2]
     # tracker = trial[1][:,0] # trajectories[1], tracker: tracs[:,0]
     # target  = trial[1][:,1] # trajectories[1], target:  tracs[:,1]
@@ -280,14 +276,14 @@ for trial in trials:
     plt.xlabel("Position Target")
     plt.ylabel("Position Tracker")
 
-
     for row in range(len(trial[2])):
-        if target[row] < target[row-1]: # check whether left movement
-            if row%20 == 0:
+        if target[row] < target[row-1]:  # check whether left movement
+            if row % 20 == 0:
                 plt.plot(target[row], tracker[row], marker="o", alpha=.4, lw=0, c="blue", ms=.4)
 
             if trial[2][row, 0] == -1:     # left
-                    plt.plot(target[row], tracker[row], marker=r"$ {} $".format("L"), markersize=10, markerfacecolor="blue")
+                    plt.plot(target[row], tracker[row], marker=r"$ {} $".format("L"), markersize=10,
+                             markerfacecolor="blue")
             if trial[2][row, 1] == 1:      # right
                     plt.plot(target[row], tracker[row], marker=r"$ {} $".format("R"), ms=10, mfc="red")
 
@@ -309,21 +305,22 @@ for trial in trials:
 
     for row in range(len(trial[2])):
         if target[row] > target[row - 1]:  # check whether right movement
-            if row%20==0:
+            if row % 20 == 0:
                 plt.plot(target[row], tracker[row], marker="o", alpha=.4, lw=0, c="blue", ms=.4)
 
             if trial[2][row, 0] == -1:     # left
-                    plt.plot(target[row], tracker[row], marker=r"$ {} $".format("L"), markersize=10, markerfacecolor="blue")
+                    plt.plot(target[row], tracker[row], marker=r"$ {} $".format("L"), markersize=10,
+                             markerfacecolor="blue")
             if trial[2][row, 1] == 1:      # right
                     plt.plot(target[row], tracker[row], marker=r"$ {} $".format("R"), ms=10, mfc="red")
 
-    plt.savefig("./{}/{} GRAPH D delta+ (Keypress and Trajectories) Trial {}".format(current_folder, condition, trial_name))
+    plt.savefig("./{}/{} GRAPH D delta+ (Keypress and Trajectories) Trial {}".format(current_folder, condition,
+                                                                                     trial_name))
 
     plt.close(fig_d_neg)
     plt.close(fig_d_pos)
 
-
-    ## GRAPH E:
+    # GRAPH E:
     # # neural_state[4]
     # trial[4].shape  # knoblin.Y
     # neural_state = trial[4]
@@ -331,7 +328,6 @@ for trial in trials:
     # # neural_input_L[5]
     # trial[5].shape  # knoblin.I
     # neural_input = trial[5]
-
 
     # Plot Input-receptor Neuron 1, and output motor-neurons 4 & 6
     fig_e = plt.figure("GRAPH E, Trial {}".format(trial_name))
@@ -345,19 +341,19 @@ for trial in trials:
 
     # Plot
     if condition == "single":
-        ax.plot(xs = neural_state[:,3], ys=neural_state[:,5], zs = neural_state[:,0], color="red")
+        ax.plot(xs=neural_state[:, 3], ys=neural_state[:, 5], zs=neural_state[:, 0], color="red")
 
     if condition == "joint":
-        ax.plot(xs=neural_state_L[:, 3], ys=neural_state_L[:, 5], zs=neural_state_L[:, 0], color="red", label="Left Agent")
-        ax.plot(xs=neural_state_R[:, 3], ys=neural_state_R[:, 5], zs=neural_state_R[:, 0], color="blue", label="Right Agent")
+        ax.plot(xs=neural_state_L[:, 3], ys=neural_state_L[:, 5], zs=neural_state_L[:, 0],
+                color="red", label="Left Agent")
+        ax.plot(xs=neural_state_R[:, 3], ys=neural_state_R[:, 5], zs=neural_state_R[:, 0],
+                color="blue", label="Right Agent")
         ax.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0., fancybox=True)
-
 
     plt.savefig("./{}/{} GRAPH E (Neural Activity of Neuron 1,4,6) Trial {}".format(current_folder,
                                                                                     condition,
                                                                                     trial_name))
     plt.close(fig_e)
-
 
     # Plot average Neural-state and Trajectories (Target, Tracker)
     if condition == "single":
@@ -366,7 +362,6 @@ for trial in trials:
     if condition == "joint":
         average_L = [np.mean(l) for l in neural_state_L]
         average_R = [np.mean(r) for r in neural_state_R]
-
 
     fig_e_b = plt.figure("GRAPH E, Trial {}".format(trial_name))
     ax = fig_e_b.add_subplot(111, projection='3d')
@@ -386,8 +381,9 @@ for trial in trials:
     cm = plt.get_cmap(colorsMap)
     if condition == "single":
         cNorm = matplotlib.colors.Normalize(vmin=min(average), vmax=max(average))
-    if condition == "joint":
-        cNorm = matplotlib.colors.Normalize(vmin=min(min(average_L), min(average_R)), vmax=max(max(average_L), max(average_R)))
+    else: # condition == "joint":
+        cNorm = matplotlib.colors.Normalize(vmin=min(min(average_L), min(average_R)),
+                                            vmax=max(max(average_L), max(average_R)))
 
     scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=cm)
 
@@ -395,12 +391,12 @@ for trial in trials:
         ax.scatter(xs=target, ys=tracker, zs=average, c=scalarMap.to_rgba(average), lw=0, s=1.5)
 
     if condition == "joint":
-        ax.scatter(xs=target, ys=tracker, zs=average_L, c="red" ,lw=0, s=1.5, label="Left Agent")    # c=scalarMap.to_rgba(average_L)
-        ax.scatter(xs=target, ys=tracker, zs=average_R, c="blue" ,lw=0, s=1.5, label="Right Agent")  # c=scalarMap.to_rgba(average_R)
+        # c=scalarMap.to_rgba(average_L):
+        ax.scatter(xs=target, ys=tracker, zs=average_L, c="red", lw=0, s=1.5, label="Left Agent")
+        # c=scalarMap.to_rgba(average_R):
+        ax.scatter(xs=target, ys=tracker, zs=average_R, c="blue", lw=0, s=1.5, label="Right Agent")
         ax.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.,
                   fancybox=True, markerscale=3)
-
-
 
     # scalarMap.set_array(average)
     # fig_e_b.colorbar(scalarMap)
@@ -409,9 +405,6 @@ for trial in trials:
                                                                                           condition,
                                                                                           trial_name))
     plt.close(fig_e_b)
-
-
-
 
     # GRAPH F:
     fig_f = plt.figure("GRAPH F, Motor Neurons, Target-Tracker Distance Trial {}".format(trial_name))
@@ -435,10 +428,10 @@ for trial in trials:
         for row in range(len(trial[2])):
             if trial[2][row, 0] == -1:  # left press
                 ax.scatter(neural_state[row, 3], neural_state[row, 5], zs=distance[row], marker=r"$ {} $".format("L"),
-                         s=30, lw=0, c="blue")
+                           s=30, lw=0, c="blue")
             if trial[2][row, 1] == 1:   # right
                 plt.scatter(neural_state[row, 3], neural_state[row, 5], zs=distance[row],
-                         marker=r"$ {} $".format("R"), s=30, lw=0, c="red")
+                            marker=r"$ {} $".format("R"), s=30, lw=0, c="red")
 
     if condition == "joint":
         ax.plot(xs=neural_state_L[:, 3], ys=neural_state_L[:, 5], zs=distance, color="royalblue",
@@ -457,13 +450,12 @@ for trial in trials:
 
         ax.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0., fancybox=True)
 
-    plt.savefig("./{}/{} GRAPH F (Motor Neuron Activity of Neuron 4,6 and Distance Target-Tracker) Trial {}".format(current_folder,
-                                                                                    condition,
-                                                                                    trial_name))
+    plt.savefig("./{}/{} GRAPH F (Motor Neuron Activity of Neuron 4, 6 and Distance Target-Tracker) Trial {}".format(
+        current_folder, condition, trial_name))
 
     plt.close(fig_f)
 
-    ## GRAPH G:
+    # GRAPH G:
     # TODO: Dynamical Graph (Neural state y, df/dy)
 
     # Y = []
@@ -494,13 +486,3 @@ for trial in trials:
     # for i in range(len(DYDT)):
     #     for j in range(len(sa.knoblin.Y)):
     #         plt.plot(i, DYDT[i][j], marker="o", ms=5., markeredgewidth=0.0, c=col[j])
-
-
-
-
-
-
-
-
-
-

@@ -1,6 +1,7 @@
 from SA_Simulator import *
 import pickle
 
+
 class SA_Evolution(SA_Simulation):
 
     def __init__(self, auditory_condition, pop_size=110, simlength_scalar=1):
