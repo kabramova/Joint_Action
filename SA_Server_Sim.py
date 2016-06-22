@@ -1,8 +1,9 @@
 from SA_Evolution import *
 
 ## For the CPU split:
-# Type in Terminal:
+# Type in Terminal (-P*, * must be equal to n_cpu):
 #  cat args_splitter | xargs -L1 -P6 python3 SA_Server_Sim.py
+# Note: args_splitter must contain numbers from 1 to n_cpu
 
 n_cpu = 6
 
@@ -42,7 +43,7 @@ if isinstance(filename, str):
 # RUN:
 if not split or split == n_cpu:
     print("Run Evolution for {} Generations in Single Condition and Sound Condition={}".format(number_of_generations, sa.condition))
-sa.run_evolution(generations=number_of_generations, splitter=split)
+sa.run_evolution(generations=number_of_generations, splitter=split, n_cpu=n_cpu)
 
 
 # # Reimplement and Plot

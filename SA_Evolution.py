@@ -105,7 +105,7 @@ class SA_Evolution(SA_Simulation):
         return fitness
 
 
-    def _run_population(self, splitter=False):
+    def _run_population(self, n_cpu, splitter=False):
 
         first_runs = False
 
@@ -136,7 +136,7 @@ class SA_Evolution(SA_Simulation):
         # If Splitter is active:
         if not isinstance(splitter, bool):
 
-            n_cpu = 6 # in principal this could be adapted to the number of Processors on the server(s)
+            # n_cpu: is adaptable to the number of Processors on the server(s)
 
             split_size = int(self.pop_size/n_cpu)
             rest = self.pop_size - split_size*n_cpu
@@ -364,15 +364,15 @@ class SA_Evolution(SA_Simulation):
         self.pop_list = new_population
 
 
-    def run_evolution(self, generations, mutation_var=.02, splitter=False):
+    def run_evolution(self, generations, mutation_var=.02, splitter=False, n_cpu=6):
+
+        assert isinstance(n_cpu, int) and n_cpu > 0, "n_cpu must be greater than zero (int)"
 
         if not splitter: # == False
             save = save_request()
             print("No Splitter is used")
         else:
             save = True
-
-        n_cpu = 6
 
         # Run evolution:
         if splitter == n_cpu or not splitter:
@@ -389,7 +389,7 @@ class SA_Evolution(SA_Simulation):
                 self._reproduction(mutation_var)
 
             # Evaluate fitness of each member
-            self._run_population(splitter=splitter)
+            self._run_population(splitter=splitter, n_cpu=n_cpu)
 
             # Saves Poplist for the last split:
             if splitter == n_cpu: # This file will be automatically deleted in _run_popoulation()

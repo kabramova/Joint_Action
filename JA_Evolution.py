@@ -117,7 +117,7 @@ class JA_Evolution(JA_Simulation):
         return fitness
 
 
-    def _run_population(self, splitter=False):
+    def _run_population(self, n_cpu, splitter=False):
 
         first_runs = False
 
@@ -157,7 +157,7 @@ class JA_Evolution(JA_Simulation):
         # If Splitter is active:
         if not isinstance(splitter, bool):
 
-            n_cpu = 6  # in principal this could be adapted to the number of Processors on the server(s)
+            # n_cpu: is adaptable to the number of Processors on the server(s)
 
             split_size = int(self.pop_size / n_cpu)      # is self.pop_list_R.shape[0]
             rest = self.pop_size - split_size * n_cpu
@@ -433,7 +433,9 @@ class JA_Evolution(JA_Simulation):
         self.pop_list_R = new_population_R
 
 
-    def run_evolution(self, generations, mutation_var=.02, splitter=False):
+    def run_evolution(self, generations, mutation_var=.02, splitter=False, n_cpu=6):
+
+        assert isinstance(n_cpu, int) and n_cpu > 0, "n_cpu must be greater than zero (int)"
 
         if not splitter: # == False
             save = save_request()
@@ -441,7 +443,6 @@ class JA_Evolution(JA_Simulation):
         else:
             save = True
 
-        n_cpu = 6
 
         # Run evolution:
         if splitter == n_cpu or not splitter:
@@ -458,7 +459,7 @@ class JA_Evolution(JA_Simulation):
                 self._reproduction(mutation_var)
 
             # Evaluate fitness of each member
-            self._run_population(splitter=splitter)
+            self._run_population(splitter=splitter, n_cpu=n_cpu)
 
             # Saves Poplists for the last split
             if splitter == n_cpu: # These files will be automatically deleted in _run_popoulation()
