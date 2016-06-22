@@ -16,7 +16,7 @@ class SA_Simulation:
         self.runs = 0               # to count how many runs the agent made
 
 
-    def setup(self, trial_speed):
+    def setup(self, trial_speed, simlength_scalar=1):
         '''
         Setup the experiment: Tracker, target, environment.
         Prepares for different trial speeds.
@@ -24,10 +24,10 @@ class SA_Simulation:
         self.environment = Jordan(trial_speed=trial_speed, auditory_condition=self.condition)
 
         if self.environment.trial == "slow" and self.simlength != 3635:
-            self.simlength = 3635   # Target needs more time to make 3 turns
+            self.simlength = 3635*simlength_scalar   # Target needs more time to make 3 turns
 
         elif self.environment.trial == "fast" and self.simlength != 2789:
-            self.simlength = 2789   # Target needs less time to make 3 turns
+            self.simlength = 2789*simlength_scalar   # Target needs less time to make 3 turns
 
 
         self.globalization()

@@ -3,9 +3,11 @@ import pickle
 
 class JA_Evolution(JA_Simulation):
 
-    def __init__(self, auditory_condition, pop_size=55):
+    def __init__(self, auditory_condition, pop_size=55, simlength_scalar=1):
 
         super(self.__class__, self).__init__(auditory_condition, simlength=2789) # self.knoblin, self.simlength, self.condition
+
+        self.simlength_scalar = simlength_scalar
 
         self.genome_L = self.create_genome(Knoblin=self.knoblin_L)
         self.genome_R = self.create_genome(Knoblin=self.knoblin_R)
@@ -598,7 +600,7 @@ class JA_Evolution(JA_Simulation):
         for trial_speed in ["slow", "fast"]:
             for init_target_direction in [-1, 1]:  # left(-1) or right(1)
 
-                self.setup(trial_speed=trial_speed)
+                self.setup(trial_speed=trial_speed, simlength_scalar=self.simlength_scalar)
 
                 self.target.velocity *= init_target_direction
 

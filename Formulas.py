@@ -225,6 +225,17 @@ def generation_request():
     return number_of_generations
 
 
+def simlength_scalar_request():
+
+    simlength_scalar = input("With what factor you want to scale the simulation length (int) [default=1]:")
+    if int(simlength_scalar): simlength_scalar = int(simlength_scalar)
+
+    if simlength_scalar <= 0:
+        raise ValueError("Scalar must be greather than zero")
+
+    return simlength_scalar
+
+
 def filename_request(single_or_joint):
     found = 0
 
@@ -338,6 +349,8 @@ def load_file(single_or_joint, audio_condition):
         print("No file was selected \n".format(found))
 
     raise ValueError("Evaluate recent poplist(s)")
+
+
 
 
 

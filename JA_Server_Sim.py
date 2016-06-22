@@ -15,16 +15,18 @@ if not split: # is False
     audicon = audio_condition_request()
     number_of_generations = generation_request()
     filename = filename_request("joint")
+    scalar = simlength_scalar_request()
 
 else: # if splitter is used, these values must be pre-given, here in python file
     # Manually adjust the following parameters:
     audicon = False
     number_of_generations = 3500
+    scalar = 1
     filename = "Gen14501-16500.popsize55.mut0.02.sound_cond=False.JA.joint(Fitness6.31)" # or None
     print("Splitter {} started!".format(split))
 
 
-ja = JA_Evolution(auditory_condition=audicon, pop_size=55)
+ja = JA_Evolution(auditory_condition=audicon, pop_size=55, simlength_scalar=scalar)
 
 
 if isinstance(filename, str):
