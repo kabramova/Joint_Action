@@ -1,8 +1,9 @@
 from SA_Evolution import *
 
-## For the CPU split:
-# Type in Terminal:
+# For the CPU split:
+# Type in Terminal (-P*, * must be equal to n_cpu):
 #  cat args_splitter | xargs -L1 -P6 python3 SA_Server_Sim.py
+# Note: args_splitter must contain numbers from 1 to n_cpu
 
 n_cpu = 6
 
@@ -12,18 +13,18 @@ else:
     split = False
 
 
-if not split: # is False
+if not split:  # is False
     audicon = audio_condition_request()
     number_of_generations = generation_request()
     filename = filename_request("single")
     scalar = simlength_scalar_request()
 
-else: # if splitter is used, these values must be pre-given, here in python file
+else:  # if splitter is used, these values must be pre-given, here in python file
     # Manually adjust the following parameters:
     audicon = False
     number_of_generations = 3000
     scalar = 1
-    filename = "Gen9001-12000.popsize111.mut0.02.sound_cond=False.JA.single(Fitness6.99)" # or None
+    filename = "Gen12001-15000.popsize111.mut0.02.sound_cond=False.JA.single(Fitness6.99)"  # or None
     print("Splitter {} started!".format(split))
 
 
@@ -41,8 +42,9 @@ if isinstance(filename, str):
 
 # RUN:
 if not split or split == n_cpu:
-    print("Run Evolution for {} Generations in Single Condition and Sound Condition={}".format(number_of_generations, sa.condition))
-sa.run_evolution(generations=number_of_generations, splitter=split)
+    print("Run Evolution for {} Generations in Single Condition and Sound Condition={}".format(number_of_generations,
+                                                                                               sa.condition))
+sa.run_evolution(generations=number_of_generations, splitter=split, n_cpu=n_cpu)
 
 
 # # Reimplement and Plot

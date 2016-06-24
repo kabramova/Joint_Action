@@ -1,11 +1,13 @@
 from JA_Simulator import *
 import pickle
 
+
 class JA_Evolution(JA_Simulation):
 
     def __init__(self, auditory_condition, pop_size=55, simlength_scalar=1):
 
-        super(self.__class__, self).__init__(auditory_condition, simlength=2789) # self.knoblin, self.simlength, self.condition
+        # self.knoblin, self.simlength, self.condition
+        super(self.__class__, self).__init__(auditory_condition, simlength=2789)
 
         self.simlength_scalar = simlength_scalar
 
@@ -21,28 +23,27 @@ class JA_Evolution(JA_Simulation):
 
         self.filename = ""
 
-
     def __create_pop_list(self, pop_size, side):
-        '''
+        """
          :param pop_size: Amount of individuals per Population
          :return: list of agents
-         '''
+        """
 
         poplist = np.zeros((pop_size, self.genome_R.size + 2))  # self.genome_R.size is self.genome_L.size
 
         for i in range(pop_size):
             poplist[i, 0] = i + 1                                           # enumerate the list
             # poplist[i, 1]                                                 = fitness, is initially zero
-            poplist[i, 2:] = self.genome_L.transpose() if side == "left" else self.genome_R.transpose()  # the current genome will be stored
+            # the current genome will be stored
+            poplist[i, 2:] = self.genome_L.transpose() if side == "left" else self.genome_R.transpose()
             if side == "left":
                 self.knoblin_L = Knoblin()                                  # Create new agent
                 self.genome_L = self.create_genome(Knoblin=self.knoblin_L)  # ... and its genome
-            else: # its a bit redundant, but for the readability and comprehensibility
+            else:  # its a bit redundant, but for the readability and comprehensibility
                 self.knoblin_R = Knoblin()
                 self.genome_R = self.create_genome(Knoblin=self.knoblin_R)
 
         return poplist
-
 
     def create_genome(self, Knoblin):
 
@@ -55,10 +56,10 @@ class JA_Evolution(JA_Simulation):
 
         return np.concatenate((A, G, T, X, C, U))
 
-
     def implement_genome(self, genome_string, side):
 
-        assert genome_string.size == self.genome_L.size and genome_string.size == self.genome_R.size, "Genome has not the right size"
+        assert genome_string.size == self.genome_L.size and genome_string.size == self.genome_R.size, \
+            "Genome has not the right size"
 
         knoblin = self.knoblin_L if side == "left" else self.knoblin_R
 
@@ -93,7 +94,6 @@ class JA_Evolution(JA_Simulation):
         else:  # side == "right"
             self.genome_R = genome_string
 
-
     def run_trials(self):
 
         fitness_per_trials = []
@@ -110,22 +110,20 @@ class JA_Evolution(JA_Simulation):
                 fitness = self.run()
                 fitness_per_trials.append(fitness)
 
-
         fitness = np.mean(fitness_per_trials)
         # print("Average fitness over all 8 trials:", np.round(fitness,2))
 
         return fitness
 
-
-    def _run_population(self, splitter=False):
+    def _run_population(self, n_cpu, splitter=False):
 
         first_runs = False
 
         if not splitter: # ==False
             for i in range(self.pop_size):
 
-                string_L = copy.copy(self.pop_list_L[i,:])
-                string_R = copy.copy(self.pop_list_R[i,:])
+                string_L = copy.copy(self.pop_list_L[i, :])
+                string_R = copy.copy(self.pop_list_R[i, :])
 
                 if string_L[1] == 0.0 or string_R[1] == 0.0:  # run only if fitness is no evaluated yet
                     genome_L = string_L[2:]
@@ -137,15 +135,17 @@ class JA_Evolution(JA_Simulation):
 
                     # Run all trials an save fitness in pop_list:
                     ticker = 10
-                    if i%ticker == 0 or i < 10:  # this way because it ignores the two first spots in pop_list, since they run already.
-                        if i%ticker == 0:
+                    # this way because it ignores the two first spots in pop_list, since they run already.
+                    if i % ticker == 0 or i < 10:
+                        if i % ticker == 0:
                             fill = i+ticker if i <= self.pop_size-ticker else self.pop_size
                             first_runs = True
                             print("Generation {}: Run trials for Agent Pair {}-{}".format(self.generation, i + 1, fill))
                         if i < 10 and not first_runs:
                             fill = ticker
                             first_runs = True
-                            print("Generation {}: Run trials for Agent Pair {}-{} (Fitness of first agent pairs was already evaluated)".format(self.generation, i + 1, fill))
+                            print("Generation {}: Run trials for Agent Pair {}-{} (Fitness of first agent pairs was "
+                                  "already evaluated)".format(self.generation, i + 1, fill))
 
                     fitness = self.run_trials()
                     self.pop_list_L[i, 1] = fitness
@@ -157,12 +157,13 @@ class JA_Evolution(JA_Simulation):
         # If Splitter is active:
         if not isinstance(splitter, bool):
 
-            n_cpu = 6  # in principal this could be adapted to the number of Processors on the server(s)
+            # n_cpu: is adaptable to the number of Processors on the server(s)
 
             split_size = int(self.pop_size / n_cpu)      # is self.pop_list_R.shape[0]
             rest = self.pop_size - split_size * n_cpu
-            split_size = split_size + rest if splitter == 1 else split_size  # first cpu can calculate more. This ballance out the effect,
-                                                                             # that first two Knoblins dont have to be computer (if Generation > 0)
+            split_size = split_size + rest if splitter == 1 else split_size
+            # first cpu can calculate more. This ballance out the effect, that first two Knoblins dont have to be
+            # computer (if Generation > 0)
 
             if splitter == 1:
                 start = 0
@@ -185,15 +186,21 @@ class JA_Evolution(JA_Simulation):
 
                     # Run all trials an save fitness in pop_list:
                     ticker = 10
-                    if i % ticker == 0 or i < 10:  # this way because it ignores the two first spots in pop_list, since they run already.
+                    # this way because it ignores the two first spots in pop_list, since they run already.
+                    if i % ticker == 0 or i < 10:
                         if i % ticker == 0:
                             fill = i + ticker if i <= self.pop_size - ticker else self.pop_size
                             first_runs = True
-                            print("Splitter{}: Generation {}: Run trials for Agent Pair {}-{}".format(splitter, self.generation, i + 1, fill))
+                            print("Splitter{}: Generation {}: Run trials for Agent Pair {}-{}".format(splitter,
+                                                                                                      self.generation,
+                                                                                                      i + 1, fill))
                         if i < 10 and not first_runs:
                             fill = ticker
                             first_runs = True
-                            print("Splitter{}: Generation {}: Run trials for Agent Pair {}-{} (Fitness of first agent pairs was already evaluated)".format(splitter, self.generation, i + 1, fill))
+                            print("Splitter{}: Generation {}: Run trials for Agent Pair {}-{} "
+                                  "(Fitness of first agent pairs was already evaluated)".format(splitter,
+                                                                                                self.generation,
+                                                                                                i + 1, fill))
 
                     fitness = self.run_trials()
                     self.pop_list_L[i, 1] = fitness
@@ -201,8 +208,14 @@ class JA_Evolution(JA_Simulation):
 
             # Save splitted Files now:
             if splitter < n_cpu:
-                np.save("./temp/JA_Poplist_part_L.{}.Generation.{}.cond{}.npy".format(splitter, self.generation, self.condition), self.pop_list_L[range(start, end), :])
-                np.save("./temp/JA_Poplist_part_R.{}.Generation.{}.cond{}.npy".format(splitter, self.generation, self.condition), self.pop_list_R[range(start, end), :])
+                np.save("./temp/JA_Poplist_part_L.{}.Generation.{}.cond{}.npy".format(splitter,
+                                                                                      self.generation,
+                                                                                      self.condition),
+                        self.pop_list_L[range(start, end), :])
+                np.save("./temp/JA_Poplist_part_R.{}.Generation.{}.cond{}.npy".format(splitter,
+                                                                                      self.generation,
+                                                                                      self.condition),
+                        self.pop_list_R[range(start, end), :])
 
             # Check for last splitter, whether all files are there:
             if splitter == n_cpu:  # = max number of splitters
@@ -212,13 +225,17 @@ class JA_Evolution(JA_Simulation):
                     count = 0
 
                     for n in range(1, n_cpu):
-                        if os.path.isfile("./temp/JA_Poplist_part_L.{}.Generation.{}.cond{}.npy".format(n, self.generation, self.condition)) \
-                                and os.path.isfile("./temp/JA_Poplist_part_R.{}.Generation.{}.cond{}.npy".format(n, self.generation, self.condition)):
+                        if os.path.isfile("./temp/JA_Poplist_part_L.{}.Generation.{}.cond{}.npy".format(n,
+                                                                                                        self.generation,
+                                                                                                        self.condition)) \
+                                and os.path.isfile("./temp/JA_Poplist_part_R.{}.Generation.{}.cond{}.npy".format(n,
+                                                                                                                 self.generation,
+                                                                                                                 self.condition)):
                             count += 1
                             if count == n_cpu - 1:
                                 print("All {} files of Generation {} exist".format(n_cpu - 1, self.generation))
 
-                    time.sleep(1) # wait 1sec before back in the loop
+                    time.sleep(1)  # wait 1sec before back in the loop
 
                 # Last splitter integrates all files again:
                 for save_counter in range(1, n_cpu):
@@ -231,8 +248,12 @@ class JA_Evolution(JA_Simulation):
 
                     end = split_size * save_counter + rest
 
-                    poplist_part_L = np.load("./temp/JA_Poplist_part_L.{}.Generation.{}.cond{}.npy".format(save_counter, self.generation, self.condition))
-                    poplist_part_R = np.load("./temp/JA_Poplist_part_R.{}.Generation.{}.cond{}.npy".format(save_counter, self.generation, self.condition))
+                    poplist_part_L = np.load("./temp/JA_Poplist_part_L.{}.Generation.{}.cond{}.npy".format(save_counter,
+                                                                                                           self.generation,
+                                                                                                           self.condition))
+                    poplist_part_R = np.load("./temp/JA_Poplist_part_R.{}.Generation.{}.cond{}.npy".format(save_counter,
+                                                                                                           self.generation,
+                                                                                                           self.condition))
 
                     self.pop_list_L[range(start, end), :] = poplist_part_L  # or self.pop_list[start:end]
                     self.pop_list_R[range(start, end), :] = poplist_part_R
@@ -241,17 +262,29 @@ class JA_Evolution(JA_Simulation):
 
                 # Remove files out of dictionary
                 for rm in range(1, n_cpu):
-                    os.remove("./temp/JA_Poplist_part_L.{}.Generation.{}.cond{}.npy".format(rm, self.generation, self.condition))
-                    os.remove("./temp/JA_Poplist_part_R.{}.Generation.{}.cond{}.npy".format(rm, self.generation, self.condition))
+                    os.remove("./temp/JA_Poplist_part_L.{}.Generation.{}.cond{}.npy".format(rm,
+                                                                                            self.generation,
+                                                                                            self.condition))
+                    os.remove("./temp/JA_Poplist_part_R.{}.Generation.{}.cond{}.npy".format(rm,
+                                                                                            self.generation,
+                                                                                            self.condition))
 
-                if os.path.isfile("./temp/Poplist_L_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu, self.generation - 1, self.condition))\
-                        and os.path.isfile("./temp/Poplist_R_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu, self.generation - 1, self.condition)):
-                    os.remove("./temp/Poplist_L_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu, self.generation - 1, self.condition))
-                    os.remove("./temp/Poplist_R_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu, self.generation - 1, self.condition))
+                if os.path.isfile("./temp/Poplist_L_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu,
+                                                                                                self.generation - 1,
+                                                                                                self.condition))\
+                        and os.path.isfile("./temp/Poplist_R_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu,
+                                                                                                         self.generation - 1,
+                                                                                                         self.condition)):
+                    os.remove("./temp/Poplist_L_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu,
+                                                                                            self.generation - 1,
+                                                                                            self.condition))
+                    os.remove("./temp/Poplist_R_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu,
+                                                                                            self.generation - 1,
+                                                                                            self.condition))
 
-                self.pop_list_L = copy.copy(mat_sort(self.pop_list_L, index=1))  # sorts the pop_list, best agents on top
+                # sorts the pop_list, best agents on top
+                self.pop_list_L = copy.copy(mat_sort(self.pop_list_L, index=1))
                 self.pop_list_R = copy.copy(mat_sort(self.pop_list_R, index=1))
-
 
     def gen_code(self):
 
@@ -265,9 +298,9 @@ class JA_Evolution(JA_Simulation):
                             ("U", self.knoblin_L.Tau.size)])
         return gens
 
-
     def _reproduction(self, mutation_var=.02):
-        '''
+
+        """
         Combination of asexual (fitness proportionate selection (fps)) and sexual reproduction
             Minimal population size = 10
             1) Takes the two best agents (couple) and copy them in new population lists.
@@ -288,8 +321,7 @@ class JA_Evolution(JA_Simulation):
 
         :param mutation_var: 0.02 by default, turned out to be better.
         :return: self.pop_list = repopulated list (new_population)
-        '''
-
+        """
 
         gens = self.gen_code()
 
@@ -299,15 +331,15 @@ class JA_Evolution(JA_Simulation):
 
         # 1) Takes the two best agents and copy them in new population.
         n_parents = 2
-        new_population_L[0:n_parents,:] = copy.copy(self.pop_list_L[(0,1),:])
-        new_population_R[0:n_parents,:] = copy.copy(self.pop_list_R[(0,1),:])
+        new_population_L[0:n_parents, :] = copy.copy(self.pop_list_L[(0, 1), :])
+        new_population_R[0:n_parents, :] = copy.copy(self.pop_list_R[(0, 1), :])
 
         # 2) Based on pop_size, creates 2-10 children (parents: two best agents)
         n_children = int(np.round(self.pop_size*0.2) if np.round(self.pop_size*0.2) < 10 else 10)
 
         for n in range(n_children):
-            new_population_L[2+n,2:] = copy.copy(self.pop_list_L[0,2:])
-            new_population_R[2+n,2:] = copy.copy(self.pop_list_R[0,2:])
+            new_population_L[2+n, 2:] = copy.copy(self.pop_list_L[0, 2:])
+            new_population_R[2+n, 2:] = copy.copy(self.pop_list_R[0, 2:])
 
             ## Crossover of a whole genome section of the second parent-pair:
             choice = np.random.choice([gen for gen in gens])  # Random choice of a section in genome
@@ -320,29 +352,30 @@ class JA_Evolution(JA_Simulation):
             index += 2  # leaves the number and fitness of agent out (new_population[:,(0,1)])
 
             # crossover from second parent pair
-            new_population_L[2+n, (index - gens[choice]):index] = copy.copy(self.pop_list_L[1, (index - gens[choice]):index])
-            new_population_R[2+n, (index - gens[choice]):index] = copy.copy(self.pop_list_R[1, (index - gens[choice]):index])
-
+            new_population_L[2+n, (index - gens[choice]):index] = copy.copy(self.pop_list_L[1,
+                                                                            (index - gens[choice]):index])
+            new_population_R[2+n, (index - gens[choice]):index] = copy.copy(self.pop_list_R[1,
+                                                                            (index - gens[choice]):index])
 
         # 3) Fitness proportionate selection of 40% (+ 1/2 fill up)
 
         # Define the number of agents via fps & via random instantiation
         n_family = n_parents + n_children
-        n_fps    = int(np.round(self.pop_size*0.4))
+        n_fps = int(np.round(self.pop_size*0.4))
         n_random = int(np.round(self.pop_size*0.2))
 
         if (self.pop_size - (n_family + n_fps + n_random)) != 0:
-            rest = self.pop_size - (n_family + n_fps + n_random) # rest has to be filled up
+            rest = self.pop_size - (n_family + n_fps + n_random)  # rest has to be filled up
 
-            odd = 1 if rest%2>0 else 0  # if rest is odd(1) else even(0)
+            odd = 1 if rest % 2 > 0 else 0  # if rest is odd(1) else even(0)
             n_fps += int((rest+odd)/2)
             n_random += int((rest-odd)/2)
-
 
         # Algorithm for fitness proportionate selection:
         # (Source: http://stackoverflow.com/questions/298301/roulette-wheel-selection-algorithm/320788#320788)
 
-        assert np.all(np.array(self.pop_list_L[:, 1]) == np.array(self.pop_list_R[:, 1])), "Fitness of each partner must be the same"
+        assert np.all(np.array(self.pop_list_L[:, 1]) == np.array(self.pop_list_R[:, 1])), \
+            "Fitness of each partner must be the same"
         fitness = copy.copy(self.pop_list_L[:, 1])  # is self.pop_list_R[:, 1]
         fitness = 1 - normalize(fitness)  # sign is correct, apparently
 
@@ -354,7 +387,7 @@ class JA_Evolution(JA_Simulation):
         for n in range(n_family, n_family+n_fps):   # or range(n_family, self.pop_size-n_random-1)
             r = np.random.random()        # random sample of continuous uniform distribution [0,1)
             for (i, individual_L) in enumerate(self.pop_list_L):
-                individual_R = self.pop_list_R[i,:]
+                individual_R = self.pop_list_R[i, :]
                 if r <= probs[i]:
                     new_population_L[n, :] = individual_L
                     new_population_R[n, :] = individual_R
@@ -363,13 +396,12 @@ class JA_Evolution(JA_Simulation):
         # 4) Fill with randomly created agents, 20% (+ 1/2 fill up)
         n_fitfamily = n_family + n_fps
         for n in range(n_fitfamily, n_fitfamily+n_random):
-            self.knoblin_L = Knoblin()                                      # Create random new agents
+            self.knoblin_L = Knoblin()                                    # Create random new agents
             self.knoblin_R = Knoblin()
-            self.genome_L = self.create_genome(Knoblin = self.knoblin_L)    # ... and their genomes
-            self.genome_R = self.create_genome(Knoblin = self.knoblin_R)
+            self.genome_L = self.create_genome(Knoblin=self.knoblin_L)    # ... and their genomes
+            self.genome_R = self.create_genome(Knoblin=self.knoblin_R)
             new_population_L[n, 2:] = self.genome_L.transpose()
             new_population_R[n, 2:] = self.genome_R.transpose()
-
 
         # 5) All but the first two best agent pairs will fall under a mutation with a variance of .02 (default)
 
@@ -378,7 +410,8 @@ class JA_Evolution(JA_Simulation):
 
         mu, sigma = 0, np.sqrt(mutation_var)  # mean and standard deviation
 
-        for i in range(n_parents, n_fitfamily):  # we start with the 3rd agent and end with the agents via fps, rest is random, anyways.
+        # we start with the 3rd agent and end with the agents via fps, rest is random, anyways:
+        for i in range(n_parents, n_fitfamily):
 
             mutation_AGTXC_L = np.random.normal(mu, sigma, AGTXC)
             mutation_AGTXC_R = np.random.normal(mu, sigma, AGTXC)
@@ -389,8 +422,9 @@ class JA_Evolution(JA_Simulation):
             AGTXC_mutated_L = new_population_L[i, 2: AGTXC+2] + mutation_AGTXC_L
             AGTXC_mutated_R = new_population_R[i, 2: AGTXC+2] + mutation_AGTXC_R
 
-            AGTXC_mutated_L[AGTXC_mutated_L > self.knoblin_L.W_RANGE[1]] = self.knoblin_L.W_RANGE[1]  # Replace values beyond the range with max.range
-            AGTXC_mutated_L[AGTXC_mutated_L < self.knoblin_L.W_RANGE[0]] = self.knoblin_L.W_RANGE[0]  # ... or min.range (T_RANGE = W.RANGE =[-13, 13])
+            # Replace values beyond the range with max.range, or min.range (T_RANGE = W.RANGE =[-13, 13])
+            AGTXC_mutated_L[AGTXC_mutated_L > self.knoblin_L.W_RANGE[1]] = self.knoblin_L.W_RANGE[1]
+            AGTXC_mutated_L[AGTXC_mutated_L < self.knoblin_L.W_RANGE[0]] = self.knoblin_L.W_RANGE[0]
             AGTXC_mutated_R[AGTXC_mutated_R > self.knoblin_R.W_RANGE[1]] = self.knoblin_R.W_RANGE[1]
             AGTXC_mutated_R[AGTXC_mutated_R < self.knoblin_R.W_RANGE[0]] = self.knoblin_R.W_RANGE[0]
 
@@ -400,23 +434,23 @@ class JA_Evolution(JA_Simulation):
             U_mutated_L = new_population_L[i, (AGTXC + 2):] + mutation_U_L
             U_mutated_R = new_population_R[i, (AGTXC + 2):] + mutation_U_R
 
-            U_mutated_L[U_mutated_L > self.knoblin_L.TAU_RANGE[1]] = self.knoblin_L.TAU_RANGE[1]  # Replace values beyond the range with max.range
-            U_mutated_L[U_mutated_L < self.knoblin_L.TAU_RANGE[0]] = self.knoblin_L.TAU_RANGE[0]  # ... or min.range (TAU_RANGE = [1, 10])
-            U_mutated_R[U_mutated_R > self.knoblin_R.TAU_RANGE[1]] = self.knoblin_R.TAU_RANGE[1]  # Replace values beyond the range with max.range
-            U_mutated_R[U_mutated_R < self.knoblin_R.TAU_RANGE[0]] = self.knoblin_R.TAU_RANGE[0]  # ... or min.range (TAU_RANGE = [1, 10])
+            # Replace values beyond the range with max.range or min.range (TAU_RANGE = [1, 10])
+            U_mutated_L[U_mutated_L > self.knoblin_L.TAU_RANGE[1]] = self.knoblin_L.TAU_RANGE[1]
+            U_mutated_L[U_mutated_L < self.knoblin_L.TAU_RANGE[0]] = self.knoblin_L.TAU_RANGE[0]
+            U_mutated_R[U_mutated_R > self.knoblin_R.TAU_RANGE[1]] = self.knoblin_R.TAU_RANGE[1]
+            U_mutated_R[U_mutated_R < self.knoblin_R.TAU_RANGE[0]] = self.knoblin_R.TAU_RANGE[0]
 
             new_population_L[i, (AGTXC + 2):] = U_mutated_L
             new_population_R[i, (AGTXC + 2):] = U_mutated_R
 
-
         # 6) Shuffle half of the agents of step 3) and step4) in each list
         n_half_fit_family = n_family + int(np.round(n_fps/2))
-        n_half_rand_fitfamily =  n_fitfamily + int(np.round(n_random/2,2))
+        n_half_rand_fitfamily = n_fitfamily + int(np.round(n_random/2, 2))
 
-        new_population_L[:, 0] = range(1, self.pop_size + 1) # enumerate list (1 to ...)
+        new_population_L[:, 0] = range(1, self.pop_size + 1)  # enumerate list (1 to ...)
         new_population_R[:, 0] = range(1, self.pop_size + 1)
 
-        np.random.shuffle(new_population_L[n_half_fit_family:n_half_rand_fitfamily, 0]) # shuffle the specific section
+        np.random.shuffle(new_population_L[n_half_fit_family:n_half_rand_fitfamily, 0])  # shuffle the specific section
         np.random.shuffle(new_population_R[n_half_fit_family:n_half_rand_fitfamily, 0])
 
         new_population_L = new_population_L[np.argsort(new_population_L[:, 0])]   # sort poplist according to shuffling
@@ -432,8 +466,9 @@ class JA_Evolution(JA_Simulation):
         self.pop_list_L = new_population_L
         self.pop_list_R = new_population_R
 
+    def run_evolution(self, generations, mutation_var=.02, splitter=False, n_cpu=6):
 
-    def run_evolution(self, generations, mutation_var=.02, splitter=False):
+        assert isinstance(n_cpu, int) and n_cpu > 0, "n_cpu must be greater than zero (int)"
 
         if not splitter: # == False
             save = save_request()
@@ -441,7 +476,6 @@ class JA_Evolution(JA_Simulation):
         else:
             save = True
 
-        n_cpu = 6
 
         # Run evolution:
         if splitter == n_cpu or not splitter:
@@ -458,7 +492,7 @@ class JA_Evolution(JA_Simulation):
                 self._reproduction(mutation_var)
 
             # Evaluate fitness of each member
-            self._run_population(splitter=splitter)
+            self._run_population(splitter=splitter, n_cpu=n_cpu)
 
             # Saves Poplists for the last split
             if splitter == n_cpu: # These files will be automatically deleted in _run_popoulation()
@@ -544,7 +578,6 @@ class JA_Evolution(JA_Simulation):
             os.remove("./temp/Poplist_R_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu, self.generation - 1,
                                                                                     self.condition))
 
-
     def reimplement_population(self, filename=None, Plot=False):
 
         assert filename.find("joint") != -1, "Wrong file! The file needs to be from the JOINT condition"
@@ -562,7 +595,9 @@ class JA_Evolution(JA_Simulation):
         self.pop_list_R = pickle.load(open('./poplists/joint/Poplist_R.{}'.format(self.filename), 'rb'))
         self.pop_size = self.pop_list_L.shape[0] # is self.pop_list_R.shape[0]
 
-        assert self.filename.find("False") != -1 or self.filename.find("True") != -1, "Condition is unknown (please add to filename (if known)"
+        assert self.filename.find("False") != -1 or self.filename.find("True") != -1, \
+            "Condition is unknown (please add to filename (if known)"
+
         self.condition = False if self.filename.find("False") != -1 and self.filename.find("True") == -1 else True
 
         fitness_progress = pickle.load(open('./poplists/joint/Fitness_progress.{}'.format(self.filename), 'rb'))
@@ -591,7 +626,6 @@ class JA_Evolution(JA_Simulation):
             # neural_state_L[4], neural_state_L[5], neural_input_L[6], neural_input_L[7]
             return output
 
-
     def plot_pop_list(self, knoblin_nr=1):
 
         output = []
@@ -604,11 +638,12 @@ class JA_Evolution(JA_Simulation):
 
                 self.target.velocity *= init_target_direction
 
-                self.implement_genome(genome_string=self.pop_list_L[knoblin_nr-1,2:], side="left")
-                self.implement_genome(genome_string=self.pop_list_R[knoblin_nr-1,2:], side="right")
+                self.implement_genome(genome_string=self.pop_list_L[knoblin_nr-1, 2:], side="left")
+                self.implement_genome(genome_string=self.pop_list_R[knoblin_nr-1, 2:], side="right")
 
                 direction = "left" if init_target_direction == - 1 else "right"
-                print("Create Animation of {} trial and initial Target direction to the {}".format(trial_speed ,direction))
+                print("Create Animation of {} trial and initial Target direction to the {}".format(trial_speed,
+                                                                                                   direction))
                 output.append(self.run_and_plot())      # include reset of the neural system
                 # output[count] = self.run_and_plot()
                 # count += 1
@@ -617,10 +652,8 @@ class JA_Evolution(JA_Simulation):
               "neural_state_L[4], neural_state_L[5], neural_input_L[6], neural_input_L[7]")
         return output
 
-
     def print_best(self, n=5):
         print(">> Left Agent(s):")
-        print(self.pop_list_L[0:n,0:3], "\n")
+        print(self.pop_list_L[0:n, 0:3], "\n")
         print(">> Right Agent(s):")
-        print(self.pop_list_R[0:n,0:3])
-
+        print(self.pop_list_R[0:n, 0:3])

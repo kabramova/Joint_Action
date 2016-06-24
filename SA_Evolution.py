@@ -1,11 +1,13 @@
 from SA_Simulator import *
 import pickle
 
+
 class SA_Evolution(SA_Simulation):
 
     def __init__(self, auditory_condition, pop_size=110, simlength_scalar=1):
 
-        super(self.__class__, self).__init__(auditory_condition, simlength=2789) # self.knoblin, self.simlength, self.condition
+        # self.knoblin, self.simlength, self.condition
+        super(self.__class__, self).__init__(auditory_condition, simlength=2789)
 
         self.simlength_scalar = simlength_scalar
 
@@ -19,12 +21,11 @@ class SA_Evolution(SA_Simulation):
 
         self.filename = ""
 
-
     def __create_pop_list(self, pop_size):
-        '''
+        """
          :param pop_size: Amount of individuals per Population
          :return: list of agents
-         '''
+        """
 
         poplist = np.zeros((pop_size, np.size(self.genome) + 2))
 
@@ -37,7 +38,6 @@ class SA_Evolution(SA_Simulation):
 
         return poplist
 
-
     def create_genome(self, Knoblin):
 
         A = np.reshape(Knoblin.W,      (Knoblin.W.size,       1))
@@ -48,7 +48,6 @@ class SA_Evolution(SA_Simulation):
         U = np.reshape(Knoblin.Tau,    (Knoblin.Tau.size,     1))
 
         return np.concatenate((A, G, T, X, C, U))
-
 
     def implement_genome(self, genome_string):
 
@@ -81,7 +80,6 @@ class SA_Evolution(SA_Simulation):
 
         self.genome = genome_string
 
-
     def run_trials(self):
 
         fitness_per_trials = []
@@ -98,50 +96,51 @@ class SA_Evolution(SA_Simulation):
                 fitness = self.run()
                 fitness_per_trials.append(fitness)
 
-
         fitness = np.mean(fitness_per_trials)
         # print("Average fitness over all 8 trials:", np.round(fitness,2))
 
         return fitness
 
-
-    def _run_population(self, splitter=False):
+    def _run_population(self, n_cpu, splitter=False):
 
         first_runs = False
 
         if not splitter:
             for i, string in enumerate(self.pop_list):
-                if string[1] ==0:  # run only if fitness is no evaluated yet
+                if string[1] == 0:  # run only if fitness is no evaluated yet
                     genome = string[2:]
                     self.knoblin = Knoblin()
                     self.implement_genome(genome_string=genome)
 
                     # Run all trials an save fitness in pop_list:
                     ticker = 10
-                    if i % ticker == 0 or i < 10:  # this way because it ignores the two first spots in pop_list, since they run already.
+                    # this way because it ignores the two first spots in pop_list, since they run already.
+                    if i % ticker == 0 or i < 10:
                         if i % ticker == 0:
                             fill = i + ticker if i <= self.pop_size - ticker else self.pop_size
                             first_runs = True
                             print("Generation {}: Run trials for Agents {}-{}".format(self.generation, i + 1, fill))
-                        if i < 10 and not first_runs: # == False
+                        if i < 10 and not first_runs:  # == False
                             fill = ticker
                             first_runs = True
-                            print("Generation {}: Run trials for Agents {}-{} (Fitness of first agents were already evaluated)".format(self.generation, i + 1, fill))
+                            print("Generation {}: Run trials for Agents {}-{} (Fitness of first agents were already "
+                                  "evaluated)".format(self.generation, i + 1, fill))
 
                     self.pop_list[i, 1] = self.run_trials()
 
             self.pop_list = copy.copy(mat_sort(self.pop_list, index=1))  # sorts the pop_list, best agents on top
 
-
         # If Splitter is active:
         if not isinstance(splitter, bool):
 
-            n_cpu = 6 # in principal this could be adapted to the number of Processors on the server(s)
+            # n_cpu: is adaptable to the number of Processors on the server(s)
 
             split_size = int(self.pop_size/n_cpu)
             rest = self.pop_size - split_size*n_cpu
-            split_size = split_size+rest if splitter == 1 else split_size   # first cpu can calculate more. This ballance out the effect,
-                                                                            # that first two Knoblins dont have to be computer (if Generation > 0)
+            # first cpu can calculate more. This ballance out the effect,
+            split_size = split_size+rest if splitter == 1 else split_size
+            # ... that first two Knoblins dont have to be computer (if Generation > 0)
+
             if splitter == 1:
                 start = 0
             else:
@@ -150,7 +149,7 @@ class SA_Evolution(SA_Simulation):
             end = split_size*splitter + rest
 
             for i in range(start, end):
-                string = self.pop_list[i,:]
+                string = self.pop_list[i, :]
 
                 if string[1] == 0.0:          # run only if fitness is no evaluated yet
                     genome = string[2:]
@@ -159,32 +158,42 @@ class SA_Evolution(SA_Simulation):
 
                     # Run all trials an save fitness in pop_list:
                     ticker = 10
-                    if i % ticker == 0 or i < 10:  # this way because it ignores the two first spots in pop_list, since they run already.
+                    # this way because it ignores the two first spots in pop_list, since they run already.
+                    if i % ticker == 0 or i < 10:
                         if i % ticker == 0:
                             fill = i + ticker if i <= self.pop_size - ticker else self.pop_size
                             first_runs = True
-                            print("Splitter{}: Generation {}: Run trials for Agents {}-{}".format(splitter, self.generation, i + 1, fill))
+                            print("Splitter{}: Generation {}: Run trials for Agents {}-{}".format(splitter,
+                                                                                                  self.generation,
+                                                                                                  i + 1, fill))
                         if i < 10 and not first_runs:
                             fill = ticker
                             first_runs = True
-                            print("Splitter{}: Generation {}: Run trials for Agents {}-{} (Fitness of first agents were already evaluated)".format(splitter, self.generation, i + 1, fill))
+                            print("Splitter{}: Generation {}: Run trials for Agents {}-{} (Fitness of first agents "
+                                  "were already evaluated)".format(splitter, self.generation, i + 1, fill))
 
                     self.pop_list[i, 1] = self.run_trials()
 
             # Save splitted Files now:
             if splitter < n_cpu:
-                np.save("./temp/SA_Poplist_part.{}.Generation.{}.cond{}.npy".format(splitter, self.generation, self.condition), self.pop_list[range(start,end),:])
+                np.save("./temp/SA_Poplist_part.{}.Generation.{}.cond{}.npy".format(splitter,
+                                                                                    self.generation,
+                                                                                    self.condition),
+                        self.pop_list[range(start, end), :])
+
                 # Here the code ends for splitter < 6
 
             # Check for last splitter, whether all files are there:
-            if splitter == n_cpu: # = max number of splitters
+            if splitter == n_cpu:  # = max number of splitters
 
                 count = 0
                 while count != n_cpu-1:
                     count = 0
 
                     for n in range(1, n_cpu):
-                        if os.path.isfile("./temp/SA_Poplist_part.{}.Generation.{}.cond{}.npy".format(n, self.generation, self.condition)):
+                        if os.path.isfile("./temp/SA_Poplist_part.{}.Generation.{}.cond{}.npy".format(n,
+                                                                                                      self.generation,
+                                                                                                      self.condition)):
                             count += 1
                             if count == n_cpu-1:
                                 print("All {} files of Generation {} exist".format(n_cpu-1, self.generation))
@@ -206,7 +215,7 @@ class SA_Evolution(SA_Simulation):
                                                                                                        self.generation,
                                                                                                        self.condition))
 
-                    self.pop_list[range(start, end),:] = poplist_part # or self.pop_list[start:end]
+                    self.pop_list[range(start, end), :] = poplist_part  # or self.pop_list[start:end]
 
                 print("All splitted poplist_parts successfully implemented")
 
@@ -226,8 +235,7 @@ class SA_Evolution(SA_Simulation):
 
                     # print("Former Poplist deleted")  # Test
 
-                self.pop_list = copy.copy(mat_sort(self.pop_list, index=1)) # sorts the pop_list, best agents on top
-
+                self.pop_list = copy.copy(mat_sort(self.pop_list, index=1))  # sorts the pop_list, best agents on top
 
     def gen_code(self):
         gens = OrderedDict([("A", self.knoblin.W.size),
@@ -238,9 +246,8 @@ class SA_Evolution(SA_Simulation):
                             ("U", self.knoblin.Tau.size)])
         return gens
 
-
     def _reproduction(self, mutation_var=.02):
-        '''
+        """
         Combination of asexual (fitness proportionate selection (fps)) and sexual reproduction
             Minimal population size = 10
             1) Takes the two best agents and copy them in new population.
@@ -257,24 +264,23 @@ class SA_Evolution(SA_Simulation):
 
         :param mutation_var: 0.02 by default, turned out to be better.
         :return: self.pop_list = repopulated list (new_population)
-        '''
+        """
 
         gens = self.gen_code()
 
         new_population = np.zeros(self.pop_list.shape)
 
-
         # 1) Takes the two best agents and copy them in new population.
         n_parents = 2
-        new_population[0:n_parents,:] = copy.copy(self.pop_list[(0,1),:])
+        new_population[0:n_parents, :] = copy.copy(self.pop_list[(0, 1), :])
 
         # 2) Based on pop_size, creates 2-10 children (parents: two best agents)
         n_children = int(np.round(self.pop_size*0.2) if np.round(self.pop_size*0.2) < 10 else 10)
 
         for n in range(n_children):
-            new_population[2+n,2:] = copy.copy(self.pop_list[0,2:])
+            new_population[2+n, 2:] = copy.copy(self.pop_list[0, 2:])
 
-            ## Crossover of a whole genome section of the second parent:
+            # Crossover of a whole genome section of the second parent:
             choice = np.random.choice([gen for gen in gens])  # Random choice of a section in genome
 
             index = 0  # indexing the section in whole genome string
@@ -284,23 +290,23 @@ class SA_Evolution(SA_Simulation):
                     break
             index += 2  # leaves the number and fitness of agent out (new_population[:,(0,1)])
 
-            new_population[2+n, (index - gens[choice]):index] = copy.copy(self.pop_list[1, (index - gens[choice]):index])  # crossover from second parent
-
+            # crossover from second parent
+            new_population[2+n, (index - gens[choice]):index] = copy.copy(self.pop_list[1, (index -
+                                                                                            gens[choice]):index])
 
         # 3) Fitness proportionate selection of 30% (+ 1/2 fill up)
 
         # Define the number of agents via fps & via random instantiation
         n_family = n_parents + n_children
-        n_fps    = int(np.round(self.pop_size*0.3))
+        n_fps = int(np.round(self.pop_size*0.3))
         n_random = int(np.round(self.pop_size*0.3))
 
         if (self.pop_size - (n_family + n_fps + n_random)) != 0:
-            rest = self.pop_size - (n_family + n_fps + n_random) # rest has to be filled up
+            rest = self.pop_size - (n_family + n_fps + n_random)  # rest has to be filled up
 
-            odd = 1 if rest%2>0 else 0 # if rest is odd(1) else even(0)
+            odd = 1 if rest % 2 > 0 else 0  # if rest is odd(1) else even(0)
             n_fps += int((rest+odd)/2)
             n_random += int((rest-odd)/2)
-
 
         # Algorithm for fitness proportionate selection:
         # (Source: http://stackoverflow.com/questions/298301/roulette-wheel-selection-algorithm/320788#320788)
@@ -321,14 +327,12 @@ class SA_Evolution(SA_Simulation):
                     new_population[n, :] = individual
                     break
 
-
         # 4) Fill with randomly created agents, 30% (+ 1/2 fill up)
         n_fitfamily = n_family + n_fps
         for n in range(n_fitfamily, n_fitfamily+n_random):
             self.knoblin = Knoblin()                                    # Create random new agent
             self.genome = self.create_genome(Knoblin = self.knoblin)    # ... and its genome
             new_population[n, 2:] = self.genome.transpose()
-
 
         # 5) All but the first two best agents will fall under a mutation with a variance of .02 (default)
 
@@ -337,25 +341,29 @@ class SA_Evolution(SA_Simulation):
 
         mu, sigma = 0, np.sqrt(mutation_var)  # mean and standard deviation
 
-        for i in range(n_parents, n_fitfamily):  # we start with the 3rd agent and end with the agents via fps, rest is random, anyways.
+        # we start with the 3rd agent and end with the agents via fps, rest is random, anyways.
+        for i in range(n_parents, n_fitfamily):
 
             mutation_AGTXC = np.random.normal(mu, sigma, AGTXC)
             mutation_U = np.random.normal(mu, sigma, U)
 
             AGTXC_mutated = new_population[i, 2: AGTXC+2] + mutation_AGTXC
 
-            AGTXC_mutated[AGTXC_mutated > self.knoblin.W_RANGE[1]] = self.knoblin.W_RANGE[1]  # Replace values beyond the range with max.range
-            AGTXC_mutated[AGTXC_mutated < self.knoblin.W_RANGE[0]] = self.knoblin.W_RANGE[0]  # ... or min.range (T_RANGE = W.RANGE =[-13, 13])
+            # Replace values beyond the range with max.range
+            AGTXC_mutated[AGTXC_mutated > self.knoblin.W_RANGE[1]] = self.knoblin.W_RANGE[1]
+            # ... or min.range (T_RANGE = W.RANGE =[-13, 13])
+            AGTXC_mutated[AGTXC_mutated < self.knoblin.W_RANGE[0]] = self.knoblin.W_RANGE[0]
 
             new_population[i, 2: AGTXC+2] = AGTXC_mutated
 
             U_mutated = new_population[i, (AGTXC + 2):] + mutation_U
 
-            U_mutated[U_mutated > self.knoblin.TAU_RANGE[1]] = self.knoblin.TAU_RANGE[1]  # Replace values beyond the range with max.range
-            U_mutated[U_mutated < self.knoblin.TAU_RANGE[0]] = self.knoblin.TAU_RANGE[0]  # ... or min.range (TAU_RANGE = [1, 10])
+            # Replace values beyond the range with max.range
+            U_mutated[U_mutated > self.knoblin.TAU_RANGE[1]] = self.knoblin.TAU_RANGE[1]
+            # ... or min.range (TAU_RANGE = [1, 10])
+            U_mutated[U_mutated < self.knoblin.TAU_RANGE[0]] = self.knoblin.TAU_RANGE[0]
 
             new_population[i, (AGTXC + 2):] = U_mutated
-
 
         # Reset enumeration and fitness (except first two agents)
         new_population[:, 0] = range(1, self.pop_size+1)
@@ -363,8 +371,9 @@ class SA_Evolution(SA_Simulation):
 
         self.pop_list = new_population
 
+    def run_evolution(self, generations, mutation_var=.02, splitter=False, n_cpu=6):
 
-    def run_evolution(self, generations, mutation_var=.02, splitter=False):
+        assert isinstance(n_cpu, int) and n_cpu > 0, "n_cpu must be greater than zero (int)"
 
         if not splitter: # == False
             save = save_request()
@@ -372,12 +381,9 @@ class SA_Evolution(SA_Simulation):
         else:
             save = True
 
-        n_cpu = 6
-
         # Run evolution:
         if splitter == n_cpu or not splitter:
             Fitness_progress = np.zeros((generations, 6))
-
 
         for i in range(generations):
 
@@ -385,14 +391,14 @@ class SA_Evolution(SA_Simulation):
                 start_timer = datetime.datetime.now().replace(microsecond=0)
 
             # Create new Generation
-            if self.generation > 0: # and (splitter is n_cpu or splitter is False):
+            if self.generation > 0:  # and (splitter is n_cpu or splitter is False):
                 self._reproduction(mutation_var)
 
             # Evaluate fitness of each member
-            self._run_population(splitter=splitter)
+            self._run_population(splitter=splitter, n_cpu=n_cpu)
 
             # Saves Poplist for the last split:
-            if splitter == n_cpu: # This file will be automatically deleted in _run_popoulation()
+            if splitter == n_cpu:  # This file will be automatically deleted in _run_popoulation()
                 np.save("./temp/Poplist_Splitter{}.Generation.{}.cond{}.npy".format(splitter,
                                                                                     self.generation,
                                                                                     self.condition), self.pop_list)
@@ -410,8 +416,11 @@ class SA_Evolution(SA_Simulation):
                         break
 
                 # Implement the united Poplist
-                # TODO: this leads sometimes to error message: fid.seek(-N, 1)  back-up OSError: [Errno 22] Invalid argument (but just for SA (Single) ?!)
-                time.sleep(splitter/10) # >> this is to prevent the splitter all trying to open the file in the same moment #HACK
+                # TODO: this leads sometimes to error message: fid.seek(-N, 1)
+                # TODO: ...back-up OSError: [Errno 22] Invalid argument (but just for SA (Single) ?!)
+                time.sleep(splitter/10)
+                # >> this is to prevent the splitter all trying to open the file in the same moment #HACK
+
                 self.pop_list = np.load("./temp/Poplist_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu,
                                                                                                     self.generation,
                                                                                                     self.condition))
@@ -432,15 +441,16 @@ class SA_Evolution(SA_Simulation):
                 duration = end_timer - start_timer
                 rest_duration = duration*(generations-(i+1))
                 print("Time passed to evolve Generation {}: {} [h:m:s]".format(i, duration))
-                print("Estimated time to evolve the rest {} Generations: {} [h:m:s]".format(generations-(i+1), rest_duration))
-
+                print("Estimated time to evolve the rest {} Generations: {} [h:m:s]".format(generations-(i+1),
+                                                                                            rest_duration))
 
         # Remove remaining temporary files out of dictionary
         if not isinstance(splitter, bool):
-            np.save("./temp/SA_Splitter{}.DONE.cond{}.npy".format(splitter, self.condition), splitter) # First each script has to show that it == done
+            # First each script has to show that it == done
+            np.save("./temp/SA_Splitter{}.DONE.cond{}.npy".format(splitter, self.condition), splitter)
             # print("Splitter {} in Generation {} is DONE".format(splitter, self.generation-1))  # test
 
-        if splitter == n_cpu: # Check whether all scripts are done
+        if splitter == n_cpu:  # Check whether all scripts are done
             counter = 0
             while counter != n_cpu:
                 counter = 0
@@ -450,24 +460,20 @@ class SA_Evolution(SA_Simulation):
                     else:
                         counter += 1
 
-
             for split_count in range(1,n_cpu+1):
                 os.remove("./temp/SA_Splitter{}.DONE.cond{}.npy".format(split_count, self.condition))
             # print("Done files removed") #test
 
-
         # Save in external file: # TODO if server problem save this for each generation and delete old ones.
         if save and (splitter == n_cpu or not splitter):
-            self.filename = "Gen{}-{}.popsize{}.mut{}.sound_cond={}.JA.single(Fitness{})".format(self.generation - generations + 1,
-                                                                                                 self.generation,
-                                                                                                 self.pop_size,
-                                                                                                 mutation_var,
-                                                                                                 self.condition,
-                                                                                                 np.round(self.pop_list[0,1],2))
-
+            self.filename = "Gen{}-{}.popsize{}.mut{}.sound_cond={}.JA." \
+                            "single(Fitness{})".format(self.generation - generations + 1, self.generation,
+                                                       self.pop_size, mutation_var, self.condition,
+                                                       np.round(self.pop_list[0, 1],2))
 
             pickle.dump(self.pop_list, open('./poplists/single/Poplist.{}'.format(self.filename), 'wb'))
-            pickle.dump(np.round(Fitness_progress, 2), open('./poplists/single/Fitness_progress.{}'.format(self.filename), 'wb'))
+            pickle.dump(np.round(Fitness_progress, 2), open('./poplists/single/Fitness_progress.{}'.format(
+                self.filename), 'wb'))
 
             print('Evolution terminated. pop_list saved \n'
                   '(Filename: "Poplist.{}")'.format(self.filename))
@@ -479,8 +485,9 @@ class SA_Evolution(SA_Simulation):
 
         # Remove last Poplist out of /temp folder
         if splitter == n_cpu:
-            os.remove("./temp/Poplist_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu, self.generation - 1, self.condition))
-
+            os.remove("./temp/Poplist_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu,
+                                                                                  self.generation - 1,
+                                                                                  self.condition))
 
     def reimplement_population(self, filename=None, Plot=False):
 
@@ -498,7 +505,9 @@ class SA_Evolution(SA_Simulation):
         self.pop_list = pickle.load(open('./poplists/single/Poplist.{}'.format(self.filename), 'rb'))
         self.pop_size = self.pop_list.shape[0]
 
-        assert self.filename.find("False") != -1 or self.filename.find("True") != -1, "Condition is unknown (please add to filename (if known)"
+        assert self.filename.find("False") != -1 or self.filename.find("True") != -1, \
+            "Condition is unknown (please add to filename (if known)"
+
         self.condition = False if self.filename.find("False") != -1 and self.filename.find("True") == -1 else True
 
         fitness_progress = pickle.load(open('./poplists/single/Fitness_progress.{}'.format(self.filename), 'rb'))
@@ -507,7 +516,8 @@ class SA_Evolution(SA_Simulation):
         print(">> ...")
         print(">> File is successfully implemented")
 
-        # self.setup(trial_speed="fast") # Trial speed is arbitrary. This command is needed to globally announce variables
+        # self.setup(trial_speed="fast") # Trial speed is arbitrary.
+        # This command is needed to globally announce variables
 
         if Plot:
 
@@ -528,7 +538,6 @@ class SA_Evolution(SA_Simulation):
             # Output contains fitness[0], trajectories[1], keypress[2] and sounds[3], neural_state[4], neural_input_L[5]
             return output
 
-
     def plot_pop_list(self, knoblin_nr=1):
 
         output = []
@@ -541,10 +550,11 @@ class SA_Evolution(SA_Simulation):
 
                 self.target.velocity *= init_target_direction
 
-                self.implement_genome(genome_string=self.pop_list[knoblin_nr-1,2:])
+                self.implement_genome(genome_string=self.pop_list[knoblin_nr-1, 2:])
 
                 direction = "left" if init_target_direction == - 1 else "right"
-                print("Create Animation of {} trial and initial Target direction to the {}".format(trial_speed, direction))
+                print("Create Animation of {} trial and initial Target direction to the {}".format(trial_speed,
+                                                                                                   direction))
                 output.append(self.run_and_plot())   # include reset of the neural system
                 # output[count] = self.run_and_plot()
                 # count += 1
@@ -553,7 +563,6 @@ class SA_Evolution(SA_Simulation):
               "neural_state[4], neural_input_L[5]")
         return output
 
-
     def print_best(self, n=5):
         print(">> {} best agent(s):".format(n))
-        print(np.round(self.pop_list[0:n,0:4],3))
+        print(np.round(self.pop_list[0:n, 0:4], 3))
