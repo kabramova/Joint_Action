@@ -578,7 +578,7 @@ class JA_Evolution(JA_Simulation):
             os.remove("./temp/Poplist_R_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu, self.generation - 1,
                                                                                     self.condition))
 
-    def reimplement_population(self, filename=None, Plot=False):
+    def reimplement_population(self, filename=None, plot=False):
 
         assert filename.find("joint") != -1, "Wrong file! The file needs to be from the JOINT condition"
 
@@ -606,7 +606,7 @@ class JA_Evolution(JA_Simulation):
         print(">> ...")
         print(">> File is successfully implemented")
 
-        if Plot:
+        if plot:
 
             # here we plot the fitness progress of all generation
             plt.figure()

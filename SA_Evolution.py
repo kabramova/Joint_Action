@@ -489,7 +489,7 @@ class SA_Evolution(SA_Simulation):
                                                                                   self.generation - 1,
                                                                                   self.condition))
 
-    def reimplement_population(self, filename=None, Plot=False):
+    def reimplement_population(self, filename=None, plot=False):
 
         assert filename.find("single") != -1, "Wrong file! The file needs to be from the SINGLE condition"
 
@@ -519,7 +519,7 @@ class SA_Evolution(SA_Simulation):
         # self.setup(trial_speed="fast") # Trial speed is arbitrary.
         # This command is needed to globally announce variables
 
-        if Plot:
+        if plot:
 
             # here we plot the fitness progress of all generation
             plt.figure()

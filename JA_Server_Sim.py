@@ -31,7 +31,7 @@ ja = JA_Evolution(auditory_condition=audicon, pop_size=55, simlength_scalar=scal
 
 
 if isinstance(filename, str):
-    ja.reimplement_population(filename=filename, Plot=False)
+    ja.reimplement_population(filename=filename, plot=False)
     if not split or split == n_cpu:
         if audicon != ja.condition:
             print("...")
@@ -50,7 +50,7 @@ ja.run_evolution(generations=number_of_generations, splitter=split, n_cpu=n_cpu)
 # ja2 = JA_Evolution(auditory_condition=True)
 # print("Sound_Cond:", ja2.condition,", Popsize:", ja2.pop_size,", Gen:", ja2.generation)
 # filename = filename_request("joint")
-# output = ja2.reimplement_population(filename=filename, Plot=True)
+# output = ja2.reimplement_population(filename=filename, plot=True)
 # print("Sound_Cond:", ja2.condition,", Popsize:", ja2.pop_size,", Gen:", ja2.generation)
 # ja2.print_best(5)
 # print(np.round(ja2.pop_list_L[0:50,0:2],2))

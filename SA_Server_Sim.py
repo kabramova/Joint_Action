@@ -32,7 +32,7 @@ sa = SA_Evolution(auditory_condition=audicon, pop_size=110, simlength_scalar=sca
 
 
 if isinstance(filename, str):
-    sa.reimplement_population(filename=filename, Plot=False)
+    sa.reimplement_population(filename=filename, plot=False)
     if not split or split == n_cpu:
         if audicon != sa.condition:
             print("...")
@@ -51,7 +51,7 @@ sa.run_evolution(generations=number_of_generations, splitter=split, n_cpu=n_cpu)
 # sa2 = SA_Evolution(auditory_condition=False)
 # print("Sound_Cond:", sa2.condition,", Popsize:", sa2.pop_size,", Gen:", sa2.generation)
 # filename = filename_request("single")
-# output = sa2.reimplement_population(filename=filename, Plot=True)
+# output = sa2.reimplement_population(filename=filename, plot=True)
 # print("Sound_Cond:", sa2.condition,", Popsize:", sa2.pop_size,", Gen:", sa2.generation)
 # sa2.print_best(5)
 # # print(np.round(sa2.pop_list[0:50,0:2],2))
