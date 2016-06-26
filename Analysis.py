@@ -3,9 +3,7 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import matplotlib.cm as cmx
 from matplotlib import colors
-from mpl_toolkits.mplot3d import Axes3D
-# Info: http://matplotlib.org/mpl_toolkits/mplot3d/tutorial.html
-
+from mpl_toolkits.mplot3d import Axes3D # Info: http://matplotlib.org/mpl_toolkits/mplot3d/tutorial.html
 from SA_Evolution import *
 from JA_Evolution import *
 
@@ -37,7 +35,7 @@ if load is False:
         if isinstance(filename, str):
             sa_performance = sa.reimplement_population(filename=filename, Plot=True)
             sa_performance = np.array(sa_performance, dtype=object)
-            fitness = np.round(sa.pop_list[0, 1],2)
+            fitness = np.round(sa.pop_list[0, 1], 2)
             np.save("./Analysis/single/sa_performance_cond{}_fitness{}".format(sa.condition, fitness), sa_performance)
             # sa_performance[0-3] are the different trials
             # sa_performance[0-3][0-5] = fitness[0], trajectories[1], keypress[2], # sounds[3], neural_state[4],
@@ -148,14 +146,14 @@ for trial in trials:
     ax = fig_b.add_subplot(111, projection='3d')
     if condition == "single":
         for i in range(neural_state.shape[1]):
-            ax.plot(xs = range(neural_state.shape[0]), zs = neural_state[:,i], ys=np.repeat(i+1,neural_state.shape[0]))
-            ax.plot(xs = range(neural_input.shape[0]), zs = neural_input[:,i], ys=np.repeat(i+1,neural_state.shape[0]),
+            ax.plot(xs=range(neural_state.shape[0]), zs=neural_state[:, i], ys=np.repeat(i+1, neural_state.shape[0]))
+            ax.plot(xs=range(neural_input.shape[0]), zs=neural_input[:, i], ys=np.repeat(i+1, neural_state.shape[0]),
                     alpha=0.0)
 
     if condition == "joint":
         for i in range(neural_state_L.shape[1]):
             ax.plot(xs=range(len(neural_state_L)), zs=neural_state_L[:, i], ys=np.repeat(i + 1, len(neural_state_L)),
-                    alpha = .5, c=col[i]) # c=cmap(i**3))
+                    alpha=.05, c=col[i]) # c=cmap(i**3))
             ax.plot(xs=range(len(neural_state_R)), zs=neural_state_R[:, i], ys=np.repeat(i + 1, len(neural_state_R)),
                     c=col[i]) # c=cmap(i**3))
 
@@ -210,7 +208,7 @@ for trial in trials:
             ax.plot(xs = range(neural_state.shape[0]), zs = neural_state[:,i], ys=np.repeat(i+1,neural_state.shape[0]),
                 alpha=0.1)
             '''
-            ax.plot(xs = range(len(neural_input_L)), zs = neural_input_L[:,i], ys=np.repeat(i+1, len(neural_input_L)),
+            ax.plot(xs=range(len(neural_input_L)), zs=neural_input_L[:, i], ys=np.repeat(i+1, len(neural_input_L)),
                     alpha=.5,
                     c=col[i])  # c=cmap(i**3))
 
@@ -381,7 +379,7 @@ for trial in trials:
     cm = plt.get_cmap(colorsMap)
     if condition == "single":
         cNorm = matplotlib.colors.Normalize(vmin=min(average), vmax=max(average))
-    else: # condition == "joint":
+    else:  # condition == "joint":
         cNorm = matplotlib.colors.Normalize(vmin=min(min(average_L), min(average_R)),
                                             vmax=max(max(average_L), max(average_R)))
 

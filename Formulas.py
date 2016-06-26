@@ -3,46 +3,49 @@ import copy
 import sys
 import os, datetime, time
 from collections import OrderedDict
+from functools import wraps
 
-## Euler Method:
+# Euler Method:
 #        Δy/Δt ≈ dy/dt = f(y,t)
-##   =>  Δy ≈ f(y,t)Δt  , where Δt = h
+#   =>  Δy ≈ f(y,t)Δt  , where Δt = h
 
 # >>Note: Courant-Friedrichs-Lewy Condition
 
+
 def sigmoid(x):
-    ''' plotting the sigmoid
+    """
+    plotting the sigmoid
     x = np.zeros(1)
     for i,j in enumerate(np.arange(-5,5,.001)):
         x = np.c_[x, f.sigmoid(j)]
     plt.plot(np.arange(-5,5,.001),x.transpose()[:-1])
-    '''
+    """
     return 1 / (1 + np.exp(-x))
     # Initialize parameter vectors Y, Tau, Theta, W and I
 
 
-def randrange(range, dimension_1, dimension_2):
-    '''
+def randrange(ranges, dimension_1, dimension_2):
+    """
     Creates matrix(dim1,dim2) with random numbers in the range of input.
     (b - a) * random_sample() + a, b>a
-    '''
-    return np.matrix((range[1] - range[0]) * np.random.sample((dimension_1, dimension_2)) + range[0])
+    """
+    return np.matrix((ranges[1] - ranges[0]) * np.random.sample((dimension_1, dimension_2)) + ranges[0])
 
 
 def vec_angle(v1, v2):
-    '''
+    """
     Computes the minimal positive angle between the two input vectors.
     Vectors will be normalized within the method
     Order of vectors does not play a role.
     :param v1: first vector
     :param v2: second vector
     :return: angle in [0,π)
-    '''
-    return np.arccos( np.dot(v1, v2) / (np.linalg.norm(v1)*np.linalg.norm(v2)) )
+    """
+    return np.arccos(np.dot(v1, v2) / (np.linalg.norm(v1)*np.linalg.norm(v2)))
 
 
-def vec_angle2(v1,v2):
-    '''
+def vec_angle2(v1, v2):
+    """
     Computes the minimal signed(!) angle between the two input vectors.
     Vectors will be normalized within the method
     Positive sign denotes a anti-clockwise rotation.
@@ -50,7 +53,7 @@ def vec_angle2(v1,v2):
     :param v1: first vector
     :param v2: seceond vector
     :return: angle in [-π,π]
-    '''
+    """
     n1 = v1/np.linalg.norm(v1)
     n2 = v2/np.linalg.norm(v2)
     angle = np.arctan2(n2[1], n2[0]) - np.arctan2(n1[1], n1[0])
@@ -61,53 +64,52 @@ def vec_angle2(v1,v2):
     return angle
 
 
-def rotate90(vector, clockwise = True):
-    '''
+def rotate90(vector, clockwise=True):
+    """
     Rotates the input vector 90 degrees
     :param vector:
     :return: rotated vector
-    '''
+    """
     swap = np.array([vector[1], vector[0]])
     if clockwise:
-        rotated_vec = swap * np.array([1,-1])
+        rotated_vec = swap * np.array([1, -1])
     else:
-        rotated_vec = swap * np.array([-1,1])
+        rotated_vec = swap * np.array([-1, 1])
 
     return rotated_vec
 
 
-def mat_sort(matrix, index = 0, axis = 2):
-    '''
+def mat_sort(matrix, index=0, axis=2):
+    """
     Sorts Matrix with respect to particular column or row
     :param matrix: Matrix to be sorted
     :param axis: axis-1 = rows; axis-2 = columns
     :param index: index of row/column, which is the "sorting-ground"
     :return: sorted matrix
-    '''
+    """
     if axis == 2:
-        return matrix[np.argsort(matrix[:,index])]
+        return matrix[np.argsort(matrix[:, index])]
     elif axis == 1:
         tmatrix = np.transpose(matrix)
-        sort_tmatrix =  tmatrix[np.argsort(tmatrix[:,index])]
+        sort_tmatrix = tmatrix[np.argsort(tmatrix[:, index])]
         return np.transpose(sort_tmatrix)
     else:
         raise ValueError("axis must be either 1 or 2")
 
 
 def normalize(array):
-    '''
+    """
     :return: rescaled array in range [0,1]
-    '''
+    """
     if np.all(np.array(array) == 0):
         print("Input = zero.array >> no Normalization")
     else:
         return (array - np.min(array)) / (np.max(array) - np.min(array))
 
 
-## Formulas for JointAction
-
-def angle_velo(beta = None, b = None):
-    '''
+# Formulas for JointAction
+def angle_velo(beta=None, b=None):
+    """
     TRIANGLE:
     a:     = 80cm distance to screen
     b:       velocity in cm of tracker/target
@@ -118,29 +120,29 @@ def angle_velo(beta = None, b = None):
     Source:  "http://www.arndt-bruenner.de/mathe/scripts/Dreiecksberechnung.htm"
     :param   beta, b: (see above)
     :return: b or beta, respectively
-    '''
+    """
 
     gamma = 90
     a = 80
 
-    if beta == None and b == None:
+    if beta is None and b is None:
         raise ValueError("Need input, either for beta or b")
 
-    elif b==None:
+    elif b is None:
         alpha = 180 - beta - gamma
         b = a * np.sin(np.radians(beta)) / np.sin(np.radians(alpha))
         # c = a * np.sin(gamma) / np.sin(alpha)
         return b
 
-    else: # beta == None:
+    else:  # beta =is None:
         c = np.sqrt(a * a + b * b - 2 * a * b * np.cos(np.radians(gamma)))
         # alpha = np.arccos((a * a - b * b - c * c) / (-2 * b * c))
         beta = np.arccos((b * b - c * c - a * a) / (-2 * c * a))
         return np.degrees(beta)
 
 
-def angle_velo2(velocity_deg = None, velocity_cm = None):
-    '''
+def angle_velo2(velocity_deg=None, velocity_cm=None):
+    """
     TRIANGLE:
     d:     = 80cm distance to screen
     theta:   Angle
@@ -150,19 +152,19 @@ def angle_velo2(velocity_deg = None, velocity_cm = None):
              "http://www.yorku.ca/eye/visangle.htm"
     :param   velocity_cm, velocity_deg: (see above)
     :return: velocity (cm, degrees, respectively)
-    '''
+    """
 
     d = 80
 
-    if velocity_deg == None and velocity_cm == None:
+    if velocity_deg is None and velocity_cm is None:
         raise ValueError("Need input, either velocity")
 
-    elif velocity_deg==None:
+    elif velocity_deg is None:
         # vel_deg = np.degrees(np.arctan(velocity_cm / d))   # if, the same as angle_velo (Version1)
         vel_deg = np.degrees(2*np.arctan(velocity_cm/(d*2)))
         return vel_deg
 
-    else: # velocity_cm == None:
+    else:  # velocity_cm is None:
         theta = velocity_deg
         # vel_cm = np.tan(np.radians(theta)) * d # if, the same as angle_velo (Version1)
         vel_cm = 2*np.tan(np.radians(theta/2)) * d
@@ -171,21 +173,22 @@ def angle_velo2(velocity_deg = None, velocity_cm = None):
 
 # Requests:
 def save_request():
-    '''
+    """
     Ask whether results should be saved in external file
     take output of save_request() as follows:
     save = save_request()
     :return True or False
-    '''
+    """
+
     count = 0
     while count != 3:
-        Input = input("Do you want to save the final population ('(y)es'/'(n)o'):")
+        inputs = input("Do you want to save the final population ('(y)es'/'(n)o'):")
 
-        if Input in ["y", "Y", "yes", "Yes", "YES"]:
+        if inputs in ["y", "Y", "yes", "Yes", "YES"]:
             print("Saving final population in external file")
             return True
 
-        elif Input in ["n", "N", "no", "No", "NO"]:
+        elif inputs in ["n", "N", "no", "No", "NO"]:
             print("Final population won't be saved")
             return False
 
@@ -217,7 +220,8 @@ def audio_condition_request():
 def generation_request():
 
     number_of_generations = input("How many Generations to run (int):")
-    if int(number_of_generations): number_of_generations = int(number_of_generations)
+    if int(number_of_generations):
+        number_of_generations = int(number_of_generations)
 
     if number_of_generations <= 1:
         raise ValueError("Evolution must run for at least 2 Generations")
@@ -228,7 +232,8 @@ def generation_request():
 def simlength_scalar_request():
 
     simlength_scalar = input("With what factor you want to scale the simulation length (int) [default=1]:")
-    if int(simlength_scalar): simlength_scalar = int(simlength_scalar)
+    if int(simlength_scalar):
+        simlength_scalar = int(simlength_scalar)
 
     if simlength_scalar <= 0:
         raise ValueError("Scalar must be greather than zero")
@@ -239,17 +244,17 @@ def simlength_scalar_request():
 def filename_request(single_or_joint):
     found = 0
 
-    assert single_or_joint in ["single","joint"], 'Wrong input: Either "single" or "joint"'
+    assert single_or_joint in ["single", "joint"], 'Wrong input: Either "single" or "joint"'
 
     for file in os.listdir('poplists/{}/'.format(single_or_joint)):
         if file.find("sound") != -1 and file.find(single_or_joint) != -1:
             count = 0
             found += 1
-            No = False
+            no = False
 
             filename = file[file.find("Gen"):]
 
-            while count != 3 and No == False:
+            while count != 3 and no is False:
                 file_request = input("{} \n Do you want to implement this file ((y)es, (n)o:".format(filename))
 
                 if file_request in ["y", "Y", "yes", "Yes", "YES"]:
@@ -258,7 +263,7 @@ def filename_request(single_or_joint):
 
                 elif file_request in ["n", "N", "no", "No", "NO"]:
                     print(">> Looking for further files")
-                    No = True
+                    no = True
 
                 else:
                     print("Input is not understood.\n"
@@ -292,13 +297,13 @@ def load_request():
 
     count = 0
     while count != 3:
-        Input = input("Do you want to load a performance file ('(y)es'/'(n)o'):")
+        inputs = input("Do you want to load a performance file ('(y)es'/'(n)o'):")
 
-        if Input in ["y", "Y", "yes", "Yes", "YES"]:
+        if inputs in ["y", "Y", "yes", "Yes", "YES"]:
             print("Loading a performance file")
             return True
 
-        elif Input in ["n", "N", "no", "No", "NO"]:
+        elif inputs in ["n", "N", "no", "No", "NO"]:
             print("Existing Poplist(s) will be evaluated and saved in performance file")
             return False
 
@@ -313,7 +318,8 @@ def load_request():
 
 def load_file(single_or_joint, audio_condition):
 
-    assert single_or_joint in ["single", "joint"], "Input not understood. single_or_joint must be either 'single' or 'joint'!"
+    assert single_or_joint in ["single", "joint"], \
+        "Input not understood. single_or_joint must be either 'single' or 'joint'!"
     assert audio_condition in [True, False], "Input not understood. audio_condition must be either True or False "
 
     found = 0
@@ -322,11 +328,11 @@ def load_file(single_or_joint, audio_condition):
         if file.find("performance") != -1 and file.find(str(audio_condition)) != -1:
             count = 0
             found += 1
-            No = False
+            no = False
 
             filename = file[file.find("sa"):] if file.find("sa") != -1 else file[file.find("ja"):]
 
-            while count != 3 and No is False:
+            while count != 3 and no is False:
                 file_request = input("{} \n Do you want to load this file ((y)es, (n)o:".format(filename))
 
                 if file_request in ["y", "Y", "yes", "Yes", "YES"]:
@@ -335,7 +341,7 @@ def load_file(single_or_joint, audio_condition):
 
                 elif file_request in ["n", "N", "no", "No", "NO"]:
                     print(">> Looking for further files")
-                    No = True
+                    no = True
 
                 else:
                     print("Input is not understood.\n"
@@ -351,13 +357,9 @@ def load_file(single_or_joint, audio_condition):
     raise ValueError("Evaluate recent poplist(s)")
 
 
-
-
-
-
 # Timers:
 def function_timer(function):
-    ''' Time and execute input-function'''
+    """ Time and execute input-function """
     start_timer = datetime.datetime.now()
 
     output = function()  # == function()
@@ -371,10 +373,8 @@ def function_timer(function):
 
 
 # Alternative:
-from functools import wraps
-
 def function_timed(function):
-    '''
+    """
     This allows to define new function with the timer-wrapper
     Write:
         @function_timed
@@ -382,8 +382,8 @@ def function_timed(function):
             print("Any Function")
     And try:
         foo()
-    :Source: http://stackoverflow.com/questions/2245161/how-to-measure-execution-time-of-functions-automatically-in-python
-    '''
+    http://stackoverflow.com/questions/2245161/how-to-measure-execution-time-of-functions-automatically-in-python
+    """
 
     @wraps(function)
     def wrapper(*args, **kwds):
@@ -398,11 +398,3 @@ def function_timed(function):
         return output
 
     return wrapper
-
-
-
-
-
-
-
-
