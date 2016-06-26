@@ -51,7 +51,7 @@ class SA_Evolution(SA_Simulation):
 
     def implement_genome(self, genome_string):
 
-        assert genome_string.size ==self.genome.size, "Genome has not the right size"
+        assert genome_string.size == self.genome.size, "Genome has not the right size"
 
         A = self.knoblin.W.size
         G = self.knoblin.WM.size
@@ -60,19 +60,19 @@ class SA_Evolution(SA_Simulation):
         C = self.knoblin.Theta.size
         U = self.knoblin.Tau.size
 
-        W       = genome_string[:A]
-        WM      = genome_string[A:A + G]
-        WV      = genome_string[A + G:A + G + T]
-        WA      = genome_string[A + G + T:A + G + T + X]
-        Theta   = genome_string[A + G + T + X:A + G + T + X + C]
-        Tau     = genome_string[A + G + T + X + C:A + G + T + X + C + U]
+        W = genome_string[:A]
+        WM = genome_string[A:A + G]
+        WV = genome_string[A + G:A + G + T]
+        WA = genome_string[A + G + T:A + G + T + X]
+        Theta = genome_string[A + G + T + X:A + G + T + X + C]
+        Tau = genome_string[A + G + T + X + C:A + G + T + X + C + U]
 
         self.knoblin.W =  np.matrix(np.reshape(W, (self.knoblin.N, self.knoblin.N)))
         self.knoblin.WM = np.matrix(np.reshape(WM, (G, 1)))
         self.knoblin.WV = np.matrix(np.reshape(WV, (T, 1)))
         self.knoblin.WA = np.matrix(np.reshape(WA, (X, 1)))
-        self.knoblin.Theta = np.matrix(np.reshape(Theta, (C,1)))
-        self.knoblin.Tau = np.matrix(np.reshape(Tau, (U,1)))
+        self.knoblin.Theta = np.matrix(np.reshape(Theta, (C, 1)))
+        self.knoblin.Tau = np.matrix(np.reshape(Tau, (U, 1)))
 
         # Update the self.genome:
         if not isinstance(genome_string, np.matrix):
@@ -331,7 +331,7 @@ class SA_Evolution(SA_Simulation):
         n_fitfamily = n_family + n_fps
         for n in range(n_fitfamily, n_fitfamily+n_random):
             self.knoblin = Knoblin()                                    # Create random new agent
-            self.genome = self.create_genome(Knoblin = self.knoblin)    # ... and its genome
+            self.genome = self.create_genome(Knoblin=self.knoblin)    # ... and its genome
             new_population[n, 2:] = self.genome.transpose()
 
         # 5) All but the first two best agents will fall under a mutation with a variance of .02 (default)
@@ -375,7 +375,7 @@ class SA_Evolution(SA_Simulation):
 
         assert isinstance(n_cpu, int) and n_cpu > 0, "n_cpu must be greater than zero (int)"
 
-        if not splitter: # == False
+        if not splitter:  # == False
             save = save_request()
             print("No Splitter is used")
         else:
@@ -460,7 +460,7 @@ class SA_Evolution(SA_Simulation):
                     else:
                         counter += 1
 
-            for split_count in range(1,n_cpu+1):
+            for split_count in range(1, n_cpu+1):
                 os.remove("./temp/SA_Splitter{}.DONE.cond{}.npy".format(split_count, self.condition))
             # print("Done files removed") #test
 
@@ -469,7 +469,7 @@ class SA_Evolution(SA_Simulation):
             self.filename = "Gen{}-{}.popsize{}.mut{}.sound_cond={}.JA." \
                             "single(Fitness{})".format(self.generation - generations + 1, self.generation,
                                                        self.pop_size, mutation_var, self.condition,
-                                                       np.round(self.pop_list[0, 1],2))
+                                                       np.round(self.pop_list[0, 1], 2))
 
             pickle.dump(self.pop_list, open('./poplists/single/Poplist.{}'.format(self.filename), 'wb'))
             pickle.dump(np.round(Fitness_progress, 2), open('./poplists/single/Fitness_progress.{}'.format(
