@@ -7,7 +7,7 @@ e1 = Evolution(simlength=5000)
 # os.listdir('poplists')
 filename = "sim5000.mut0.02.Gen8001-8500(Fitness 24.54)"      # Filename starts with "sim..."
 if filename != "" and isinstance(filename, str):
-    e1.reimplement_population(Filename=filename, Plot=False)
+    e1.reimplement_population(filename=filename, plot=False)
     print("File implemented:", e1.filename)
 
 n_gen = generation_request()
