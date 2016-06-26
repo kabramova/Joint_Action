@@ -153,7 +153,8 @@ for trial in trials:
     if condition == "joint":
         for i in range(neural_state_L.shape[1]):
             ax.plot(xs=range(len(neural_state_L)), zs=neural_state_L[:, i], ys=np.repeat(i + 1, len(neural_state_L)),
-                    alpha=.05, c=col[i]) # c=cmap(i**3))
+                    alpha=.05,
+                    c=col[i]) # c=cmap(i**3))
             ax.plot(xs=range(len(neural_state_R)), zs=neural_state_R[:, i], ys=np.repeat(i + 1, len(neural_state_R)),
                     c=col[i]) # c=cmap(i**3))
 
@@ -181,7 +182,8 @@ for trial in trials:
     if condition == "joint":
         for i in [2, 3, 4, 5, 6]:
             ax.plot(xs=range(len(neural_state_L)), zs=neural_state_L[:, i], ys=np.repeat(i + 1, len(neural_state_L)),
-                    alpha=.5, c=col[i])  # c=cmap(i**3))
+                    alpha=.5,
+                    c=col[i])  # c=cmap(i**3))
             ax.plot(xs=range(len(neural_state_R)), zs=neural_state_R[:, i], ys=np.repeat(i + 1, len(neural_state_R)),
                     c=col[i])  # c=cmap(i**3))
 
@@ -194,8 +196,7 @@ for trial in trials:
     ax.set_xlabel('Timesteps')
     ax.set_ylabel('Neurons')
     ax.set_zlabel('Activation')
-    plt.savefig("./{}/{} GRAPH B_a (Neural Activity) without Input Neurons Trial {}".format(current_folder, condition,
-                                                                                            trial_name))
+    plt.savefig("./{}/{} GRAPH B_a (Neural Activity) without Input Neurons Trial {}".format(current_folder, condition, trial_name))
     plt.close(fig_b_a)
 
     # Input
@@ -312,7 +313,8 @@ for trial in trials:
             if trial[2][row, 1] == 1:      # right
                     plt.plot(target[row], tracker[row], marker=r"$ {} $".format("R"), ms=10, mfc="red")
 
-    plt.savefig("./{}/{} GRAPH D delta+ (Keypress and Trajectories) Trial {}".format(current_folder, condition,
+    plt.savefig("./{}/{} GRAPH D delta+ (Keypress and Trajectories) Trial {}".format(current_folder,
+                                                                                     condition,
                                                                                      trial_name))
 
     plt.close(fig_d_neg)
@@ -428,14 +430,14 @@ for trial in trials:
                 ax.scatter(neural_state[row, 3], neural_state[row, 5], zs=distance[row], marker=r"$ {} $".format("L"),
                            s=30, lw=0, c="blue")
             if trial[2][row, 1] == 1:   # right
-                plt.scatter(neural_state[row, 3], neural_state[row, 5], zs=distance[row],
-                            marker=r"$ {} $".format("R"), s=30, lw=0, c="red")
+                plt.scatter(neural_state[row, 3], neural_state[row, 5], zs=distance[row], marker=r"$ {} $".format("R"),
+                            s=30, lw=0, c="red")
 
     if condition == "joint":
-        ax.plot(xs=neural_state_L[:, 3], ys=neural_state_L[:, 5], zs=distance, color="royalblue",
-                label="Left Agent")
-        ax.plot(xs=neural_state_R[:, 3], ys=neural_state_R[:, 5], zs=distance, color="fuchsia",
-                label="Right Agent")
+        ax.plot(xs=neural_state_L[:, 3], ys=neural_state_L[:, 5], zs=distance,
+                color="royalblue", label="Left Agent")
+        ax.plot(xs=neural_state_R[:, 3], ys=neural_state_R[:, 5], zs=distance,
+                color="fuchsia", label="Right Agent")
 
         for row in range(len(trial[2])):
             if trial[2][row, 0] == -1:  # left press
@@ -448,8 +450,9 @@ for trial in trials:
 
         ax.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0., fancybox=True)
 
-    plt.savefig("./{}/{} GRAPH F (Motor Neuron Activity of Neuron 4, 6 and Distance Target-Tracker) Trial {}".format(
-        current_folder, condition, trial_name))
+    plt.savefig("./{}/{} GRAPH F (Motor Neuron Activity of Neuron 4, 6 and Distance Target-Tracker) Trial {}".format(current_folder,
+                                                                                                                     condition,
+                                                                                                                     trial_name))
 
     plt.close(fig_f)
 

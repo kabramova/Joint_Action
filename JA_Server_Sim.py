@@ -41,8 +41,7 @@ if isinstance(filename, str):
 
 # RUN:
 if not split or split == n_cpu:
-    print("Run Evolution for {} Generations in Joint Condition and Sound Condition={}".format(number_of_generations,
-                                                                                              ja.condition))
+    print("Run Evolution for {} Generations in Joint Condition and Sound Condition={}".format(number_of_generations, ja.condition))
 ja.run_evolution(generations=number_of_generations, splitter=split, n_cpu=n_cpu)
 
 
