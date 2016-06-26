@@ -13,7 +13,7 @@ if filename != "" and isinstance(filename, str):
 n_gen = generation_request()
 
 print("Run Evolution from Generations {}-{}".format(e1.Generation, e1.Generation+n_gen))
-e1.run_evolution(Generations=n_gen, mutation_var=.02, complex_trials=True, fit_prop_sel=False, position_agent=[50, 50],
+e1.run_evolution(generations=n_gen, mutation_var=.02, complex_trials=True, fit_prop_sel=False, position_agent=[50, 50],
                  angle_to_target=np.pi/2, distance_to_target=30)
 
 # e1.reimplement_population(Filename=filename, Plot=True)
