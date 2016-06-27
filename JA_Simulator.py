@@ -193,7 +193,7 @@ class JA_Simulation:
         times = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
         os.makedirs("./Animation/{}.Animation.Sound_{}.{}_trial".format(times, self.condition, trial))
 
-        ticker = 10  # just plot every 10th (x-th) state.
+        ticker = 10         # just plot every 10th (x-th) state.
         counter_img = 0
         counter_sec = 0
 
@@ -205,17 +205,17 @@ class JA_Simulation:
 
             plt.figure(figsize=(10, 6), dpi=80)
 
-            plt.plot(positions[i, 0], 0, 'ro', markersize=12, alpha=0.5)    # Tracker
-            plt.plot(positions[i, 1], 0, 'go')                              # Target
+            plt.plot(positions[i, 0], 0, 'ro', markersize=12, alpha=0.5)     # Tracker
+            plt.plot(positions[i, 1], 0, 'go')                               # Target
 
             if any(keypress[i:i+9, 0] == -1):
-                plt.plot(-10, -4, 'bs', markersize=16)                      # keypress left
+                plt.plot(-10, -4, 'bs', markersize=16)                       # keypress left
             if any(keypress[i:i+9, 0] == 1):
-                plt.plot(10, -4, 'bs', markersize=16)                       # keypress right
+                plt.plot(10, -4, 'bs', markersize=16)                        # keypress right
 
             if self.condition:
                 if any(sounds[i:i+9, 0] == 1):
-                    plt.plot(-10, -3.9, 'yo', markersize=24, alpha=0.3)       # sound left
+                    plt.plot(-10, -3.9, 'yo', markersize=24, alpha=0.3)      # sound left
                 if any(sounds[i:i+9, 1] == 1):
                     plt.plot(10, -3.9, 'yo', markersize=24, alpha=0.3)       # sound right
 
