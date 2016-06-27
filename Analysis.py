@@ -33,7 +33,7 @@ if load is False:
     if condition == "single":
         sa = SA_Evolution(auditory_condition=audicon)
         if isinstance(filename, str):
-            sa_performance = sa.reimplement_population(filename=filename, Plot=True)
+            sa_performance = sa.reimplement_population(filename=filename, plot=True)
             sa_performance = np.array(sa_performance, dtype=object)
             fitness = np.round(sa.pop_list[0, 1], 2)
             np.save("./Analysis/single/sa_performance_cond{}_fitness{}".format(sa.condition, fitness), sa_performance)
@@ -44,7 +44,7 @@ if load is False:
     if condition == "joint":
         ja = JA_Evolution(auditory_condition=audicon, pop_size=55)
         if isinstance(filename, str):
-            ja_performance = ja.reimplement_population(filename=filename, Plot=True)
+            ja_performance = ja.reimplement_population(filename=filename, plot=True)
             ja_performance = np.array(ja_performance, dtype=object)
             fitness = np.round(ja.pop_list_L[0, 1], 2)
             np.save("./Analysis/joint/ja_performance_cond{}_fitness{}".format(ja.condition, fitness), ja_performance)

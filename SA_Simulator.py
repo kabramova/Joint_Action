@@ -187,16 +187,16 @@ class SA_Simulation:
             plt.plot(positions[i, 0], 0, 'ro', markersize=12, alpha=0.5)    # Tracker
             plt.plot(positions[i, 1], 0, 'go')                              # Target
 
-            if keypress[i, 0] == -1:
+            if any(keypress[i:i + 9, 0] == -1):
                 plt.plot(-10, -4, 'bs', markersize=16)                      # keypress left
-            if keypress[i, 1] == 1:
+            if any(keypress[i:i + 9, 0] == 1):
                 plt.plot(10, -4, 'bs', markersize=16)                       # keypress right
 
             if self.condition:
-                if sounds[i, 0] == 1:
-                    plt.plot(-10, -3.9, 'yo', markersize=24, alpha=0.3)       # sound left
-                if sounds[i, 1] == 1:
-                    plt.plot(10, -3.9, 'yo', markersize=24, alpha=0.3)        # sound right
+                if any(sounds[i:i + 9, 0] == 1):
+                    plt.plot(-10, -3.9, 'yo', markersize=24, alpha=0.3)     # sound left
+                if any(sounds[i:i + 9, 1] == 1):
+                    plt.plot(10, -3.9, 'yo', markersize=24, alpha=0.3)      # sound right
 
             # Define boarders
             plt.xlim(-20, 20)
