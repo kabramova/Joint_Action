@@ -2,6 +2,7 @@ from Formulas import *
 
 
 class CTRNN:
+
     def __init__(self, number_of_neurons, timestep=0.01):
 
         """
