@@ -189,7 +189,7 @@ class SA_Simulation:
 
             if any(keypress[i:i + ticker, 0] == -1):
                 plt.plot(-10, -4, 'bs', markersize=16)                      # keypress left
-            if any(keypress[i:i + ticker, 0] == 1):
+            if any(keypress[i:i + ticker, 1] == 1):
                 plt.plot(10, -4, 'bs', markersize=16)                       # keypress right
 
             if self.condition:
