@@ -26,6 +26,8 @@ audicon = audio_condition_request()
 
 load = load_request()
 
+
+# TODO Lesion Study
 if load is False:
     filename = filename_request(condition)  # "joint" or "single"
     # filename = "Gen1001-2000.popsize55.mut0.02.sound_cond=False.JA.joint(Fitness6.1)"

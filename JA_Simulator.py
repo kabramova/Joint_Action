@@ -158,8 +158,8 @@ class JA_Simulation:
             neural_input_r[i, :] = self.knoblin_R.I.transpose()
 
             # 6) Agents react:
-            if self.knoblin_L.timer_motor_l <= 0 or self.knoblin_L.timer_motor_r <= 0 or \
-                            self.knoblin_R.timer_motor_l <= 0 or self.knoblin_R.timer_motor_r <= 0:
+            if self.knoblin_L.timer_motor_l <= 0 or self.knoblin_L.timer_motor_r <= 0 or self.knoblin_R.timer_motor_l <= 0 \
+                    or self.knoblin_R.timer_motor_r <= 0:
                 # this is a bit redundant (see e.g.) Knoblin.press_left(), but more computational efficient
                 activation_l = self.knoblin_L.motor_output()
                 activation_r = self.knoblin_R.motor_output()
@@ -208,15 +208,15 @@ class JA_Simulation:
             plt.plot(positions[i, 0], 0, 'ro', markersize=12, alpha=0.5)     # Tracker
             plt.plot(positions[i, 1], 0, 'go')                               # Target
 
-            if any(keypress[i:i+9, 0] == -1):
+            if any(keypress[i:i+ticker, 0] == -1):
                 plt.plot(-10, -4, 'bs', markersize=16)                       # keypress left
-            if any(keypress[i:i+9, 0] == 1):
+            if any(keypress[i:i+ticker, 0] == 1):
                 plt.plot(10, -4, 'bs', markersize=16)                        # keypress right
 
             if self.condition:
-                if any(sounds[i:i+9, 0] == 1):
+                if any(sounds[i:i+ticker, 0] == 1):
                     plt.plot(-10, -3.9, 'yo', markersize=24, alpha=0.3)      # sound left
-                if any(sounds[i:i+9, 1] == 1):
+                if any(sounds[i:i+ticker, 1] == 1):
                     plt.plot(10, -3.9, 'yo', markersize=24, alpha=0.3)       # sound right
 
             # Define boarders
