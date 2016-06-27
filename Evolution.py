@@ -409,8 +409,7 @@ class Evolution(Simulate):
         n = n_agents
 
         pos_target = self._set_target(position_agent=position_agent, complex=True)
-        col = ["royalblue", "tomato", "palegreen", "fuchsia",
-               "gold", "darkviolet", "darkslategray", "orange"]  # colors.cnames
+        col = ["royalblue", "tomato", "palegreen", "fuchsia", "gold", "darkviolet", "darkslategray", "orange"]  # colors.cnames
 
         for i in range(n_agents):
 

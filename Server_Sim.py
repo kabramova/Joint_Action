@@ -16,4 +16,4 @@ print("Run Evolution from Generations {}-{}".format(e1.Generation, e1.Generation
 e1.run_evolution(generations=n_gen, mutation_var=.02, complex_trials=True, fit_prop_sel=False, position_agent=[50, 50],
                  angle_to_target=np.pi/2, distance_to_target=30)
 
-# e1.reimplement_population(Filename=filename, Plot=True)
+# e1.reimplement_population(filename=filename, plot=True)
