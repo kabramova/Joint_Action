@@ -32,7 +32,6 @@ load = load_request()
 lesion = lesion_request() # True/False
 lesion_name = "_lesion" if lesion else ""
 
-# TODO Lesion Study
 if load is False:
 
     if condition == "single":
@@ -555,3 +554,6 @@ for trial in trials:
     # for i in range(len(DYDT)):
     #     for j in range(len(sa.knoblin.Y)):
     #         plt.plot(i, DYDT[i][j], marker="o", ms=5., markeredgewidth=0.0, c=col[j])
+
+    # TODO: plot weights
+    # http: // matplotlib.org / examples / specialty_plots / hinton_demo.html
