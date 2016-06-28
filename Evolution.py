@@ -110,7 +110,7 @@ class Evolution(Simulate):
                             ("U", self.agent.Tau.size)])
         return gens
 
-    def _reproduction(self, mutation_var=0.25, fps=False):
+    def _reproduction(self, mutation_var, fps=False):
         """
         If fitness proportionate selection (fps) = False:
             +: sexual reproduction, saves best, adds new random bots
@@ -141,7 +141,7 @@ class Evolution(Simulate):
                 - weights: w (weights of interneurons, sensory and motor neurons) in range [-13, 13]
                 - bias: θ (theta) in range [-13, 13]
 
-        :param mutation_var: 0.25 by default, according to Agmon & Beer (2013)
+        :param mutation_var: given by run_evolution() (0.25 by default, according to Agmon & Beer (2013))
         :return: self.pop_list = repopulated list (new_population)
         """
 
@@ -311,12 +311,23 @@ class Evolution(Simulate):
 
                 fitness.append(self.fitness())
 
-            self.pop_list[i,1] = np.sum(fitness)/len(fitness)  # agent's average fitness will be stored
+            self.pop_list[i, 1] = np.sum(fitness)/len(fitness)  # agent's average fitness will be stored
 
         self.pop_list = copy.copy(mat_sort(self.pop_list, index=1))
 
-    def run_evolution(self, generations, mutation_var=0.25, complex_trials=True, fit_prop_sel=False,
+    def run_evolution(self, generations, mutation_var=0.10, complex_trials=True, fit_prop_sel=False,
                       position_agent=[50, 50], angle_to_target= np.pi/2, distance_to_target=30):
+        """
+        Run evolution for n-generations with particular mutation rate.
+
+        :param generations: number of generations to run
+        :param mutation_var: test out smaller value, 0.25 by default, according to Agmon & Beer (2013)
+        :param complex_trials: if true multiple targets to catch
+        :param fit_prop_sel: fitness proportionate selection
+        :param position_agent: start position of agent in all trials
+        :param angle_to_target: defines angle to target (in case of complex_trials, redundant)
+        :param distance_to_target: defines corresponding distance to target (in case of complex_trials, redundant)
+        """
 
         # Ask whether results should be saved in external file
         save = save_request()
@@ -333,7 +344,7 @@ class Evolution(Simulate):
 
             start_timer = datetime.datetime.now().replace(microsecond=0)
 
-            self._reproduction(mutation_var, fps=fit_prop_sel)
+            self._reproduction(mutation_var=mutation_var, fps=fit_prop_sel)
 
             self._simulate_next_population(position_agent=position_agent,
                                            pos_target=pos_target)
@@ -384,7 +395,7 @@ class Evolution(Simulate):
         self.simlength = int(filename[filename.find('m')+1: filename.find('.')])  # depends on filename
 
         fitness_progress = pickle.load(open('./poplists/Fitness_progress.{}'.format(filename), 'rb'))
-        self.Generation = int(fitness_progress[-1,0])
+        self.Generation = int(fitness_progress[-1, 0])
 
         self.filename = filename
 
