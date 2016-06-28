@@ -298,7 +298,7 @@ class JA_Evolution(JA_Simulation):
                             ("U", self.knoblin_L.Tau.size)])
         return gens
 
-    def _reproduction(self, mutation_var=.02):
+    def _reproduction(self, mutation_var):
 
         """
         Combination of asexual (fitness proportionate selection (fps)) and sexual reproduction
@@ -319,7 +319,7 @@ class JA_Evolution(JA_Simulation):
                 - successful agents will have new partners.
                 - The partners will be either other successful agents from other list [step 3)] or random new partners [step 4)]
 
-        :param mutation_var: 0.02 by default, turned out to be better.
+        :param mutation_var: given by run_evolution()
         :return: self.pop_list = repopulated list (new_population)
         """
 
@@ -466,7 +466,14 @@ class JA_Evolution(JA_Simulation):
         self.pop_list_L = new_population_L
         self.pop_list_R = new_population_R
 
-    def run_evolution(self, generations, mutation_var=.02, splitter=False, n_cpu=6):
+    # TODO: Mutation increased
+    def run_evolution(self, generations, mutation_var=0.10, splitter=False, n_cpu=6):
+        """
+        :param generations: number of generations to run
+        :param mutation_var: mutation_var: 0.02 by default, turned out to be better
+        :param splitter: if parallel processing
+        :param n_cpu: number of parallel processes
+        """
 
         assert isinstance(n_cpu, int) and n_cpu > 0, "n_cpu must be greater than zero (int)"
 
@@ -489,7 +496,7 @@ class JA_Evolution(JA_Simulation):
 
             # Create new Generation
             if self.generation > 0: # and (splitter == n_cpu or splitter is False):
-                self._reproduction(mutation_var)
+                self._reproduction(mutation_var=mutation_var)
 
             # Evaluate fitness of each member
             self._run_population(splitter=splitter, n_cpu=n_cpu)
@@ -595,8 +602,7 @@ class JA_Evolution(JA_Simulation):
         self.pop_list_R = pickle.load(open('./poplists/joint/Poplist_R.{}'.format(self.filename), 'rb'))
         self.pop_size = self.pop_list_L.shape[0] # is self.pop_list_R.shape[0]
 
-        assert self.filename.find("False") != -1 or self.filename.find("True") != -1, \
-            "Condition is unknown (please add to filename (if known)"
+        assert self.filename.find("False") != -1 or self.filename.find("True") != -1, "Condition is unknown (please add to filename (if known)"
 
         self.condition = False if self.filename.find("False") != -1 and self.filename.find("True") == -1 else True
 

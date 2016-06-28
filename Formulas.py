@@ -67,7 +67,6 @@ def vec_angle2(v1, v2):
 def rotate90(vector, clockwise=True):
     """
     Rotates the input vector 90 degrees
-    :param vector:
     :return: rotated vector
     """
     swap = np.array([vector[1], vector[0]])
@@ -118,7 +117,7 @@ def angle_velo(beta=None, b=None):
     beta:    angle-velocity of tracker/target
     gamma: = 90 degrees (screen is orthogonal to viewer)
     Source:  "http://www.arndt-bruenner.de/mathe/scripts/Dreiecksberechnung.htm"
-    :param   beta, b: (see above)
+    :param:   beta, b: (see above)
     :return: b or beta, respectively
     """
 
@@ -355,6 +354,22 @@ def load_file(single_or_joint, audio_condition):
         print("No file was selected \n".format(found))
 
     raise ValueError("Evaluate recent poplist(s)")
+
+
+def animation_request():
+
+    animation = input("Do you want to animate '(T)rue' / '(F)alse':")
+
+    if animation == 1 or animation.lower() == "t" or animation.lower() == "true":
+        animation = True
+
+    elif animation == 0 or animation.lower() == "f" or animation.lower() == "false":
+        animation = False
+
+    else:
+        raise ValueError("Input must be True or False")
+
+    return animation
 
 
 # Timers:

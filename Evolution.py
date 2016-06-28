@@ -65,7 +65,7 @@ class Evolution(Simulate):
         Tau = genome_string[A+G+T+C:A+G+T+C+U]
 
         self.agent.W = np.matrix(np.reshape(W,          (self.agent.N, self.agent.N)))
-        self.agent.WM = np.matrix(np.reshape(WM,        (G, 1)))    # for poplists before 1.June take the reshape out.
+        self.agent.WM = np.matrix(np.reshape(WM,        (G, 1)))    # for poplists before 1.June take the reshape out (see github, also CTRNN.py)
         self.agent.WV = np.matrix(np.reshape(WV,        (T, 1)))
         self.agent.Theta = np.matrix(np.reshape(Theta,  (C, 1)))
         self.agent.Tau = np.matrix(np.reshape(Tau,      (U, 1)))
@@ -110,7 +110,7 @@ class Evolution(Simulate):
                             ("U", self.agent.Tau.size)])
         return gens
 
-    def _reproduction(self, mutation_var=0.25, fps=False):
+    def _reproduction(self, mutation_var, fps=False):
         """
         If fitness proportionate selection (fps) = False:
             +: sexual reproduction, saves best, adds new random bots
@@ -141,7 +141,7 @@ class Evolution(Simulate):
                 - weights: w (weights of interneurons, sensory and motor neurons) in range [-13, 13]
                 - bias: θ (theta) in range [-13, 13]
 
-        :param mutation_var: 0.25 by default, according to Agmon & Beer (2013)
+        :param mutation_var: given by run_evolution() (0.25 by default, according to Agmon & Beer (2013))
         :return: self.pop_list = repopulated list (new_population)
         """
 
@@ -264,8 +264,7 @@ class Evolution(Simulate):
     def _set_target(self, position_agent=[50, 50], angle_to_target=np.pi/2, distance=30, complex=False):
 
         if not complex:  # We just create one target, depending on the angle:
-            pos_target = np.array(position_agent) + np.array([np.cos(angle_to_target),
-                                                              np.sin(angle_to_target)]) * distance
+            pos_target = np.array(position_agent) + np.array([np.cos(angle_to_target), np.sin(angle_to_target)]) * distance
 
             return list([pos_target])  # This form of output is necessarry for _simulate_next_population()
 
@@ -312,12 +311,23 @@ class Evolution(Simulate):
 
                 fitness.append(self.fitness())
 
-            self.pop_list[i,1] = np.sum(fitness)/len(fitness)  # agent's average fitness will be stored
+            self.pop_list[i, 1] = np.sum(fitness)/len(fitness)  # agent's average fitness will be stored
 
         self.pop_list = copy.copy(mat_sort(self.pop_list, index=1))
 
-    def run_evolution(self, generations, mutation_var=0.25, complex_trials=True, fit_prop_sel=False,
+    def run_evolution(self, generations, mutation_var=0.10, complex_trials=True, fit_prop_sel=False,
                       position_agent=[50, 50], angle_to_target= np.pi/2, distance_to_target=30):
+        """
+        Run evolution for n-generations with particular mutation rate.
+
+        :param generations: number of generations to run
+        :param mutation_var: test out smaller value, 0.25 by default, according to Agmon & Beer (2013)
+        :param complex_trials: if true multiple targets to catch
+        :param fit_prop_sel: fitness proportionate selection
+        :param position_agent: start position of agent in all trials
+        :param angle_to_target: defines angle to target (in case of complex_trials, redundant)
+        :param distance_to_target: defines corresponding distance to target (in case of complex_trials, redundant)
+        """
 
         # Ask whether results should be saved in external file
         save = save_request()
@@ -334,7 +344,7 @@ class Evolution(Simulate):
 
             start_timer = datetime.datetime.now().replace(microsecond=0)
 
-            self._reproduction(mutation_var, fps=fit_prop_sel)
+            self._reproduction(mutation_var=mutation_var, fps=fit_prop_sel)
 
             self._simulate_next_population(position_agent=position_agent,
                                            pos_target=pos_target)
@@ -385,11 +395,13 @@ class Evolution(Simulate):
         self.simlength = int(filename[filename.find('m')+1: filename.find('.')])  # depends on filename
 
         fitness_progress = pickle.load(open('./poplists/Fitness_progress.{}'.format(filename), 'rb'))
-        self.Generation = int(fitness_progress[-1,0])
+        self.Generation = int(fitness_progress[-1, 0])
 
         self.filename = filename
 
         if plot:
+
+            animation = animation_request()
 
             # here we plot the fitness progress of all generation
             plt.figure()
@@ -397,13 +409,14 @@ class Evolution(Simulate):
             plt.plot(fitness_progress[:, 2])
 
             # Here we plot the trajectory of the best agent:
-            self.plot_pop_list()
+
+            self.plot_pop_list(animation=animation)
             print("Plot the best agent")
 
             global n   # this is needed for self.close()
             n = 2
 
-    def plot_pop_list(self, n_agents=1, position_agent=[50, 50]):
+    def plot_pop_list(self, n_agents=1, position_agent=[50, 50], animation=False):
 
         global n
         n = n_agents
@@ -415,14 +428,22 @@ class Evolution(Simulate):
 
             col_count = 0
 
-            plt.figure()
+            if not animation:
+                plt.figure(figsize=(10, 6), dpi=80)
+            else:
+                plt.figure(figsize=(10, 6), dpi=40)
+
+            # Define boarders
+            plt.xlim(0, 100)
+            plt.ylim(-15, 100)
 
             for tpos in pos_target:
                 self.agent = CatchBot(position_agent=position_agent)
                 self.agent.position_target = tpos
                 self.implement_genome(self.pop_list[i, 2:])
-                self.run_and_plot(colour=col[col_count])
-                plt.plot(tpos[0], tpos[1], 's', c=col[col_count])
+                plt.plot(tpos[0], tpos[1], 's', c=col[col_count])  # Plot Targets
+                self.run_and_plot(colour=col[col_count], animation=animation)  # Plot Trajectory
+
                 col_count += 1
 
             plt.plot(position_agent[0], position_agent[1], 'bo')
