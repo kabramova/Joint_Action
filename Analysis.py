@@ -24,19 +24,20 @@ GRAPHS:
 condition = single_or_joint_request()
 audicon = audio_condition_request()
 
-load = load_request()
+filename = filename_request(condition)  # "joint" or "single"
+# filename = "Gen1001-2000.popsize55.mut0.02.sound_cond=False.JA.joint(Fitness6.1)"
 
+load = load_request()
 
 # TODO Lesion Study
 if load is False:
-    filename = filename_request(condition)  # "joint" or "single"
-    # filename = "Gen1001-2000.popsize55.mut0.02.sound_cond=False.JA.joint(Fitness6.1)"
 
     if condition == "single":
         sa = SA_Evolution(auditory_condition=audicon)
         if isinstance(filename, str):
             sa_performance = sa.reimplement_population(filename=filename, plot=True)
             sa_performance = np.array(sa_performance, dtype=object)
+            sa.implement_genome(genome_string=sa.pop_list[0, 2:])
             fitness = np.round(sa.pop_list[0, 1], 2)
             np.save("./Analysis/single/sa_performance_cond{}_fitness{}".format(sa.condition, fitness), sa_performance)
             # sa_performance[0-3] are the different trials
@@ -48,6 +49,8 @@ if load is False:
         if isinstance(filename, str):
             ja_performance = ja.reimplement_population(filename=filename, plot=True)
             ja_performance = np.array(ja_performance, dtype=object)
+            ja.implement_genome(genome_string=ja.pop_list_L[0, 2:], side="left")
+            ja.implement_genome(genome_string=ja.pop_list_R[0, 2:], side="right")
             fitness = np.round(ja.pop_list_L[0, 1], 2)
             np.save("./Analysis/joint/ja_performance_cond{}_fitness{}".format(ja.condition, fitness), ja_performance)
             # ja_performance[0-3] are the different trials
@@ -62,10 +65,26 @@ if load is True:
         sa_performance = load_file(condition, audicon)
         print(">> File is loaded in sa_performance")
         fitness = np.round(np.mean([i[0] for i in sa_performance]), 2)  # Fitness over all trials
+
+        sa = SA_Evolution(auditory_condition=audicon)
+        if isinstance(filename, str):
+            sa.reimplement_population(filename=filename, plot=False)
+            sa.implement_genome(genome_string=sa.pop_list[0,2:])
+            # sa_performance[0-3] are the different trials
+            # sa_performance[0-3][0-5] = fitness[0], trajectories[1], keypress[2], # sounds[3], neural_state[4],
+            # neural_input_L[5]
+
     if condition == "joint":
         ja_performance = load_file(condition, audicon)
         print(">> File is loaded in ja_performance")
         fitness = np.round(np.mean([i[0] for i in ja_performance]), 2)  # Fitness over all trials
+
+        ja = JA_Evolution(auditory_condition=audicon, pop_size=55)
+        if isinstance(filename, str):
+            ja.reimplement_population(filename=filename, plot=False)
+            ja.implement_genome(genome_string=ja.pop_list_L[0, 2:], side="left")
+            ja.implement_genome(genome_string=ja.pop_list_R[0, 2:], side="right")
+
 
 
 # Split in different Trials:
