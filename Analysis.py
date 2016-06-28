@@ -110,14 +110,40 @@ for trial in trials:
     if not os.path.exists(current_folder):
         os.mkdir(current_folder)
 
-    # GRAPH A:
     tracker = trial[1][:, 0]  # trajectories[1], tracker: tracs[:,0]
     target = trial[1][:, 1]   # trajectories[1], target:  tracs[:,1]
 
+    # Define Regions (2 Border-, 1 Middle Region):
+    upper_bound = int(np.round(max(target)))
+    lower_bound = int(np.round(min(target)))
+    screen_width = upper_bound-lower_bound
+    region_width = screen_width/3
+    right_border = 0 + region_width/2
+    left_border = 0 - region_width/2
+    simlength = len(tracker)
+
+    # Find time points, when tracker enters new region:
+    crossing = [cross > right_border or cross < left_border for cross in target]
+    crosses = []
+    test = True
+    for i, bol in enumerate(crossing):
+        if bol == test:
+            crosses.append(i)
+            test = not test
+
+    # GRAPH A:
     fig_a = plt.figure("GRAPH A, Trial {}".format(trial_name))
+    plt.xlim(0-10.0, simlength+10.0)
     plt.ylim(-20.5, 20.5)
+    # Plot Regions
+    plt.plot(range(0, simlength), np.repeat(right_border, simlength), "--", c="grey", alpha=0.2)
+    plt.plot(range(0, simlength), np.repeat(left_border, simlength), "--", c="grey", alpha=0.2)
+    for cross in crosses:
+        plt.plot(np.repeat(cross, len(range(lower_bound, upper_bound))), range(lower_bound, upper_bound), "--", c="grey", alpha=0.2)
+
     plt.plot(tracker, 'r', markersize=12, alpha=0.5, label="Tracker")
     plt.plot(target, 'g', label="Target")
+
     plt.legend()
     # plt.title("Target and Tracker Positions")
     plt.xlabel("Timesteps")
@@ -243,6 +269,10 @@ for trial in trials:
     plt.ylabel("Keypress")
     plt.yticks([-1, 1], ["left", "right"])
 
+    # Plot verticals, when target enters new region
+    for cross in crosses:
+        plt.plot(np.repeat(cross, len(range(lower_bound, upper_bound))), range(lower_bound, upper_bound), "--", c="grey", alpha=0.2)
+
     for i in range(len(trial[3])):
         if trial[3][i, 0] == 1:  # sound left
             plt.plot(i, trial[3][i, 0]-2, 'yo', markersize=16, alpha=0.05, lw=0)
@@ -268,7 +298,7 @@ for trial in trials:
     # for negative change of target position (left movement)
     fig_d_neg = plt.figure("GRAPH D delta-, Trial {}".format(trial_name))
 
-    # Define boarders
+    # Define borders
     plt.xlim(-20.5, 20.5)
     plt.ylim(-20.5, 20.5)
 
@@ -277,6 +307,13 @@ for trial in trials:
     plt.xlabel("Position Target")
     plt.ylabel("Position Tracker")
 
+    # Plot lines for borderregion
+    plt.plot(range(lower_bound, upper_bound), np.repeat(left_border, len(range(lower_bound, upper_bound))), "--", c="grey", alpha=0.2)
+    plt.plot(range(lower_bound, upper_bound), np.repeat(right_border, len(range(lower_bound, upper_bound))), "--", c="grey", alpha=0.2)
+    plt.plot(np.repeat(left_border, len(range(lower_bound, upper_bound))), range(lower_bound, upper_bound), "--", c="grey", alpha=0.2)
+    plt.plot(np.repeat(right_border, len(range(lower_bound, upper_bound))), range(lower_bound, upper_bound),  "--", c="grey", alpha=0.2)
+
+    # Plot
     for row in range(len(trial[2])):
         if target[row] < target[row-1]:  # check whether left movement
             if row % 20 == 0:
@@ -295,7 +332,7 @@ for trial in trials:
     # for positive change of target position (right movement)
     fig_d_pos = plt.figure("GRAPH D delta+, Trial {}".format(trial_name))
 
-    # Define boarders
+    # Define borders
     plt.xlim(-20.5, 20.5)
     plt.ylim(-20.5, 20.5)
 
@@ -304,6 +341,13 @@ for trial in trials:
     plt.xlabel("Position Target")
     plt.ylabel("Position Tracker")
 
+    # Plot lines for borderregion
+    plt.plot(range(lower_bound, upper_bound), np.repeat(left_border, len(range(lower_bound, upper_bound))), "--", c="grey", alpha=0.2)
+    plt.plot(range(lower_bound, upper_bound), np.repeat(right_border, len(range(lower_bound, upper_bound))), "--", c="grey", alpha=0.2)
+    plt.plot(np.repeat(left_border, len(range(lower_bound, upper_bound))), range(lower_bound, upper_bound), "--", c="grey", alpha=0.2)
+    plt.plot(np.repeat(right_border, len(range(lower_bound, upper_bound))), range(lower_bound, upper_bound), "--", c="grey", alpha=0.2)
+
+    # Plot
     for row in range(len(trial[2])):
         if target[row] > target[row - 1]:  # check whether right movement
             if row % 20 == 0:
