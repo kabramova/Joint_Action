@@ -110,7 +110,7 @@ class JA_Simulation:
 
         return output
 
-    def run_and_plot(self):
+    def run_and_plot(self, lesion=False):
 
         self.reset_neural_system()  # All inner neural states = 0
 
@@ -138,15 +138,24 @@ class JA_Simulation:
             sound_output = self.tracker.movement()
 
             # 3) Agents see:
-            self.knoblin_L.visual_input(position_tracker=self.tracker.position, position_target=self.target.position)
-            self.knoblin_R.visual_input(position_tracker=self.tracker.position, position_target=self.target.position)
+            if not lesion or lesion and i < self.simlength/2:
+                self.knoblin_L.visual_input(position_tracker=self.tracker.position, position_target=self.target.position)
+                self.knoblin_R.visual_input(position_tracker=self.tracker.position, position_target=self.target.position)
+            else:  # No input anymore
+                self.knoblin_L.visual_input(position_tracker=0, position_target=0)
+                self.knoblin_R.visual_input(position_tracker=0, position_target=0)
 
             positions[i, :] = [self.tracker.position, self.target.position]  # save positions
 
             # 4) Agents hear:
             if self.condition:  # condition will be globally announced by class Jordan (self.environment)
-                self.knoblin_L.auditory_input(sound_input=sound_output)
-                self.knoblin_R.auditory_input(sound_input=sound_output)
+                if not lesion or lesion and i < self.simlength / 2:
+                    self.knoblin_L.auditory_input(sound_input=sound_output)
+                    self.knoblin_R.auditory_input(sound_input=sound_output)
+                else: # No input anymore
+                    self.knoblin_L.auditory_input(sound_input=[0, 0])
+                    self.knoblin_R.auditory_input(sound_input=[0, 0])
+
                 sounds[i, :] = sound_output  # save sound_output
 
             # 5) Update agents' neural systems

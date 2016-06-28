@@ -489,9 +489,12 @@ class SA_Evolution(SA_Simulation):
                                                                                   self.generation - 1,
                                                                                   self.condition))
 
-    def reimplement_population(self, filename=None, plot=False):
+    def reimplement_population(self, filename=None, plot=False, lesion=False):
 
         assert filename.find("single") != -1, "Wrong file! The file needs to be from the SINGLE condition"
+
+        if lesion:
+            assert plot, "If you want to lesion a population then you need to plot it!"
 
         if filename is None:
             if self.filename == "":
@@ -531,14 +534,14 @@ class SA_Evolution(SA_Simulation):
             plt.close()
 
             # Here we plot the trajectory of the best agent:
-            output = self.plot_pop_list(knoblin_nr=1)
+            output = self.plot_pop_list(knoblin_nr=1, lesion=lesion)
             self.print_best(n=1)
             print("Animation of best agent is saved")
 
             # Output contains fitness[0], trajectories[1], keypress[2] and sounds[3], neural_state[4], neural_input_L[5]
             return output
 
-    def plot_pop_list(self, knoblin_nr=1):
+    def plot_pop_list(self, knoblin_nr=1, lesion=False):
 
         output = []
         # count = 0
@@ -555,7 +558,7 @@ class SA_Evolution(SA_Simulation):
                 direction = "left" if init_target_direction == - 1 else "right"
                 print("Create Animation of {} trial and initial Target direction to the {}".format(trial_speed,
                                                                                                    direction))
-                output.append(self.run_and_plot())   # include reset of the neural system
+                output.append(self.run_and_plot(lesion=lesion))   # include reset of the neural system
                 # output[count] = self.run_and_plot()
                 # count += 1
 

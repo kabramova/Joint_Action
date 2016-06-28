@@ -372,6 +372,33 @@ def animation_request():
     return animation
 
 
+def lesion_request():
+    """
+    Ask whether a network should be lesioned
+    :return True or False
+    """
+
+    count = 0
+    while count != 3:
+        inputs = input("Do you want to lesion the network ('(y)es'/'(n)o'):")
+
+        if inputs in ["y", "Y", "yes", "Yes", "YES"]:
+            print("Network will be lesioned")
+            return True
+
+        elif inputs in ["n", "N", "no", "No", "NO"]:
+            print("Network stays intact through the whole trial")
+            return False
+
+        else:
+            print("Input is not understood.\n"
+                  "Type either 'yes' or 'no'.\n"
+                  "{} more attempt(s)".format(2 - count))
+            count += 1
+
+    raise ValueError("Function stopped")
+
+
 # Timers:
 def function_timer(function):
     """ Time and execute input-function """

@@ -585,9 +585,12 @@ class JA_Evolution(JA_Simulation):
             os.remove("./temp/Poplist_R_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu, self.generation - 1,
                                                                                     self.condition))
 
-    def reimplement_population(self, filename=None, plot=False):
+    def reimplement_population(self, filename=None, plot=False, lesion=False):
 
         assert filename.find("joint") != -1, "Wrong file! The file needs to be from the JOINT condition"
+
+        if lesion:
+            assert plot, "If you want to lesion a population then you need to plot it!"
 
         if filename is None:
             if self.filename == "":
@@ -624,7 +627,7 @@ class JA_Evolution(JA_Simulation):
             plt.close()
 
             # Here we plot the trajectory of the best agent:
-            output = self.plot_pop_list(knoblin_nr=1)
+            output = self.plot_pop_list(knoblin_nr=1, lesion=lesion)
             self.print_best(n=1)
             print("Animation of best agent pair is saved")
 
@@ -632,7 +635,7 @@ class JA_Evolution(JA_Simulation):
             # neural_state_L[4], neural_state_L[5], neural_input_L[6], neural_input_L[7]
             return output
 
-    def plot_pop_list(self, knoblin_nr=1):
+    def plot_pop_list(self, knoblin_nr=1, lesion=False):
 
         output = []
         # count = 0
@@ -650,7 +653,7 @@ class JA_Evolution(JA_Simulation):
                 direction = "left" if init_target_direction == - 1 else "right"
                 print("Create Animation of {} trial and initial Target direction to the {}".format(trial_speed,
                                                                                                    direction))
-                output.append(self.run_and_plot())      # include reset of the neural system
+                output.append(self.run_and_plot(lesion=lesion))      # include reset of the neural system
                 # output[count] = self.run_and_plot()
                 # count += 1
 

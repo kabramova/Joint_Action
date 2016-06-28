@@ -29,17 +29,21 @@ filename = filename_request(condition)  # "joint" or "single"
 
 load = load_request()
 
+lesion = lesion_request() # True/False
+lesion_name = "_lesion" if lesion else ""
+
 # TODO Lesion Study
 if load is False:
 
     if condition == "single":
         sa = SA_Evolution(auditory_condition=audicon)
         if isinstance(filename, str):
-            sa_performance = sa.reimplement_population(filename=filename, plot=True)
+            sa_performance = sa.reimplement_population(filename=filename, plot=True, lesion=lesion)
             sa_performance = np.array(sa_performance, dtype=object)
             sa.implement_genome(genome_string=sa.pop_list[0, 2:])
-            fitness = np.round(sa.pop_list[0, 1], 2)
-            np.save("./Analysis/single/sa_performance_cond{}_fitness{}".format(sa.condition, fitness), sa_performance)
+            fitness = np.round(np.mean([i[0] for i in sa_performance]), 2)  # Fitness over all trials
+            # fitness = np.round(sa.pop_list[0, 1], 2)
+            np.save("./Analysis/single/sa_performance_cond{}_fitness{}{}".format(sa.condition, fitness, lesion_name), sa_performance)
             # sa_performance[0-3] are the different trials
             # sa_performance[0-3][0-5] = fitness[0], trajectories[1], keypress[2], # sounds[3], neural_state[4],
             # neural_input_L[5]
@@ -47,12 +51,13 @@ if load is False:
     if condition == "joint":
         ja = JA_Evolution(auditory_condition=audicon, pop_size=55)
         if isinstance(filename, str):
-            ja_performance = ja.reimplement_population(filename=filename, plot=True)
+            ja_performance = ja.reimplement_population(filename=filename, plot=True, lesion=lesion)
             ja_performance = np.array(ja_performance, dtype=object)
             ja.implement_genome(genome_string=ja.pop_list_L[0, 2:], side="left")
             ja.implement_genome(genome_string=ja.pop_list_R[0, 2:], side="right")
-            fitness = np.round(ja.pop_list_L[0, 1], 2)
-            np.save("./Analysis/joint/ja_performance_cond{}_fitness{}".format(ja.condition, fitness), ja_performance)
+            fitness = np.round(np.mean([i[0] for i in ja_performance]), 2)  # Fitness over all trials
+            # fitness = np.round(ja.pop_list_L[0, 1], 2)
+            np.save("./Analysis/joint/ja_performance_cond{}_fitness{}{}".format(ja.condition, fitness, lesion_name), ja_performance)
             # ja_performance[0-3] are the different trials
             # ja_performance[0-3][0-7] = fitness[0], trajectories[1], keypress[2], sounds[3], neural_state_L[4],
             # neural_state_R[5], neural_input_R[6], neural_input_L[7]
@@ -85,8 +90,6 @@ if load is True:
             ja.implement_genome(genome_string=ja.pop_list_L[0, 2:], side="left")
             ja.implement_genome(genome_string=ja.pop_list_R[0, 2:], side="right")
 
-
-
 # Split in different Trials:
 sl = sa_performance[0] if condition == "single" else ja_performance[0]  # speed: slow, initial target-direction: left
 sr = sa_performance[1] if condition == "single" else ja_performance[1]  # speed: slow, initial target-direction: right
@@ -97,7 +100,7 @@ trials = [sl, sr, fl, fr]
 trial_names = ["slowleft", "slowright", "fastleft", "fastright"]
 index = -1
 
-folder = "./Analysis/graphs/{}_{}_{}".format(condition, audicon, fitness)
+folder = "./Analysis/graphs/{}_{}_{}{}".format(condition, audicon, fitness, lesion_name)
 if not os.path.exists(folder):
     os.mkdir(folder)
 
