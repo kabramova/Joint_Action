@@ -138,7 +138,8 @@ class JA_Simulation:
             sound_output = self.tracker.movement()
 
             # 3) Agents see:
-            if not lesion or lesion and i < self.simlength/2:
+            # if not lesion or lesion and i < self.simlength/2:  # (Lesion cuts input in second half of simulation)
+            if not lesion:  # TODO: cut all input
                 self.knoblin_L.visual_input(position_tracker=self.tracker.position, position_target=self.target.position)
                 self.knoblin_R.visual_input(position_tracker=self.tracker.position, position_target=self.target.position)
             else:  # No input anymore
@@ -149,10 +150,11 @@ class JA_Simulation:
 
             # 4) Agents hear:
             if self.condition:  # condition will be globally announced by class Jordan (self.environment)
-                if not lesion or lesion and i < self.simlength / 2:
+                # if not lesion or lesion and i < self.simlength / 2:  # (Lesion cuts input in second half of simulation)
+                if not lesion:  # TODO: cut all input
                     self.knoblin_L.auditory_input(sound_input=sound_output)
                     self.knoblin_R.auditory_input(sound_input=sound_output)
-                else: # No input anymore
+                else:  # No input anymore
                     self.knoblin_L.auditory_input(sound_input=[0, 0])
                     self.knoblin_R.auditory_input(sound_input=[0, 0])
 
@@ -231,6 +233,9 @@ class JA_Simulation:
             # Define boarders
             plt.xlim(-20, 20)
             plt.ylim(-5, 5)
+
+            # Remove y-Axis
+            plt.yticks([])
 
             # Print Fitnesss, time and conditions in Plot
             plt.annotate(xy=[0, 4], xytext=[0, 4], s="fitness = {}".format(output[0]))  # Fitness
