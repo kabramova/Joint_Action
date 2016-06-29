@@ -23,7 +23,7 @@ else:  # if splitter is used, these values must be pre-given, here in python fil
     audicon = False
     number_of_generations = 1000
     scalar = 1
-    filename = "Gen22001-23000.popsize55.mut0.02.sound_cond=False.JA.joint(Fitness6.31)"  # or None
+    filename = "Gen23001-24000.popsize55.mut0.1.sound_cond=False.JA.joint(Fitness6.31)"  # or None
     print("Splitter {} started!".format(split))
 
 
