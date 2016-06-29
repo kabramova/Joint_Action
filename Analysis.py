@@ -620,12 +620,13 @@ if condition == "single":
     plt.savefig("./{}/{} GRAPH W, Knoblin Weights".format(folder, condition, trial_name))
     plt.close()
 
-    # Audio Weights
-    hinton(sa.knoblin.WA.transpose(), maxweight=sa.knoblin.W_RANGE[1])
-    plt.title("Knoblin Hinton diagram - Audio Weights 4x1")
-    plt.show()
-    plt.savefig("./{}/{} GRAPH WA, Knoblin Audio Weights".format(folder, condition))
-    plt.close()
+    if audicon:
+        # Audio Weights
+        hinton(sa.knoblin.WA.transpose(), maxweight=sa.knoblin.W_RANGE[1])
+        plt.title("Knoblin Hinton diagram - Audio Weights 4x1")
+        plt.show()
+        plt.savefig("./{}/{} GRAPH WA, Knoblin Audio Weights".format(folder, condition))
+        plt.close()
 
     # Vision Weights
     hinton(sa.knoblin.WV.transpose(), maxweight=sa.knoblin.W_RANGE[1])
@@ -656,18 +657,19 @@ if condition == "joint":
     plt.savefig("./{}/{} GRAPH W, Right Knoblin Weights".format(folder, condition))
     plt.close()
 
-    # Audio Weights
-    hinton(ja.knoblin_L.WA.transpose(), maxweight=ja.knoblin_L.W_RANGE[1])
-    plt.title("Left Knoblin Hinton diagram - Audio Weights 4x1")
-    plt.show()
-    plt.savefig("./{}/{} GRAPH WA, Left Knoblin Audio Weights".format(folder, condition))
-    plt.close()
+    if audicon:
+        # Audio Weights
+        hinton(ja.knoblin_L.WA.transpose(), maxweight=ja.knoblin_L.W_RANGE[1])
+        plt.title("Left Knoblin Hinton diagram - Audio Weights 4x1")
+        plt.show()
+        plt.savefig("./{}/{} GRAPH WA, Left Knoblin Audio Weights".format(folder, condition))
+        plt.close()
 
-    hinton(ja.knoblin_R.WA.transpose(), maxweight=ja.knoblin_R.W_RANGE[1])
-    plt.title("Right Knoblin Hinton diagram - Audio Weights 4x1")
-    plt.show()
-    plt.savefig("./{}/{} GRAPH WA, Right Knoblin Audio Weights".format(folder, condition))
-    plt.close()
+        hinton(ja.knoblin_R.WA.transpose(), maxweight=ja.knoblin_R.W_RANGE[1])
+        plt.title("Right Knoblin Hinton diagram - Audio Weights 4x1")
+        plt.show()
+        plt.savefig("./{}/{} GRAPH WA, Right Knoblin Audio Weights".format(folder, condition))
+        plt.close()
 
     # Vision Weights
     hinton(ja.knoblin_L.WV.transpose(), maxweight=ja.knoblin_L.W_RANGE[1])
