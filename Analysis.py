@@ -117,8 +117,8 @@ col = ["royalblue", "tomato", "palegreen", "fuchsia", "gold", "darkviolet", "dar
 # trial = trials[0]
 
 # TODO: Save neural states in csv (choose specific trial, or all):
-# np.savetxt("neural_state_L.csv",ja_performance[0][4], delimiter=",")
-# np.savetxt("neural_state_R.csv",ja_performance[0][5], delimiter=",")
+# np.savetxt("{}/neural_state_L_slowleft.csv".format(folder), ja_performance[0][4], delimiter=";")
+# np.savetxt("{}/neural_state_R_slowleft.csv".format(folder), ja_performance[0][5], delimiter=";")
 
 
 for trial in trials:
