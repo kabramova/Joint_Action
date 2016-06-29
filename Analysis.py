@@ -557,3 +557,141 @@ for trial in trials:
 
     # TODO: plot weights
     # http: // matplotlib.org / examples / specialty_plots / hinton_demo.html
+
+
+def _blob(x, y, area, colour):
+    """
+    Draws a square-shaped blob with the given area (< 1) at
+    the given coordinates.
+    """
+    hs = np.sqrt(area) / 2
+    xcorners = np.array([x - hs, x + hs, x + hs, x - hs])
+    ycorners = np.array([y - hs, y - hs, y + hs, y + hs])
+    plt.fill(xcorners, ycorners, colour, edgecolor=colour)
+
+
+def hinton(W, maxweight=None):
+    """
+    Draws a Hinton diagram for visualizing a weight matrix.
+    Temporarily disables matplotlib interactive mode if it is on,
+    otherwise this takes forever.
+    """
+    reenable = False
+    if plt.isinteractive():
+        plt.ioff()
+        reenable = True
+
+    plt.clf()
+    height, width = W.shape
+    if not maxweight:
+        maxweight = 2 ** np.ceil(np.log(np.max(np.abs(W))) / np.log(2))
+
+    plt.fill(np.array([0, width, width, 0]),
+             np.array([0, 0, height, height]),
+             'gray')
+
+    plt.axis('off')
+    plt.axis('equal')
+    for x in range(width):
+        for y in range(height):
+            _x = x + 1
+            _y = y + 1
+            w = W[y, x]
+            if w > 0:
+                _blob(_x - 0.5,
+                      height - _y + 0.5,
+                      min(1, w / maxweight),
+                      'white')
+            elif w < 0:
+                _blob(_x - 0.5,
+                      height - _y + 0.5,
+                      min(1, -w / maxweight),
+                      'black')
+    if reenable:
+        plt.ion()
+
+
+if condition == "single":
+
+    # Weights
+    hinton(sa.knoblin.W, maxweight=sa.knoblin.W_RANGE[1])
+    plt.title("Knoblin Hinton diagram - Weights 8x8")
+    plt.show()
+    plt.savefig("./{}/{} GRAPH W, Knoblin Weights".format(folder, condition, trial_name))
+    plt.close()
+
+    # Audio Weights
+    hinton(sa.knoblin.WA.transpose(), maxweight=sa.knoblin.W_RANGE[1])
+    plt.title("Knoblin Hinton diagram - Audio Weights 4x1")
+    plt.show()
+    plt.savefig("./{}/{} GRAPH WA, Knoblin Audio Weights".format(folder, condition))
+    plt.close()
+
+    # Vision Weights
+    hinton(sa.knoblin.WV.transpose(), maxweight=sa.knoblin.W_RANGE[1])
+    plt.title("Knoblin Hinton diagram - Vision Weights 4x1")
+    plt.show()
+    plt.savefig("./{}/{} GRAPH WV, Knoblin Vision Weights".format(folder, condition))
+    plt.close()
+
+    # Motor Weights
+    hinton(sa.knoblin.WM.transpose(), maxweight=sa.knoblin.W_RANGE[1])
+    plt.title("Knoblin Hinton diagram - Motor Weights 4x1")
+    plt.show()
+    plt.savefig("./{}/{} GRAPH WM, Knoblin Motor Weights".format(folder, condition))
+    plt.close()
+
+if condition == "joint":
+
+    # Weights
+    hinton(ja.knoblin_L.W, maxweight=ja.knoblin_L.W_RANGE[1])
+    plt.title("Left Knoblin Hinton diagram - Weights 8x8")
+    plt.show()
+    plt.savefig("./{}/{} GRAPH W, Left Knoblin Weights".format(folder, condition))
+    plt.close()
+
+    hinton(ja.knoblin_R.W, maxweight=ja.knoblin_R.W_RANGE[1])
+    plt.title("Right Knoblin Hinton diagram - Weights 8x8")
+    plt.show()
+    plt.savefig("./{}/{} GRAPH W, Right Knoblin Weights".format(folder, condition))
+    plt.close()
+
+    # Audio Weights
+    hinton(ja.knoblin_L.WA.transpose(), maxweight=ja.knoblin_L.W_RANGE[1])
+    plt.title("Left Knoblin Hinton diagram - Audio Weights 4x1")
+    plt.show()
+    plt.savefig("./{}/{} GRAPH WA, Left Knoblin Audio Weights".format(folder, condition))
+    plt.close()
+
+    hinton(ja.knoblin_R.WA.transpose(), maxweight=ja.knoblin_R.W_RANGE[1])
+    plt.title("Right Knoblin Hinton diagram - Audio Weights 4x1")
+    plt.show()
+    plt.savefig("./{}/{} GRAPH WA, Right Knoblin Audio Weights".format(folder, condition))
+    plt.close()
+
+    # Vision Weights
+    hinton(ja.knoblin_L.WV.transpose(), maxweight=ja.knoblin_L.W_RANGE[1])
+    plt.title("Left Knoblin Hinton diagram - Vision Weights 4x1")
+    plt.show()
+    plt.savefig("./{}/{} GRAPH WV, Left Knoblin Vision Weights".format(folder, condition))
+    plt.close()
+
+    hinton(ja.knoblin_R.WV.transpose(), maxweight=ja.knoblin_R.W_RANGE[1])
+    plt.title("Right Knoblin Hinton diagram - Vision Weights 4x1")
+    plt.show()
+    plt.savefig("./{}/{} GRAPH WV, Right Knoblin Vision Weights".format(folder, condition))
+    plt.close()
+
+    # Motor Weights
+    hinton(ja.knoblin_L.WM.transpose(), maxweight=ja.knoblin_L.W_RANGE[1])
+    plt.title("Left Knoblin Hinton diagram - Motor Weights 4x1")
+    plt.show()
+    plt.savefig("./{}/{} GRAPH WM, Left Knoblin Motor Weights".format(folder, condition))
+    plt.close()
+
+    hinton(ja.knoblin_R.WM.transpose(), maxweight=ja.knoblin_R.W_RANGE[1])
+    plt.title("Right Knoblin Hinton diagram - Motor Weights 4x1")
+    plt.show()
+    plt.savefig("./{}/{} GRAPH WM, Right Knoblin Motor Weights".format(folder, condition))
+    plt.close()
+
