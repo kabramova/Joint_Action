@@ -208,6 +208,14 @@ class JA_Simulation:
         counter_img = 0
         counter_sec = 0
 
+        # Region Borders
+        upper_bound = self.environment.env_range[1]
+        lower_bound = self.environment.env_range[0]
+        screen_width = upper_bound - lower_bound
+        region_width = screen_width / 3
+        right_border = 0 + region_width / 2
+        left_border = 0 - region_width / 2
+
         for i in np.arange(0, self.simlength, ticker):
 
             # For Fast Trials: with a simlength of 2789 the resulting gif-animation is approx. 11sec long (25frames/sec)
@@ -215,6 +223,9 @@ class JA_Simulation:
             # we can change the animation length by changing the modulo here [i%x].
 
             plt.figure(figsize=(10, 6), dpi=80)
+
+            plt.plot(np.repeat(left_border, len(range(-5, 5))), range(-5, 5), "--", c="grey", alpha=0.2)   # Region Left
+            plt.plot(np.repeat(right_border, len(range(-5, 5))), range(-5, 5), "--", c="grey", alpha=0.2)  # Region Right
 
             plt.plot(positions[i, 0], 0, 'ro', markersize=12, alpha=0.5)     # Tracker
             plt.plot(positions[i, 1], 0, 'go')                               # Target

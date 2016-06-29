@@ -153,7 +153,7 @@ for trial in trials:
             test = not test
 
     # GRAPH A:
-    fig_a = plt.figure("GRAPH A, Trial {}".format(trial_name))
+    fig_a = plt.figure("GRAPH A, Trial {}".format(trial_name), figsize=(10, 2), dpi=80)
     plt.xlim(0-10.0, simlength+10.0)
     plt.ylim(-20.5, 20.5)
     # Plot Regions
@@ -283,7 +283,7 @@ for trial in trials:
 
     # GRAPH C:
     # keypress[2], sounds[3]
-    fig_c = plt.figure("GRAPH C, Trial {}".format(trial_name))
+    fig_c = plt.figure("GRAPH C, Trial {}".format(trial_name), figsize=(10, 2), dpi=80)
     plt.xlim(0, len(trial[2]))
     plt.ylim(2, -2)
     plt.xlabel("Timesteps")
@@ -317,8 +317,8 @@ for trial in trials:
     # target  = trial[1][:,1] # trajectories[1], target:  tracs[:,1]
 
     # for negative change of target position (left movement)
-    fig_d_neg = plt.figure("GRAPH D delta-, Trial {}".format(trial_name))
 
+    fig_d_neg = plt.figure("GRAPH D delta-, Trial {}".format(trial_name), figsize=(6, 6), dpi=80)
     # Define borders
     plt.xlim(-20.5, 20.5)
     plt.ylim(-20.5, 20.5)
@@ -351,7 +351,7 @@ for trial in trials:
                                                                                      trial_name))
 
     # for positive change of target position (right movement)
-    fig_d_pos = plt.figure("GRAPH D delta+, Trial {}".format(trial_name))
+    fig_d_pos = plt.figure("GRAPH D delta+, Trial {}".format(trial_name), figsize=(6, 6), dpi=80)
 
     # Define borders
     plt.xlim(-20.5, 20.5)
