@@ -113,13 +113,15 @@ col = ["royalblue", "tomato", "palegreen", "fuchsia", "gold", "darkviolet", "dar
 #     plt.plot(2*i,1, marker="o", c=col[i])
 #     plt.xlim(-1,15)
 
-
 # trial = trials[0]
 
 # TODO: Save neural states in csv (choose specific trial, or all):
-# np.savetxt("{}/neural_state_L_slowleft.csv".format(folder), ja_performance[0][4], delimiter=";")
-# np.savetxt("{}/neural_state_R_slowleft.csv".format(folder), ja_performance[0][5], delimiter=";")
+# if condition == "single":
+#   np.savetxt("{}/neural_state_fastleft.csv".format(folder), sa_performance[2][4], delimiter=";")
 
+# if condition == "joint":
+#   np.savetxt("{}/neural_state_L_slowleft.csv".format(folder), ja_performance[0][4], delimiter=";")
+#   np.savetxt("{}/neural_state_R_slowleft.csv".format(folder), ja_performance[0][5], delimiter=";")
 
 for trial in trials:
 
