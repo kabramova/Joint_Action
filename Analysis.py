@@ -204,7 +204,7 @@ for trial in trials:
     if condition == "joint":
         for i in range(neural_state_L.shape[1]):
             ax.plot(xs=range(len(neural_state_L)), zs=neural_state_L[:, i], ys=np.repeat(i + 1, len(neural_state_L)),
-                    alpha=.05,
+                    alpha=.5,
                     c=col[i]) # c=cmap(i**3))
             ax.plot(xs=range(len(neural_state_R)), zs=neural_state_R[:, i], ys=np.repeat(i + 1, len(neural_state_R)),
                     c=col[i]) # c=cmap(i**3))
