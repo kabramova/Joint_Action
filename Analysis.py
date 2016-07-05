@@ -3,7 +3,7 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import matplotlib.cm as cmx
 from matplotlib import colors
-from mpl_toolkits.mplot3d import Axes3D # Info: http://matplotlib.org/mpl_toolkits/mplot3d/tutorial.html
+from mpl_toolkits.mplot3d import Axes3D  # Info: http://matplotlib.org/mpl_toolkits/mplot3d/tutorial.html
 from SA_Evolution import *
 from JA_Evolution import *
 
@@ -557,14 +557,14 @@ for trial in trials:
     #     for j in range(len(sa.knoblin.Y)):
     #         plt.plot(i, DYDT[i][j], marker="o", ms=5., markeredgewidth=0.0, c=col[j])
 
-    # TODO: plot weights
-    # http: // matplotlib.org / examples / specialty_plots / hinton_demo.html
 
+# Plot weights
 
 def _blob(x, y, area, colour):
     """
     Draws a square-shaped blob with the given area (< 1) at
     the given coordinates.
+    Source: http://matplotlib.org/examples/specialty_plots/hinton_demo.html
     """
     hs = np.sqrt(area) / 2
     xcorners = np.array([x - hs, x + hs, x + hs, x - hs])
@@ -577,6 +577,7 @@ def hinton(W, maxweight=None):
     Draws a Hinton diagram for visualizing a weight matrix.
     Temporarily disables matplotlib interactive mode if it is on,
     otherwise this takes forever.
+    Source: http://matplotlib.org/examples/specialty_plots/hinton_demo.html
     """
     reenable = False
     if plt.isinteractive():
@@ -698,4 +699,3 @@ if condition == "joint":
     plt.show()
     plt.savefig("./{}/{} GRAPH WM, Right Knoblin Motor Weights".format(folder, condition))
     plt.close()
-
