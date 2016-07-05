@@ -40,35 +40,35 @@ class Evolution(Simulate):
         :rtype: vector
         :return: vector of all parameters
         """
-        A = np.reshape(self.agent.W,     (self.agent.W.size, 1))
-        G = np.reshape(self.agent.WM,    (self.agent.WM.size, 1))
-        T = np.reshape(self.agent.WV,    (self.agent.WV.size, 1))
-        C = np.reshape(self.agent.Theta, (self.agent.Theta.size, 1))
-        U = np.reshape(self.agent.Tau,   (self.agent.Tau.size, 1))
+        a = np.reshape(self.agent.W,     (self.agent.W.size, 1))
+        g = np.reshape(self.agent.WM,    (self.agent.WM.size, 1))
+        t = np.reshape(self.agent.WV,    (self.agent.WV.size, 1))
+        c = np.reshape(self.agent.Theta, (self.agent.Theta.size, 1))
+        u = np.reshape(self.agent.Tau,   (self.agent.Tau.size, 1))
 
-        return np.concatenate((A, G, T, C, U))
+        return np.concatenate((a, g, t, c, u))
 
     def implement_genome(self, genome_string):
 
         assert genome_string.size == self.genome.size, "Genome has not the right size"
 
-        A = self.agent.W.size
-        G = self.agent.WM.size
-        T = self.agent.WV.size
-        C = self.agent.Theta.size
-        U = self.agent.Tau.size
+        a = self.agent.W.size
+        g = self.agent.WM.size
+        t = self.agent.WV.size
+        c = self.agent.Theta.size
+        u = self.agent.Tau.size
 
-        W = genome_string[:A]
-        WM = genome_string[A:A+G]
-        WV = genome_string[A+G:A+G+T]
-        Theta = genome_string[A+G+T:A+G+T+C]
-        Tau = genome_string[A+G+T+C:A+G+T+C+U]
+        w = genome_string[:a]
+        wm = genome_string[a:a+g]
+        wv = genome_string[a+g:a+g+t]
+        theta = genome_string[a+g+t:a+g+t+c]
+        tau = genome_string[a+g+t+c:a+g+t+c+u]
 
-        self.agent.W = np.matrix(np.reshape(W,          (self.agent.N, self.agent.N)))
-        self.agent.WM = np.matrix(np.reshape(WM,        (G, 1)))    # for poplists before 1.June take the reshape out (see github, also CTRNN.py)
-        self.agent.WV = np.matrix(np.reshape(WV,        (T, 1)))
-        self.agent.Theta = np.matrix(np.reshape(Theta,  (C, 1)))
-        self.agent.Tau = np.matrix(np.reshape(Tau,      (U, 1)))
+        self.agent.W = np.matrix(np.reshape(w,          (self.agent.N, self.agent.N)))
+        self.agent.WM = np.matrix(np.reshape(wm,        (g, 1)))    # for poplists before 1.June take the reshape out (see github, also CTRNN.py)
+        self.agent.WV = np.matrix(np.reshape(wv,        (t, 1)))
+        self.agent.Theta = np.matrix(np.reshape(theta,  (c, 1)))
+        self.agent.Tau = np.matrix(np.reshape(tau,      (u, 1)))
 
         # Update the self.genome:
         if not isinstance(genome_string, np.matrix):
@@ -228,42 +228,43 @@ class Evolution(Simulate):
 
         # 6) Mutation (for fps=True & False):
 
-        AGTC = sum(gens.values()) - gens["U"]   # sum of all gen-sizes, except Tau
-        U = gens["U"]                           # == self.agent.Tau.size
+        agtc = sum(gens.values()) - gens["U"]   # sum of all gen-sizes, except Tau
+        u = gens["U"]                           # == self.agent.Tau.size
 
         mu, sigma = 0, np.sqrt(mutation_var)    # mean and standard deviation
 
         for i in range(1-fps, new_population.shape[0]):  # if fps = False => range(1,size), else => range(0,size)
 
-            mutation_AGTC = np.random.normal(mu, sigma, AGTC)
-            mutation_U = np.random.normal(mu, sigma, U)
+            mutation_agtc = np.random.normal(mu, sigma, agtc)
+            mutation_u = np.random.normal(mu, sigma, u)
 
-            AGTC_mutated = new_population[i, 2:AGTC+2] + mutation_AGTC
+            agtc_mutated = new_population[i, 2:agtc+2] + mutation_agtc
 
             # Replace values beyond the range with max.range
-            AGTC_mutated[AGTC_mutated > self.agent.W_RANGE[1]] = self.agent.W_RANGE[1]
+            agtc_mutated[agtc_mutated > self.agent.W_RANGE[1]] = self.agent.W_RANGE[1]
             # ... or min.range (T_RANGE = W.RANGE =[-13, 13])
-            AGTC_mutated[AGTC_mutated < self.agent.W_RANGE[0]] = self.agent.W_RANGE[0]
+            agtc_mutated[agtc_mutated < self.agent.W_RANGE[0]] = self.agent.W_RANGE[0]
 
-            new_population[i, 2:AGTC+2] = AGTC_mutated
+            new_population[i, 2:agtc+2] = agtc_mutated
 
-            U_mutated = new_population[i, (AGTC+2):] + mutation_U
+            u_mutated = new_population[i, (agtc+2):] + mutation_u
 
             # Replace values beyond the range with max.range
-            U_mutated[U_mutated > self.agent.TAU_RANGE[1]] = self.agent.TAU_RANGE[1]
+            u_mutated[u_mutated > self.agent.TAU_RANGE[1]] = self.agent.TAU_RANGE[1]
             # ... or min.range (TAU_RANGE = [1, 10])
-            U_mutated[U_mutated < self.agent.TAU_RANGE[0]] = self.agent.TAU_RANGE[0]
+            u_mutated[u_mutated < self.agent.TAU_RANGE[0]] = self.agent.TAU_RANGE[0]
 
-            new_population[i, (AGTC+2):] = U_mutated
+            new_population[i, (agtc+2):] = u_mutated
 
             new_population[i, 0] = i+1   # reset enumeration
             new_population[i, 1] = 0     # reset fitness
 
         self.pop_list = copy.copy(new_population)
 
-    def _set_target(self, position_agent=[50, 50], angle_to_target=np.pi/2, distance=30, complex=False):
+    @staticmethod
+    def _set_target(position_agent=[50, 50], angle_to_target=np.pi/2, distance=30, iscomplex=False):
 
-        if not complex:  # We just create one target, depending on the angle:
+        if not iscomplex:  # We just create one target, depending on the angle:
             pos_target = np.array(position_agent) + np.array([np.cos(angle_to_target), np.sin(angle_to_target)]) * distance
 
             return list([pos_target])  # This form of output is necessarry for _simulate_next_population()
@@ -316,7 +317,7 @@ class Evolution(Simulate):
         self.pop_list = copy.copy(mat_sort(self.pop_list, index=1))
 
     def run_evolution(self, generations, mutation_var=0.10, complex_trials=True, fit_prop_sel=False,
-                      position_agent=[50, 50], angle_to_target= np.pi/2, distance_to_target=30):
+                      position_agent=[50, 50], angle_to_target=np.pi/2, distance_to_target=30):
         """
         Run evolution for n-generations with particular mutation rate.
 
@@ -338,7 +339,7 @@ class Evolution(Simulate):
         pos_target = self._set_target(position_agent=position_agent,
                                       angle_to_target=angle_to_target,
                                       distance=distance_to_target,
-                                      complex=complex_trials)
+                                      iscomplex=complex_trials)
 
         for i in range(generations):
 
@@ -421,7 +422,7 @@ class Evolution(Simulate):
         global n
         n = n_agents
 
-        pos_target = self._set_target(position_agent=position_agent, complex=True)
+        pos_target = self._set_target(position_agent=position_agent, iscomplex=True)
         col = ["royalblue", "tomato", "palegreen", "fuchsia", "gold", "darkviolet", "darkslategray", "orange"]  # colors.cnames
 
         for i in range(n_agents):
@@ -452,7 +453,8 @@ class Evolution(Simulate):
         if n_agents > 1:
             print("Close all Windows with close()")
 
-    def close(self):
+    @staticmethod
+    def close():
         for j in range(n):  # n is from the global variable of plot_pop_list()/reimplement_population()
             plt.close()
 

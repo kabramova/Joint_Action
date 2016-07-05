@@ -45,9 +45,9 @@ class SA_Evolution(SA_Simulation):
         T = np.reshape(Knoblin.WV,     (Knoblin.WV.size,      1))
         X = np.reshape(Knoblin.WA,     (Knoblin.WA.size,      1))
         C = np.reshape(Knoblin.Theta,  (Knoblin.Theta.size,   1))
-        U = np.reshape(Knoblin.Tau,    (Knoblin.Tau.size,     1))
+        u = np.reshape(Knoblin.Tau,    (Knoblin.Tau.size,     1))
 
-        return np.concatenate((A, G, T, X, C, U))
+        return np.concatenate((A, G, T, X, C, u))
 
     def implement_genome(self, genome_string):
 
@@ -58,21 +58,21 @@ class SA_Evolution(SA_Simulation):
         T = self.knoblin.WV.size
         X = self.knoblin.WA.size
         C = self.knoblin.Theta.size
-        U = self.knoblin.Tau.size
+        u = self.knoblin.Tau.size
 
         W = genome_string[:A]
         WM = genome_string[A:A + G]
         WV = genome_string[A + G:A + G + T]
         WA = genome_string[A + G + T:A + G + T + X]
         Theta = genome_string[A + G + T + X:A + G + T + X + C]
-        Tau = genome_string[A + G + T + X + C:A + G + T + X + C + U]
+        Tau = genome_string[A + G + T + X + C:A + G + T + X + C + u]
 
         self.knoblin.W =  np.matrix(np.reshape(W, (self.knoblin.N, self.knoblin.N)))
         self.knoblin.WM = np.matrix(np.reshape(WM, (G, 1)))
         self.knoblin.WV = np.matrix(np.reshape(WV, (T, 1)))
         self.knoblin.WA = np.matrix(np.reshape(WA, (X, 1)))
         self.knoblin.Theta = np.matrix(np.reshape(Theta, (C, 1)))
-        self.knoblin.Tau = np.matrix(np.reshape(Tau, (U, 1)))
+        self.knoblin.Tau = np.matrix(np.reshape(Tau, (u, 1)))
 
         # Update the self.genome:
         if not isinstance(genome_string, np.matrix):
@@ -337,7 +337,7 @@ class SA_Evolution(SA_Simulation):
         # 5) All but the first two best agents will fall under a mutation with a variance of .02 (default)
 
         AGTXC = sum(gens.values()) - gens["U"]  # sum of all gen-sizes, except Tau
-        U = gens["U"]  # is self.knoblin.Tau.size
+        u = gens["U"]  # is self.knoblin.Tau.size
 
         mu, sigma = 0, np.sqrt(mutation_var)  # mean and standard deviation
 
@@ -345,7 +345,7 @@ class SA_Evolution(SA_Simulation):
         for i in range(n_parents, n_fitfamily):
 
             mutation_AGTXC = np.random.normal(mu, sigma, AGTXC)
-            mutation_U = np.random.normal(mu, sigma, U)
+            mutation_u = np.random.normal(mu, sigma, u)
 
             AGTXC_mutated = new_population[i, 2: AGTXC+2] + mutation_AGTXC
 
@@ -356,14 +356,14 @@ class SA_Evolution(SA_Simulation):
 
             new_population[i, 2: AGTXC+2] = AGTXC_mutated
 
-            U_mutated = new_population[i, (AGTXC + 2):] + mutation_U
+            u_mutated = new_population[i, (AGTXC + 2):] + mutation_u
 
             # Replace values beyond the range with max.range
-            U_mutated[U_mutated > self.knoblin.TAU_RANGE[1]] = self.knoblin.TAU_RANGE[1]
+            u_mutated[u_mutated > self.knoblin.TAU_RANGE[1]] = self.knoblin.TAU_RANGE[1]
             # ... or min.range (TAU_RANGE = [1, 10])
-            U_mutated[U_mutated < self.knoblin.TAU_RANGE[0]] = self.knoblin.TAU_RANGE[0]
+            u_mutated[u_mutated < self.knoblin.TAU_RANGE[0]] = self.knoblin.TAU_RANGE[0]
 
-            new_population[i, (AGTXC + 2):] = U_mutated
+            new_population[i, (AGTXC + 2):] = u_mutated
 
         # Reset enumeration and fitness (except first two agents)
         new_population[:, 0] = range(1, self.pop_size+1)

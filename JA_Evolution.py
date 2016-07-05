@@ -52,9 +52,9 @@ class JA_Evolution(JA_Simulation):
         T = np.reshape(Knoblin.WV,     (Knoblin.WV.size,      1))
         X = np.reshape(Knoblin.WA,     (Knoblin.WA.size,      1))
         C = np.reshape(Knoblin.Theta,  (Knoblin.Theta.size,   1))
-        U = np.reshape(Knoblin.Tau,    (Knoblin.Tau.size,     1))
+        u = np.reshape(Knoblin.Tau,    (Knoblin.Tau.size,     1))
 
-        return np.concatenate((A, G, T, X, C, U))
+        return np.concatenate((A, G, T, X, C, u))
 
     def implement_genome(self, genome_string, side):
 
@@ -68,14 +68,14 @@ class JA_Evolution(JA_Simulation):
         T = knoblin.WV.size
         X = knoblin.WA.size
         C = knoblin.Theta.size
-        U = knoblin.Tau.size
+        u = knoblin.Tau.size
 
         W       = genome_string[:A]
         WM      = genome_string[A:A + G]
         WV      = genome_string[A + G:A + G + T]
         WA      = genome_string[A + G + T:A + G + T + X]
         Theta   = genome_string[A + G + T + X:A + G + T + X + C]
-        Tau     = genome_string[A + G + T + X + C:A + G + T + X + C + U]
+        Tau     = genome_string[A + G + T + X + C:A + G + T + X + C + u]
 
         # self.knoblin_L or _R (respectively) will be updated
         knoblin.W = np.reshape(W, (knoblin.N, knoblin.N))
@@ -83,7 +83,7 @@ class JA_Evolution(JA_Simulation):
         knoblin.WV = np.matrix(np.reshape(WV, (T, 1)))
         knoblin.WA = np.matrix(np.reshape(WA, (X, 1)))
         knoblin.Theta = np.matrix(np.reshape(Theta, (C, 1)))
-        knoblin.Tau = np.matrix(np.reshape(Tau, (U, 1)))
+        knoblin.Tau = np.matrix(np.reshape(Tau, (u, 1)))
 
         # Update the self.genome:
         if not isinstance(genome_string, np.matrix):
@@ -406,7 +406,7 @@ class JA_Evolution(JA_Simulation):
         # 5) All but the first two best agent pairs will fall under a mutation with a variance of .02 (default)
 
         AGTXC = sum(gens.values()) - gens["U"]  # sum of all gen-sizes, except Tau
-        U = gens["U"]  # is self.knoblin.Tau.size
+        u = gens["U"]  # is self.knoblin.Tau.size
 
         mu, sigma = 0, np.sqrt(mutation_var)  # mean and standard deviation
 
@@ -415,8 +415,8 @@ class JA_Evolution(JA_Simulation):
 
             mutation_AGTXC_L = np.random.normal(mu, sigma, AGTXC)
             mutation_AGTXC_R = np.random.normal(mu, sigma, AGTXC)
-            mutation_U_L = np.random.normal(mu, sigma, U)
-            mutation_U_R = np.random.normal(mu, sigma, U)
+            mutation_u_L = np.random.normal(mu, sigma, u)
+            mutation_u_R = np.random.normal(mu, sigma, u)
 
 
             AGTXC_mutated_L = new_population_L[i, 2: AGTXC+2] + mutation_AGTXC_L
@@ -431,17 +431,17 @@ class JA_Evolution(JA_Simulation):
             new_population_L[i, 2: AGTXC+2] = AGTXC_mutated_L
             new_population_R[i, 2: AGTXC+2] = AGTXC_mutated_R
 
-            U_mutated_L = new_population_L[i, (AGTXC + 2):] + mutation_U_L
-            U_mutated_R = new_population_R[i, (AGTXC + 2):] + mutation_U_R
+            u_mutated_L = new_population_L[i, (AGTXC + 2):] + mutation_u_L
+            u_mutated_R = new_population_R[i, (AGTXC + 2):] + mutation_u_R
 
             # Replace values beyond the range with max.range or min.range (TAU_RANGE = [1, 10])
-            U_mutated_L[U_mutated_L > self.knoblin_L.TAU_RANGE[1]] = self.knoblin_L.TAU_RANGE[1]
-            U_mutated_L[U_mutated_L < self.knoblin_L.TAU_RANGE[0]] = self.knoblin_L.TAU_RANGE[0]
-            U_mutated_R[U_mutated_R > self.knoblin_R.TAU_RANGE[1]] = self.knoblin_R.TAU_RANGE[1]
-            U_mutated_R[U_mutated_R < self.knoblin_R.TAU_RANGE[0]] = self.knoblin_R.TAU_RANGE[0]
+            u_mutated_L[u_mutated_L > self.knoblin_L.TAU_RANGE[1]] = self.knoblin_L.TAU_RANGE[1]
+            u_mutated_L[u_mutated_L < self.knoblin_L.TAU_RANGE[0]] = self.knoblin_L.TAU_RANGE[0]
+            u_mutated_R[u_mutated_R > self.knoblin_R.TAU_RANGE[1]] = self.knoblin_R.TAU_RANGE[1]
+            u_mutated_R[u_mutated_R < self.knoblin_R.TAU_RANGE[0]] = self.knoblin_R.TAU_RANGE[0]
 
-            new_population_L[i, (AGTXC + 2):] = U_mutated_L
-            new_population_R[i, (AGTXC + 2):] = U_mutated_R
+            new_population_L[i, (AGTXC + 2):] = u_mutated_L
+            new_population_R[i, (AGTXC + 2):] = u_mutated_R
 
         # 6) Shuffle half of the agents of step 3) and step4) in each list
         n_half_fit_family = n_family + int(np.round(n_fps/2))
