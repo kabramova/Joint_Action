@@ -23,7 +23,7 @@ if not split:  # is False
 
 else:  # if splitter is used, these values must be pre-given, here in python file
     # Manually adjust the following parameters:
-    audicon = False
+    audicon = True
     number_of_generations = 1000
     scalar = 0.336  # 1 == no scaling [Default]
     filename = None
