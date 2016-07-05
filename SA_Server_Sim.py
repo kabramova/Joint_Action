@@ -25,7 +25,7 @@ else:  # if splitter is used, these values must be pre-given, here in python fil
     # Manually adjust the following parameters:
     audicon = True
     number_of_generations = 1000
-    scalar = 0.336  # 1 == no scaling [Default]
+    scalar = 0.336  # 1 == no scaling [Default], 1/3 == first turn
     filename = None
     print("Splitter {} started!".format(split))
 
@@ -44,8 +44,9 @@ if isinstance(filename, str):
 
 # RUN:
 if not split or split == n_cpu:
-    print("Run Evolution for {} Generations in Single Condition and Sound Condition={}".format(number_of_generations,
-                                                                                               sa.condition))
+    print("Run Evolution for {} Generations in Single Condition and Sound Condition={} with simlength-scalar {}".format(number_of_generations,
+                                                                                                                        sa.condition,
+                                                                                                                        scalar))
 sa.run_evolution(generations=number_of_generations, splitter=split, n_cpu=n_cpu)
 
 
