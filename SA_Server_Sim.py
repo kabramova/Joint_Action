@@ -18,7 +18,7 @@ if not split:  # is False
     number_of_generations = generation_request()
     filename = filename_request("single")
 
-    # Target just makes one turn: scalar = 0.336
+    # If e.g. scalar = 0.336 => Target just makes one turn
     scalar = simlength_scalar_request()
 
 else:  # if splitter is used, these values must be pre-given, here in python file
@@ -48,13 +48,3 @@ if not split or split == n_cpu:
                                                                                                                         sa.condition,
                                                                                                                         scalar))
 sa.run_evolution(generations=number_of_generations, splitter=split, n_cpu=n_cpu)
-
-
-# # Reimplement and Plot
-# sa2 = SA_Evolution(auditory_condition=False)
-# print("Sound_Cond:", sa2.condition,", Popsize:", sa2.pop_size,", Gen:", sa2.generation)
-# filename = filename_request("single")
-# output = sa2.reimplement_population(filename=filename, plot=True)
-# print("Sound_Cond:", sa2.condition,", Popsize:", sa2.pop_size,", Gen:", sa2.generation)
-# sa2.print_best(5)
-# # print(np.round(sa2.pop_list[0:50,0:2],2))

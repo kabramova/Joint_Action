@@ -17,7 +17,7 @@ if not split:  # is False
     number_of_generations = generation_request()
     filename = filename_request("joint")
 
-    # Target just makes one turn: scalar = 0.336
+    # If e.g. scalar = 0.336 => Target just makes one turn
     scalar = simlength_scalar_request()
 
 
@@ -48,14 +48,3 @@ if not split or split == n_cpu:
                                                                                                                        ja.condition,
                                                                                                                        scalar))
 ja.run_evolution(generations=number_of_generations, splitter=split, n_cpu=n_cpu)
-
-
-# Reimplement and plot:
-# ja2 = JA_Evolution(auditory_condition=True)
-# print("Sound_Cond:", ja2.condition,", Popsize:", ja2.pop_size,", Gen:", ja2.generation)
-# filename = filename_request("joint")
-# output = ja2.reimplement_population(filename=filename, plot=True)
-# print("Sound_Cond:", ja2.condition,", Popsize:", ja2.pop_size,", Gen:", ja2.generation)
-# ja2.print_best(5)
-# print(np.round(ja2.pop_list_L[0:50,0:2],2))
-# print(np.round(ja2.pop_list_R[0:50,0:2],2))
