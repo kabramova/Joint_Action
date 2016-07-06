@@ -11,7 +11,7 @@ class SA_Evolution(SA_Simulation):
 
         self.simlength_scalar = simlength_scalar
 
-        self.genome = self.create_genome(Knoblin=self.knoblin)
+        self.genome = self.create_genome(knoblin=self.knoblin)
 
         self.generation = 0
 
@@ -34,45 +34,46 @@ class SA_Evolution(SA_Simulation):
             # poplist[i, 1]                                         = fitness, is initially zero
             poplist[i, 2:] = self.genome.transpose()                # the current genome will be stored
             self.knoblin = Knoblin()                                # Create new agent
-            self.genome = self.create_genome(Knoblin=self.knoblin)  # ... and its genome
+            self.genome = self.create_genome(knoblin=self.knoblin)  # ... and its genome
 
         return poplist
 
-    def create_genome(self, Knoblin):
+    @staticmethod
+    def create_genome(knoblin):
 
-        A = np.reshape(Knoblin.W,      (Knoblin.W.size,       1))
-        G = np.reshape(Knoblin.WM,     (Knoblin.WM.size,      1))
-        T = np.reshape(Knoblin.WV,     (Knoblin.WV.size,      1))
-        X = np.reshape(Knoblin.WA,     (Knoblin.WA.size,      1))
-        C = np.reshape(Knoblin.Theta,  (Knoblin.Theta.size,   1))
-        u = np.reshape(Knoblin.Tau,    (Knoblin.Tau.size,     1))
+        a = np.reshape(knoblin.W,      (knoblin.W.size,       1))
+        g = np.reshape(knoblin.WM,     (knoblin.WM.size,      1))
+        t = np.reshape(knoblin.WV,     (knoblin.WV.size,      1))
+        x = np.reshape(knoblin.WA,     (knoblin.WA.size,      1))
+        c = np.reshape(knoblin.Theta,  (knoblin.Theta.size,   1))
+        u = np.reshape(knoblin.Tau,    (knoblin.Tau.size,     1))
 
-        return np.concatenate((A, G, T, X, C, u))
+        return np.concatenate((a, g, t, x, c, u))
 
     def implement_genome(self, genome_string):
 
         assert genome_string.size == self.genome.size, "Genome has not the right size"
 
-        A = self.knoblin.W.size
-        G = self.knoblin.WM.size
-        T = self.knoblin.WV.size
-        X = self.knoblin.WA.size
-        C = self.knoblin.Theta.size
+        a = self.knoblin.W.size
+        g = self.knoblin.WM.size
+        t = self.knoblin.WV.size
+        x = self.knoblin.WA.size
+        c = self.knoblin.Theta.size
         u = self.knoblin.Tau.size
 
-        W = genome_string[:A]
-        WM = genome_string[A:A + G]
-        WV = genome_string[A + G:A + G + T]
-        WA = genome_string[A + G + T:A + G + T + X]
-        Theta = genome_string[A + G + T + X:A + G + T + X + C]
-        Tau = genome_string[A + G + T + X + C:A + G + T + X + C + u]
+        w = genome_string[:a]
+        wm = genome_string[a:a + g]
+        wv = genome_string[a + g:a + g + t]
+        wa = genome_string[a + g + t:a + g + t + x]
+        theta = genome_string[a + g + t + x:a + g + t + x + c]
+        tau = genome_string[a + g + t + x + c:a + g + t + x + c + u]
 
-        self.knoblin.W =  np.matrix(np.reshape(W, (self.knoblin.N, self.knoblin.N)))
-        self.knoblin.WM = np.matrix(np.reshape(WM, (G, 1)))
-        self.knoblin.WV = np.matrix(np.reshape(WV, (T, 1)))
-        self.knoblin.WA = np.matrix(np.reshape(WA, (X, 1)))
-        self.knoblin.Theta = np.matrix(np.reshape(Theta, (C, 1)))
-        self.knoblin.Tau = np.matrix(np.reshape(Tau, (u, 1)))
+        self.knoblin.W = np.matrix(np.reshape(w, (self.knoblin.N, self.knoblin.N)))
+        self.knoblin.WM = np.matrix(np.reshape(wm, (g, 1)))
+        self.knoblin.WV = np.matrix(np.reshape(wv, (t, 1)))
+        self.knoblin.WA = np.matrix(np.reshape(wa, (x, 1)))
+        self.knoblin.Theta = np.matrix(np.reshape(theta, (c, 1)))
+        self.knoblin.Tau = np.matrix(np.reshape(tau, (u, 1)))
 
         # Update the self.genome:
         if not isinstance(genome_string, np.matrix):
@@ -331,12 +332,12 @@ class SA_Evolution(SA_Simulation):
         n_fitfamily = n_family + n_fps
         for n in range(n_fitfamily, n_fitfamily+n_random):
             self.knoblin = Knoblin()                                    # Create random new agent
-            self.genome = self.create_genome(Knoblin=self.knoblin)    # ... and its genome
+            self.genome = self.create_genome(knoblin=self.knoblin)      # ... and its genome
             new_population[n, 2:] = self.genome.transpose()
 
         # 5) All but the first two best agents will fall under a mutation with a variance of .02 (default)
 
-        AGTXC = sum(gens.values()) - gens["U"]  # sum of all gen-sizes, except Tau
+        agtxc = sum(gens.values()) - gens["U"]  # sum of all gen-sizes, except Tau
         u = gens["U"]  # is self.knoblin.Tau.size
 
         mu, sigma = 0, np.sqrt(mutation_var)  # mean and standard deviation
@@ -344,26 +345,26 @@ class SA_Evolution(SA_Simulation):
         # we start with the 3rd agent and end with the agents via fps, rest is random, anyways.
         for i in range(n_parents, n_fitfamily):
 
-            mutation_AGTXC = np.random.normal(mu, sigma, AGTXC)
+            mutation_agtxc = np.random.normal(mu, sigma, agtxc)
             mutation_u = np.random.normal(mu, sigma, u)
 
-            AGTXC_mutated = new_population[i, 2: AGTXC+2] + mutation_AGTXC
+            agtxc_mutated = new_population[i, 2: agtxc+2] + mutation_agtxc
 
             # Replace values beyond the range with max.range
-            AGTXC_mutated[AGTXC_mutated > self.knoblin.W_RANGE[1]] = self.knoblin.W_RANGE[1]
+            agtxc_mutated[agtxc_mutated > self.knoblin.W_RANGE[1]] = self.knoblin.W_RANGE[1]
             # ... or min.range (T_RANGE = W.RANGE =[-13, 13])
-            AGTXC_mutated[AGTXC_mutated < self.knoblin.W_RANGE[0]] = self.knoblin.W_RANGE[0]
+            agtxc_mutated[agtxc_mutated < self.knoblin.W_RANGE[0]] = self.knoblin.W_RANGE[0]
 
-            new_population[i, 2: AGTXC+2] = AGTXC_mutated
+            new_population[i, 2: agtxc+2] = agtxc_mutated
 
-            u_mutated = new_population[i, (AGTXC + 2):] + mutation_u
+            u_mutated = new_population[i, (agtxc + 2):] + mutation_u
 
             # Replace values beyond the range with max.range
             u_mutated[u_mutated > self.knoblin.TAU_RANGE[1]] = self.knoblin.TAU_RANGE[1]
             # ... or min.range (TAU_RANGE = [1, 10])
             u_mutated[u_mutated < self.knoblin.TAU_RANGE[0]] = self.knoblin.TAU_RANGE[0]
 
-            new_population[i, (AGTXC + 2):] = u_mutated
+            new_population[i, (agtxc + 2):] = u_mutated
 
         # Reset enumeration and fitness (except first two agents)
         new_population[:, 0] = range(1, self.pop_size+1)
@@ -383,7 +384,7 @@ class SA_Evolution(SA_Simulation):
 
         # Run evolution:
         if splitter == n_cpu or not splitter:
-            Fitness_progress = np.zeros((generations, 6))
+            fitness_progress = np.zeros((generations, 6))
 
         for i in range(generations):
 
@@ -432,9 +433,9 @@ class SA_Evolution(SA_Simulation):
 
             # Saves fitness progress for the five best agents:
             if splitter == n_cpu or not splitter:
-                Fitness_progress[i, 1:] = np.round(self.pop_list[0:5, 1], 2)
-                Fitness_progress[i, 0] = self.generation
-                print("Generation {}: Fitness (5 best Agents): {}".format(self.generation, Fitness_progress[i, 1:]))
+                fitness_progress[i, 1:] = np.round(self.pop_list[0:5, 1], 2)
+                fitness_progress[i, 0] = self.generation
+                print("Generation {}: Fitness (5 best Agents): {}".format(self.generation, fitness_progress[i, 1:]))
 
                 # Estimate Duration of Evolution
                 end_timer = datetime.datetime.now().replace(microsecond=0)
@@ -464,7 +465,7 @@ class SA_Evolution(SA_Simulation):
                 os.remove("./temp/SA_Splitter{}.DONE.cond{}.npy".format(split_count, self.condition))
             # print("Done files removed") #test
 
-        # Save in external file: # TODO if server problem save this for each generation and delete old ones.
+        # Save in external file:  # TODO if server problem save this for each generation and delete old ones.
         if save and (splitter == n_cpu or not splitter):
             self.filename = "Gen{}-{}.popsize{}.mut{}.sound_cond={}.JA." \
                             "single(Fitness{})".format(self.generation - generations + 1, self.generation,
@@ -472,7 +473,7 @@ class SA_Evolution(SA_Simulation):
                                                        np.round(self.pop_list[0, 1], 2))
 
             pickle.dump(self.pop_list, open('./poplists/single/Poplist.{}'.format(self.filename), 'wb'))
-            pickle.dump(np.round(Fitness_progress, 2), open('./poplists/single/Fitness_progress.{}'.format(
+            pickle.dump(np.round(fitness_progress, 2), open('./poplists/single/Fitness_progress.{}'.format(
                 self.filename), 'wb'))
 
             print('Evolution terminated. pop_list saved \n'

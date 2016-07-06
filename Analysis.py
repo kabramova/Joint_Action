@@ -29,7 +29,7 @@ filename = filename_request(condition)  # "joint" or "single"
 
 load = load_request()
 
-lesion = lesion_request() # True/False
+lesion = lesion_request()  # True/False
 lesion_name = "_lesion" if lesion else ""
 
 if load is False:
@@ -73,7 +73,7 @@ if load is True:
         sa = SA_Evolution(auditory_condition=audicon)
         if isinstance(filename, str):
             sa.reimplement_population(filename=filename, plot=False)
-            sa.implement_genome(genome_string=sa.pop_list[0,2:])
+            sa.implement_genome(genome_string=sa.pop_list[0, 2:])
             # sa_performance[0-3] are the different trials
             # sa_performance[0-3][0-5] = fitness[0], trajectories[1], keypress[2], # sounds[3], neural_state[4],
             # neural_input_L[5]
@@ -572,7 +572,7 @@ def _blob(x, y, area, colour):
     plt.fill(xcorners, ycorners, colour, edgecolor=colour)
 
 
-def hinton(W, maxweight=None):
+def hinton(weight_matrix, maxweight=None):
     """
     Draws a Hinton diagram for visualizing a weight matrix.
     Temporarily disables matplotlib interactive mode if it is on,
@@ -585,9 +585,9 @@ def hinton(W, maxweight=None):
         reenable = True
 
     plt.clf()
-    height, width = W.shape
+    height, width = weight_matrix.shape
     if not maxweight:
-        maxweight = 2 ** np.ceil(np.log(np.max(np.abs(W))) / np.log(2))
+        maxweight = 2 ** np.ceil(np.log(np.max(np.abs(weight_matrix))) / np.log(2))
 
     plt.fill(np.array([0, width, width, 0]),
              np.array([0, 0, height, height]),
@@ -599,7 +599,7 @@ def hinton(W, maxweight=None):
         for y in range(height):
             _x = x + 1
             _y = y + 1
-            w = W[y, x]
+            w = weight_matrix[y, x]
             if w > 0:
                 _blob(_x - 0.5,
                       height - _y + 0.5,
