@@ -1,5 +1,15 @@
 from JA_Evolution import *
 
+"""
+__author__ = Simon Hofmann"
+__credits__ = ["Simon Hofmann", "Katja Abramova", "Willem Zuidema"]
+__version__ = "1.0.1"
+__date__ "2016"
+__maintainer__ = "Simon Hofmann"
+__email__ = "simon.hofmann@protonmail.com"
+__status__ = "Development"
+"""
+
 # For the CPU split:
 # Type in Terminal (-P*, * must be equal to n_cpu):
 #  cat args_splitter | xargs -L1 -P6 python3 JA_Server_Sim.py

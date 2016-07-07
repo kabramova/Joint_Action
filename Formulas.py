@@ -5,6 +5,18 @@ import os, datetime, time
 from collections import OrderedDict
 from functools import wraps
 
+
+"""
+__author__ = Simon Hofmann"
+__credits__ = ["Simon Hofmann", "Katja Abramova", "Willem Zuidema"]
+__version__ = "1.0.1"
+__date__ "2016"
+__maintainer__ = "Simon Hofmann"
+__email__ = "simon.hofmann@protonmail.com"
+__status__ = "Development"
+"""
+
+
 # Euler Method:
 #        Δy/Δt ≈ dy/dt = f(y,t)
 #   =>  Δy ≈ f(y,t)Δt  , where Δt = h

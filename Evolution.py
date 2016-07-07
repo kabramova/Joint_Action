@@ -1,6 +1,16 @@
 from Simulator import *
 import pickle
 
+"""
+__author__ = Simon Hofmann"
+__credits__ = ["Simon Hofmann", "Katja Abramova", "Willem Zuidema"]
+__version__ = "1.0.1"
+__date__ "2016"
+__maintainer__ = "Simon Hofmann"
+__email__ = "simon.hofmann@protonmail.com"
+__status__ = "Development"
+"""
+
 # Agmon & Beer (2013): "real-valued GA":
 '''
 "Each genetic string is a search vector of real numbers in the range 61,
