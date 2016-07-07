@@ -8,8 +8,8 @@ class JA_Simulation:
     """ Joint Action Simulation (Joint Task): """
 
     def __init__(self, auditory_condition, simlength=2789):
-        self.knoblin_L = Knoblin()
-        self.knoblin_R = Knoblin()
+        self.knoblin_l = Knoblin()
+        self.knoblin_r = Knoblin()
         # With simlength=2789, Target turns 3times during each fast trial (with regard to Knoblich & Jordan, 2003)
         # With simlength=3635, Target turns 3times during each slow trial, will be changed in setup
         self.simlength = simlength
@@ -42,19 +42,19 @@ class JA_Simulation:
         env_range = self.environment.env_range
 
         global h
-        h = self.knoblin_L.h  # == self.knoblin_R.h
+        h = self.knoblin_l.h  # == self.knoblin_r.h
 
     def reset_neural_system(self):
         """Sets all activation to zero"""
-        self.knoblin_L.Y = np.matrix(np.zeros((self.knoblin_L.N, 1)))
-        self.knoblin_L.I = np.matrix(np.zeros((self.knoblin_L.N, 1)))
-        self.knoblin_L.timer_motor_l = 0
-        self.knoblin_L.timer_motor_r = 0
+        self.knoblin_l.Y = np.matrix(np.zeros((self.knoblin_l.N, 1)))
+        self.knoblin_l.I = np.matrix(np.zeros((self.knoblin_l.N, 1)))
+        self.knoblin_l.timer_motor_l = 0
+        self.knoblin_l.timer_motor_r = 0
 
-        self.knoblin_R.Y = np.matrix(np.zeros((self.knoblin_R.N, 1)))
-        self.knoblin_R.I = np.matrix(np.zeros((self.knoblin_R.N, 1)))
-        self.knoblin_R.timer_motor_l = 0
-        self.knoblin_R.timer_motor_r = 0
+        self.knoblin_r.Y = np.matrix(np.zeros((self.knoblin_r.N, 1)))
+        self.knoblin_r.I = np.matrix(np.zeros((self.knoblin_r.N, 1)))
+        self.knoblin_r.timer_motor_l = 0
+        self.knoblin_r.timer_motor_r = 0
         # Alternatively for class JA_Evolution:
         # self.knoblin = Knoblin()
         # self.implement_genome(genome_string=self.genome)
@@ -78,24 +78,24 @@ class JA_Simulation:
             sound_output = self.tracker.movement()
 
             # 3) Agent sees:
-            self.knoblin_L.visual_input(position_tracker=self.tracker.position, position_target=self.target.position)
-            self.knoblin_R.visual_input(position_tracker=self.tracker.position, position_target=self.target.position)
+            self.knoblin_l.visual_input(position_tracker=self.tracker.position, position_target=self.target.position)
+            self.knoblin_r.visual_input(position_tracker=self.tracker.position, position_target=self.target.position)
 
             # 4) Agent hears:
             if self.condition:  # condition will be globally announced by class Jordan (self.environment)
-                self.knoblin_L.auditory_input(sound_input=sound_output)
-                self.knoblin_R.auditory_input(sound_input=sound_output)
+                self.knoblin_l.auditory_input(sound_input=sound_output)
+                self.knoblin_r.auditory_input(sound_input=sound_output)
 
             # 5) Update agent's neural systems
-            self.knoblin_L.next_state()
-            self.knoblin_R.next_state()
+            self.knoblin_l.next_state()
+            self.knoblin_r.next_state()
 
             # 5) Agents react:
-            if self.knoblin_L.timer_motor_l <= 0 or self.knoblin_L.timer_motor_r <= 0 or \
-                            self.knoblin_R.timer_motor_l <= 0 or self.knoblin_R.timer_motor_r <= 0:
+            if self.knoblin_l.timer_motor_l <= 0 or self.knoblin_l.timer_motor_r <= 0 or \
+                            self.knoblin_r.timer_motor_l <= 0 or self.knoblin_r.timer_motor_r <= 0:
                 # this is a bit redundant (see e.g.) Knoblin.press_left(), but more computational efficient
-                activation_l = self.knoblin_L.motor_output()
-                activation_r = self.knoblin_R.motor_output()
+                activation_l = self.knoblin_l.motor_output()
+                activation_r = self.knoblin_r.motor_output()
                 activation = [activation_l[0], activation_r[1]]
                 # if any(act > 0 for act in np.abs(activation)): print("Activation:", activation)
                 self.tracker.accelerate(inputs=activation)
@@ -119,10 +119,10 @@ class JA_Simulation:
         positions = np.zeros((self.simlength, 2))
         keypress = np.zeros((self.simlength, 2))
         sounds = np.zeros((self.simlength, 2))
-        neural_state_l = np.zeros((self.simlength, self.knoblin_L.N))
-        neural_state_r = np.zeros((self.simlength, self.knoblin_R.N))
-        neural_input_l = np.zeros((self.simlength, self.knoblin_L.N))
-        neural_input_r = np.zeros((self.simlength, self.knoblin_R.N))
+        neural_state_l = np.zeros((self.simlength, self.knoblin_l.N))
+        neural_state_r = np.zeros((self.simlength, self.knoblin_r.N))
+        neural_input_l = np.zeros((self.simlength, self.knoblin_l.N))
+        neural_input_r = np.zeros((self.simlength, self.knoblin_r.N))
 
         print("Sound condition:\t {} \n"
               "Trial speed:\t {}".format(self.condition, trial))
@@ -140,11 +140,11 @@ class JA_Simulation:
             # 3) Agents see:
             # if not lesion or lesion and i < self.simlength/2:  # (Lesion cuts input in second half of simulation)
             if not lesion:  # TODO: cut all input
-                self.knoblin_L.visual_input(position_tracker=self.tracker.position, position_target=self.target.position)
-                self.knoblin_R.visual_input(position_tracker=self.tracker.position, position_target=self.target.position)
+                self.knoblin_l.visual_input(position_tracker=self.tracker.position, position_target=self.target.position)
+                self.knoblin_r.visual_input(position_tracker=self.tracker.position, position_target=self.target.position)
             else:  # No input anymore
-                self.knoblin_L.visual_input(position_tracker=0, position_target=0)
-                self.knoblin_R.visual_input(position_tracker=0, position_target=0)
+                self.knoblin_l.visual_input(position_tracker=0, position_target=0)
+                self.knoblin_r.visual_input(position_tracker=0, position_target=0)
 
             positions[i, :] = [self.tracker.position, self.target.position]  # save positions
 
@@ -152,28 +152,28 @@ class JA_Simulation:
             if self.condition:  # condition will be globally announced by class Jordan (self.environment)
                 # if not lesion or lesion and i < self.simlength / 2:  # (Lesion cuts input in second half of simulation)
                 if not lesion:  # TODO: cut all input
-                    self.knoblin_L.auditory_input(sound_input=sound_output)
-                    self.knoblin_R.auditory_input(sound_input=sound_output)
+                    self.knoblin_l.auditory_input(sound_input=sound_output)
+                    self.knoblin_r.auditory_input(sound_input=sound_output)
                 else:  # No input anymore
-                    self.knoblin_L.auditory_input(sound_input=[0, 0])
-                    self.knoblin_R.auditory_input(sound_input=[0, 0])
+                    self.knoblin_l.auditory_input(sound_input=[0, 0])
+                    self.knoblin_r.auditory_input(sound_input=[0, 0])
 
                 sounds[i, :] = sound_output  # save sound_output
 
             # 5) Update agents' neural systems
-            self.knoblin_L.next_state()
-            self.knoblin_R.next_state()
-            neural_state_l[i, :] = self.knoblin_L.Y.transpose()
-            neural_state_r[i, :] = self.knoblin_R.Y.transpose()
-            neural_input_l[i, :] = self.knoblin_L.I.transpose()
-            neural_input_r[i, :] = self.knoblin_R.I.transpose()
+            self.knoblin_l.next_state()
+            self.knoblin_r.next_state()
+            neural_state_l[i, :] = self.knoblin_l.Y.transpose()
+            neural_state_r[i, :] = self.knoblin_r.Y.transpose()
+            neural_input_l[i, :] = self.knoblin_l.I.transpose()
+            neural_input_r[i, :] = self.knoblin_r.I.transpose()
 
             # 6) Agents react:
-            if self.knoblin_L.timer_motor_l <= 0 or self.knoblin_L.timer_motor_r <= 0 or self.knoblin_R.timer_motor_l <= 0 \
-                    or self.knoblin_R.timer_motor_r <= 0:
+            if self.knoblin_l.timer_motor_l <= 0 or self.knoblin_l.timer_motor_r <= 0 or self.knoblin_r.timer_motor_l <= 0 \
+                    or self.knoblin_r.timer_motor_r <= 0:
                 # this is a bit redundant (see e.g.) Knoblin.press_left(), but more computational efficient
-                activation_l = self.knoblin_L.motor_output()
-                activation_r = self.knoblin_R.motor_output()
+                activation_l = self.knoblin_l.motor_output()
+                activation_r = self.knoblin_r.motor_output()
                 activation = [activation_l[0], activation_r[1]]
 
                 # if any(act > 0 for act in np.abs(activation)): print("Activation:", activation)
