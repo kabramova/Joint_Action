@@ -23,10 +23,10 @@ class SA_Simulation:
         self.environment = Jordan(trial_speed=trial_speed, auditory_condition=self.condition)
 
         if self.environment.trial == "slow" and self.simlength != 3635:
-            self.simlength = 3635*simlength_scalar   # Target needs more time to make 3 turns
+            self.simlength = np.round(3635*simlength_scalar)   # Target needs more time to make 3 turns
 
         elif self.environment.trial == "fast" and self.simlength != 2789:
-            self.simlength = 2789*simlength_scalar   # Target needs less time to make 3 turns
+            self.simlength = np.round(2789*simlength_scalar)   # Target needs less time to make 3 turns
 
         self.globalization()
         self.tracker = Tracker()
