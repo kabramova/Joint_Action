@@ -529,7 +529,7 @@ class JA_Evolution(JA_Simulation):
                 end_timer = datetime.datetime.now().replace(microsecond=0)
                 duration = end_timer - start_timer
                 rest_duration = duration * (generations - (i + 1))
-                print("Time passed to evolve Generation {}: {} [h:m:s]".format(i, duration))
+                print("Time passed to evolve Generation {}: {} [h:m:s]".format(self.generation-1, duration))
                 print("Estimated time to evolve the rest {} Generations: {} [h:m:s]".format(generations-(i + 1), rest_duration))
 
         # Remove remaining temporary files out of dictionary
