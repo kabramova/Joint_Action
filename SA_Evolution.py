@@ -90,7 +90,7 @@ class SA_Evolution(SA_Simulation):
 
                 self.reset_neural_system()
 
-                self.setup(trial_speed=trial_speed)
+                self.setup(trial_speed=trial_speed, simlength_scalar=self.simlength_scalar)
                 self.target.velocity *= init_target_direction
 
                 # Run trial:

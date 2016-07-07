@@ -104,7 +104,7 @@ class JA_Evolution(JA_Simulation):
 
                 self.reset_neural_system()
 
-                self.setup(trial_speed=trial_speed)
+                self.setup(trial_speed=trial_speed, simlength_scalar=self.simlength_scalar)
                 self.target.velocity *= init_target_direction
 
                 # Run trial:
@@ -574,9 +574,11 @@ class JA_Evolution(JA_Simulation):
 
         # Remove last Poplists out of /temp folder
         if splitter == n_cpu:
-            os.remove("./temp/Poplist_l_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu, self.generation - 1,
+            os.remove("./temp/Poplist_l_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu,
+                                                                                    self.generation - 1,
                                                                                     self.condition))
-            os.remove("./temp/Poplist_R_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu, self.generation - 1,
+            os.remove("./temp/Poplist_R_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu,
+                                                                                    self.generation - 1,
                                                                                     self.condition))
 
     def reimplement_population(self, filename=None, plot=False, lesion=False):
