@@ -435,7 +435,7 @@ class SA_Evolution(SA_Simulation):
             if splitter == n_cpu or not splitter:
                 fitness_progress[i, 1:] = np.round(self.pop_list[0:5, 1], 2)
                 fitness_progress[i, 0] = self.generation
-                print("Generation {}: Fitness (5 best Agents): {}".format(self.generation, fitness_progress[i, 1:]))
+                print("Generation {}: Fitness (5 best Agents): {}".format(self.generation-1, fitness_progress[i, 1:]))
 
                 # Estimate Duration of Evolution
                 end_timer = datetime.datetime.now().replace(microsecond=0)
