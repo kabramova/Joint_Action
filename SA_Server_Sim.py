@@ -34,9 +34,9 @@ if not split:  # is False
 else:  # if splitter is used, these values must be pre-given, here in python file
     # Manually adjust the following parameters:
     audicon = True
-    number_of_generations = 1000
+    number_of_generations = 9000
     scalar = 0.336  # 1 == no scaling [Default], 1/3 == first turn
-    filename = None
+    filename = "Gen1-1000.popsize110.mut0.02.sound_cond=True.JA.single(Fitness5.25)"  # or None
     print("Splitter {} started!".format(split))
 
 
