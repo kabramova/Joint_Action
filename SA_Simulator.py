@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 
 """
-__author__ = Simon Hofmann"
+__author__  = Simon Hofmann"
 __credits__ = ["Simon Hofmann", "Katja Abramova", "Willem Zuidema"]
 __version__ = "1.0.1"
 __date__ "2016"
