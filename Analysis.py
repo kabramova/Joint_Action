@@ -63,10 +63,10 @@ if load is False:
         if isinstance(filename, str):
             ja_performance = ja.reimplement_population(filename=filename, plot=True, lesion=lesion)
             ja_performance = np.array(ja_performance, dtype=object)
-            ja.implement_genome(genome_string=ja.pop_list_L[0, 2:], side="left")
-            ja.implement_genome(genome_string=ja.pop_list_R[0, 2:], side="right")
+            ja.implement_genome(genome_string=ja.pop_list_l[0, 2:], side="left")
+            ja.implement_genome(genome_string=ja.pop_list_r[0, 2:], side="right")
             fitness = np.round(np.mean([i[0] for i in ja_performance]), 2)  # Fitness over all trials
-            # fitness = np.round(ja.pop_list_L[0, 1], 2)
+            # fitness = np.round(ja.pop_list_l[0, 1], 2)
             np.save("./Analysis/joint/ja_performance_cond{}_fitness{}{}".format(ja.condition, fitness, lesion_name), ja_performance)
             # ja_performance[0-3] are the different trials
             # ja_performance[0-3][0-7] = fitness[0], trajectories[1], keypress[2], sounds[3], neural_state_L[4],
@@ -97,8 +97,8 @@ if load is True:
         ja = JA_Evolution(auditory_condition=audicon, pop_size=55)
         if isinstance(filename, str):
             ja.reimplement_population(filename=filename, plot=False)
-            ja.implement_genome(genome_string=ja.pop_list_L[0, 2:], side="left")
-            ja.implement_genome(genome_string=ja.pop_list_R[0, 2:], side="right")
+            ja.implement_genome(genome_string=ja.pop_list_l[0, 2:], side="left")
+            ja.implement_genome(genome_string=ja.pop_list_r[0, 2:], side="right")
 
 # Split in different Trials:
 sl = sa_performance[0] if condition == "single" else ja_performance[0]  # speed: slow, initial target-direction: left
@@ -659,13 +659,13 @@ if condition == "single":
 if condition == "joint":
 
     # Weights
-    hinton(ja.knoblin_L.W, maxweight=ja.knoblin_L.W_RANGE[1])
+    hinton(ja.knoblin_l.W, maxweight=ja.knoblin_l.W_RANGE[1])
     plt.title("Left Knoblin Hinton diagram - Weights 8x8")
     plt.show()
     plt.savefig("./{}/{} GRAPH W, Left Knoblin Weights".format(folder, condition))
     plt.close()
 
-    hinton(ja.knoblin_R.W, maxweight=ja.knoblin_R.W_RANGE[1])
+    hinton(ja.knoblin_r.W, maxweight=ja.knoblin_r.W_RANGE[1])
     plt.title("Right Knoblin Hinton diagram - Weights 8x8")
     plt.show()
     plt.savefig("./{}/{} GRAPH W, Right Knoblin Weights".format(folder, condition))
@@ -673,39 +673,39 @@ if condition == "joint":
 
     if audicon:
         # Audio Weights
-        hinton(ja.knoblin_L.WA.transpose(), maxweight=ja.knoblin_L.W_RANGE[1])
+        hinton(ja.knoblin_l.WA.transpose(), maxweight=ja.knoblin_l.W_RANGE[1])
         plt.title("Left Knoblin Hinton diagram - Audio Weights 4x1")
         plt.show()
         plt.savefig("./{}/{} GRAPH WA, Left Knoblin Audio Weights".format(folder, condition))
         plt.close()
 
-        hinton(ja.knoblin_R.WA.transpose(), maxweight=ja.knoblin_R.W_RANGE[1])
+        hinton(ja.knoblin_r.WA.transpose(), maxweight=ja.knoblin_r.W_RANGE[1])
         plt.title("Right Knoblin Hinton diagram - Audio Weights 4x1")
         plt.show()
         plt.savefig("./{}/{} GRAPH WA, Right Knoblin Audio Weights".format(folder, condition))
         plt.close()
 
     # Vision Weights
-    hinton(ja.knoblin_L.WV.transpose(), maxweight=ja.knoblin_L.W_RANGE[1])
+    hinton(ja.knoblin_l.WV.transpose(), maxweight=ja.knoblin_l.W_RANGE[1])
     plt.title("Left Knoblin Hinton diagram - Vision Weights 4x1")
     plt.show()
     plt.savefig("./{}/{} GRAPH WV, Left Knoblin Vision Weights".format(folder, condition))
     plt.close()
 
-    hinton(ja.knoblin_R.WV.transpose(), maxweight=ja.knoblin_R.W_RANGE[1])
+    hinton(ja.knoblin_r.WV.transpose(), maxweight=ja.knoblin_r.W_RANGE[1])
     plt.title("Right Knoblin Hinton diagram - Vision Weights 4x1")
     plt.show()
     plt.savefig("./{}/{} GRAPH WV, Right Knoblin Vision Weights".format(folder, condition))
     plt.close()
 
     # Motor Weights
-    hinton(ja.knoblin_L.WM.transpose(), maxweight=ja.knoblin_L.W_RANGE[1])
+    hinton(ja.knoblin_l.WM.transpose(), maxweight=ja.knoblin_l.W_RANGE[1])
     plt.title("Left Knoblin Hinton diagram - Motor Weights 4x1")
     plt.show()
     plt.savefig("./{}/{} GRAPH WM, Left Knoblin Motor Weights".format(folder, condition))
     plt.close()
 
-    hinton(ja.knoblin_R.WM.transpose(), maxweight=ja.knoblin_R.W_RANGE[1])
+    hinton(ja.knoblin_r.WM.transpose(), maxweight=ja.knoblin_r.W_RANGE[1])
     plt.title("Right Knoblin Hinton diagram - Motor Weights 4x1")
     plt.show()
     plt.savefig("./{}/{} GRAPH WM, Right Knoblin Motor Weights".format(folder, condition))
