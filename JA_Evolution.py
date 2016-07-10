@@ -584,7 +584,7 @@ class JA_Evolution(JA_Simulation):
 
         # Remove last Poplists out of /temp folder
         if splitter == n_cpu:
-            os.remove("./temp/Poplist_l_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu,
+            os.remove("./temp/Poplist_L_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu,
                                                                                     self.generation - 1,
                                                                                     self.condition))
             os.remove("./temp/Poplist_R_Splitter{}.Generation.{}.cond{}.npy".format(n_cpu,
