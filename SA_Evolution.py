@@ -302,8 +302,7 @@ class SA_Evolution(SA_Simulation):
             index += 2  # leaves the number and fitness of agent out (new_population[:,(0,1)])
 
             # crossover from second parent
-            new_population[2+n, (index - gens[choice]):index] = copy.copy(self.pop_list[1, (index -
-                                                                                            gens[choice]):index])
+            new_population[2+n, (index - gens[choice]):index] = copy.copy(self.pop_list[1, (index - gens[choice]):index])
 
         # 3) Fitness proportionate selection of 30% (+ 1/2 fill up)
 
