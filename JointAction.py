@@ -37,7 +37,7 @@ class Tracker:
 
     def accelerate(self, inputs):
         """
-        Accelerates the tacker to either the left or the right
+        Accelerates the tracker to either the left or the right
         Impact of keypress is either:
         - low velocity change 0.7° per second squared ["slow"]
         or
