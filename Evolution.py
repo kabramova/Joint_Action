@@ -40,7 +40,7 @@ class Evolution(Simulate):
 
         self.pop_list = self.__create_pop_list(pop_size)
 
-        self.Generation = 0
+        self.generation = 0
 
         self.filename = ""   # starts with "sim...."
 
@@ -362,11 +362,11 @@ class Evolution(Simulate):
 
             fitness_progress[i, 1:] = np.round(self.pick_best()[:, 1], 2)
 
-            self.Generation += 1
+            self.generation += 1
 
-            fitness_progress[i, 0] = self.Generation
+            fitness_progress[i, 0] = self.generation
 
-            print(fitness_progress[i, 1:], "Generation", self.Generation)
+            print(fitness_progress[i, 1:], "Generation", self.generation)
 
             # Estimate Duration of Evolution
             end_timer = datetime.datetime.now().replace(microsecond=0)
@@ -381,8 +381,8 @@ class Evolution(Simulate):
 
             self.filename = "sim{}.mut{}.Gen{}-{}(Fitness {})".format(self.simlength,
                                                                       mutation_var,
-                                                                      self.Generation - generations + 1,
-                                                                      self.Generation, np.round(self.pop_list[0, 1], 2))
+                                                                      self.generation - generations + 1,
+                                                                      self.generation, np.round(self.pop_list[0, 1], 2))
 
             pickle.dump(self.pop_list, open('./poplists/Poplist.{}'.format(self.filename), 'wb'))
             pickle.dump(np.round(fitness_progress, 2),
@@ -406,7 +406,7 @@ class Evolution(Simulate):
         self.simlength = int(filename[filename.find('m')+1: filename.find('.')])  # depends on filename
 
         fitness_progress = pickle.load(open('./poplists/Fitness_progress.{}'.format(filename), 'rb'))
-        self.Generation = int(fitness_progress[-1, 0])
+        self.generation = int(fitness_progress[-1, 0])
 
         self.filename = filename
 
