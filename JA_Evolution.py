@@ -597,7 +597,7 @@ class JA_Evolution(JA_Simulation):
         # Save in external file:
         if save and (splitter == n_cpu or not splitter):
             # Add Information, if weights were held symmetrical:
-            symmetry = ".sym_weights." if self.symmetrical_weights else ""
+            symmetry = ".sym_weights" if self.symmetrical_weights else ""
 
             self.filename = "Gen{}-{}.popsize{}.mut{}.sound_cond={}{}.JA.joint(Fitness{})".format(self.generation - generations + 1,
                                                                                                   self.generation,

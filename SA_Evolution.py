@@ -502,7 +502,7 @@ class SA_Evolution(SA_Simulation):
         # Save in external file:  # TODO if server problem save this for each generation and delete old ones.
         if save and (splitter == n_cpu or not splitter):
             # Add Information, if weights were held symmetrical:
-            symmetry = ".sym_weights." if self.symmetrical_weights else ""
+            symmetry = ".sym_weights" if self.symmetrical_weights else ""
 
             self.filename = "Gen{}-{}.popsize{}.mut{}.sound_cond={}{}.JA.single(Fitness{})".format(self.generation - generations + 1,
                                                                                                    self.generation,
