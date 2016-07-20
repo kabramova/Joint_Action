@@ -126,7 +126,7 @@ col = ["royalblue", "tomato", "palegreen", "fuchsia", "gold", "darkviolet", "dar
 
 # trial = trials[0]
 
-# TODO: Save neural states in csv (choose specific trial, or all):
+# Save neural states in csv (choose specific trial, or all):
 # if condition == "single":
 #   np.savetxt("{}/neural_state_fastleft.csv".format(folder), sa_performance[2][4], delimiter=";")
 

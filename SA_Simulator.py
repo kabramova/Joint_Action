@@ -18,8 +18,8 @@ __status__ = "Development"
 class SA_Simulation:
     """ Joint Action Simulation (Single Task): """
 
-    def __init__(self, auditory_condition, simlength=2789):
-        self.knoblin = Knoblin()
+    def __init__(self, auditory_condition, symmetrical_weights=False, simlength=2789):
+        self.knoblin = Knoblin(symmetrical_weights=symmetrical_weights)
         # With simlength=2789, Target turns 3times during each fast trial (with regard to Knoblich & Jordan, 2003)
         # With simlength=3635, Target turns 3times during each slow trial, will be changed in setup
         self.simlength = simlength

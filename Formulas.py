@@ -228,6 +228,24 @@ def audio_condition_request():
     return condition
 
 
+def symmetrical_weights_request():
+
+    symmetrical_weights = input("Shall the sensory and auditory weights be symmetrical '(T)rue' / '(F)alse':")
+
+    if symmetrical_weights == 1 or symmetrical_weights.lower() == "t" or symmetrical_weights.lower() == "true":
+        symmetry = True
+        print("Sensory and auditory weights will be symmetrical")
+
+    elif symmetrical_weights == 0 or symmetrical_weights.lower() == "f" or symmetrical_weights.lower() == "false":
+        symmetry = False
+        print("Sensory and auditory weights won't be held symmetrical")
+
+    else:
+        raise ValueError("Input must be True or False")
+
+    return symmetry
+
+
 def generation_request():
 
     number_of_generations = input("How many Generations to run (int):")

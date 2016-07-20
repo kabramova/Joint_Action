@@ -17,9 +17,9 @@ __status__ = "Development"
 class JA_Simulation:
     """ Joint Action Simulation (Joint Task): """
 
-    def __init__(self, auditory_condition, simlength=2789):
-        self.knoblin_l = Knoblin()
-        self.knoblin_r = Knoblin()
+    def __init__(self, auditory_condition, symmetrical_weights=False, simlength=2789):
+        self.knoblin_l = Knoblin(symmetrical_weights=symmetrical_weights)
+        self.knoblin_r = Knoblin(symmetrical_weights=symmetrical_weights)
         # With simlength=2789, Target turns 3times during each fast trial (with regard to Knoblich & Jordan, 2003)
         # With simlength=3635, Target turns 3times during each slow trial, will be changed in setup
         self.simlength = simlength
@@ -149,7 +149,7 @@ class JA_Simulation:
 
             # 3) Agents see:
             # if not lesion or lesion and i < self.simlength/2:  # (Lesion cuts input in second half of simulation)
-            if not lesion:  # TODO: cut all input
+            if not lesion:  # cut all input
                 self.knoblin_l.visual_input(position_tracker=self.tracker.position, position_target=self.target.position)
                 self.knoblin_r.visual_input(position_tracker=self.tracker.position, position_target=self.target.position)
             else:  # No input anymore
@@ -161,7 +161,7 @@ class JA_Simulation:
             # 4) Agents hear:
             if self.condition:  # condition will be globally announced by class Jordan (self.environment)
                 # if not lesion or lesion and i < self.simlength / 2:  # (Lesion cuts input in second half of simulation)
-                if not lesion:  # TODO: cut all input
+                if not lesion:  # cut all input
                     self.knoblin_l.auditory_input(sound_input=sound_output)
                     self.knoblin_r.auditory_input(sound_input=sound_output)
                 else:  # No input anymore

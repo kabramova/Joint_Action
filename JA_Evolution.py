@@ -14,10 +14,12 @@ __status__ = "Development"
 
 class JA_Evolution(JA_Simulation):
 
-    def __init__(self, auditory_condition, pop_size=55, simlength_scalar=1):
+    def __init__(self, auditory_condition, pop_size=55, simlength_scalar=1, symmetrical_weights=False):
+
+        self.symmetrical_weights = symmetrical_weights
 
         # self.knoblin, self.simlength, self.condition
-        super(self.__class__, self).__init__(auditory_condition, simlength=2789)
+        super(self.__class__, self).__init__(auditory_condition, symmetrical_weights=self.symmetrical_weights, simlength=2789)
 
         self.simlength_scalar = simlength_scalar
 
@@ -47,10 +49,10 @@ class JA_Evolution(JA_Simulation):
             # the current genome will be stored
             poplist[i, 2:] = self.genome_l.transpose() if side == "left" else self.genome_r.transpose()
             if side == "left":
-                self.knoblin_l = Knoblin()                                  # Create new agent
+                self.knoblin_l = Knoblin(symmetrical_weights=self.symmetrical_weights)  # Create new agent
                 self.genome_l = self.create_genome(knoblin=self.knoblin_l)  # ... and its genome
             else:  # its a bit redundant, but for the readability and comprehensibility
-                self.knoblin_r = Knoblin()
+                self.knoblin_r = Knoblin(symmetrical_weights=self.symmetrical_weights)
                 self.genome_r = self.create_genome(knoblin=self.knoblin_r)
 
         return poplist
@@ -69,17 +71,18 @@ class JA_Evolution(JA_Simulation):
 
     def implement_genome(self, genome_string, side):
 
-        assert genome_string.size == self.genome_l.size and genome_string.size == self.genome_r.size, \
-            "Genome has not the right size"
+        assert genome_string.size == self.genome_l.size and genome_string.size == self.genome_r.size, "Genome has not the right size"
 
         knoblin = self.knoblin_l if side == "left" else self.knoblin_r
 
-        a = knoblin.W.size
-        g = knoblin.WM.size
-        t = knoblin.WV.size
-        x = knoblin.WA.size
-        c = knoblin.Theta.size
-        u = knoblin.Tau.size
+        gens = self.gen_code()
+
+        a = gens["A"]  # knoblin.W.size
+        g = gens["G"]  # knoblin.WM.size
+        t = gens["T"]  # knoblin.WV.size
+        x = gens["X"]  # knoblin.WA.size
+        c = gens["C"]  # knoblin.Theta.size
+        u = gens["U"]  # knoblin.Tau.size
 
         w = genome_string[:a]
         wm = genome_string[a:a + g]
@@ -139,8 +142,8 @@ class JA_Evolution(JA_Simulation):
                 if string_l[1] == 0.0 or string_r[1] == 0.0:  # run only if fitness is no evaluated yet
                     genome_l = string_l[2:]
                     genome_r = string_r[2:]
-                    self.knoblin_l = Knoblin()
-                    self.knoblin_r = Knoblin()
+                    self.knoblin_l = Knoblin(symmetrical_weights=self.symmetrical_weights)
+                    self.knoblin_r = Knoblin(symmetrical_weights=self.symmetrical_weights)
                     self.implement_genome(genome_string=genome_l, side="left")
                     self.implement_genome(genome_string=genome_r, side="right")
 
@@ -190,8 +193,8 @@ class JA_Evolution(JA_Simulation):
                 if string_l[1] == 0.0 or string_r[1] == 0.0:  # run only if fitness is no evaluated yet
                     genome_l = string_l[2:]
                     genome_r = string_r[2:]
-                    self.knoblin_l = Knoblin()
-                    self.knoblin_r = Knoblin()
+                    self.knoblin_l = Knoblin(symmetrical_weights=self.symmetrical_weights)
+                    self.knoblin_r = Knoblin(symmetrical_weights=self.symmetrical_weights)
                     self.implement_genome(genome_string=genome_l, side="left")
                     self.implement_genome(genome_string=genome_r, side="right")
 
@@ -384,8 +387,7 @@ class JA_Evolution(JA_Simulation):
         # Algorithm for fitness proportionate selection:
         # (Source: http://stackoverflow.com/questions/298301/roulette-wheel-selection-algorithm/320788#320788)
 
-        assert np.all(np.array(self.pop_list_l[:, 1]) == np.array(self.pop_list_r[:, 1])), \
-            "Fitness of each partner must be the same"
+        assert np.all(np.array(self.pop_list_l[:, 1]) == np.array(self.pop_list_r[:, 1])), "Fitness of each partner must be the same"
         fitness = copy.copy(self.pop_list_l[:, 1])  # is self.pop_list_r[:, 1]
         fitness = 1 - normalize(fitness)  # sign is correct, apparently
 
@@ -406,9 +408,9 @@ class JA_Evolution(JA_Simulation):
         # 4) Fill with randomly created agents, 20% (+ 1/2 fill up)
         n_fitfamily = n_family + n_fps
         for n in range(n_fitfamily, n_fitfamily+n_random):
-            self.knoblin_l = Knoblin()                                    # Create random new agents
-            self.knoblin_r = Knoblin()
-            self.genome_l = self.create_genome(knoblin=self.knoblin_l)    # ... and their genomes
+            self.knoblin_l = Knoblin(symmetrical_weights=self.symmetrical_weights)  # Create random new agents
+            self.knoblin_r = Knoblin(symmetrical_weights=self.symmetrical_weights)
+            self.genome_l = self.create_genome(knoblin=self.knoblin_l)              # ... and their genomes
             self.genome_r = self.create_genome(knoblin=self.knoblin_r)
             new_population_l[n, 2:] = self.genome_l.transpose()
             new_population_r[n, 2:] = self.genome_r.transpose()
@@ -437,9 +439,39 @@ class JA_Evolution(JA_Simulation):
             agtxc_mutated_r[agtxc_mutated_r > self.knoblin_r.W_RANGE[1]] = self.knoblin_r.W_RANGE[1]
             agtxc_mutated_r[agtxc_mutated_r < self.knoblin_r.W_RANGE[0]] = self.knoblin_r.W_RANGE[0]
 
+            # For symmetrical weights the individual mutations have to be adjusted:
+            if self.symmetrical_weights:
+                # Motor weights:
+                motor = gens["A"]  # index for motor weights
+                agtxc_mutated_l[motor + 1] = agtxc_mutated_l[motor + 0]       # Outputs from Neuron 4 to Right == 6 to Left
+                agtxc_mutated_l[motor + 2] = agtxc_mutated_l[motor + 0] * -1  # Outputs from Neuron 4 to Left
+                agtxc_mutated_l[motor + 3] = agtxc_mutated_l[motor + 0] * -1  # Outputs from Neuron 6 to Right
+
+                agtxc_mutated_r[motor + 1] = agtxc_mutated_l[motor + 0]
+                agtxc_mutated_r[motor + 2] = agtxc_mutated_r[motor + 0] * -1
+                agtxc_mutated_r[motor + 3] = agtxc_mutated_r[motor + 0] * -1
+
+                # Visual weights
+                visual = gens["A"] + gens["G"]  # index for visual weights
+                agtxc_mutated_l[visual + 3] = agtxc_mutated_l[visual + 2]       # Inputs to Neuron 2,8
+                agtxc_mutated_l[visual + 1] = agtxc_mutated_l[visual + 0] * -1  # Inputs to Neuron 1
+
+                agtxc_mutated_r[visual + 3] = agtxc_mutated_r[visual + 2]
+                agtxc_mutated_r[visual + 1] = agtxc_mutated_r[visual + 0] * -1
+
+                # Auditory weights
+                auditory = gens["A"] + gens["G"] + gens["T"]  # index for auditory weights
+                agtxc_mutated_l[auditory + 2] = agtxc_mutated_l[auditory + 0]       # Inputs to Neuron 3,7
+                agtxc_mutated_l[auditory + 3] = agtxc_mutated_l[auditory + 1] * -1  # Inputs to Neuron 5
+
+                agtxc_mutated_r[auditory + 2] = agtxc_mutated_r[auditory + 0]
+                agtxc_mutated_r[auditory + 3] = agtxc_mutated_r[auditory + 1] * -1
+
+            # Inject mutation in new population:
             new_population_l[i, 2: agtxc+2] = agtxc_mutated_l
             new_population_r[i, 2: agtxc+2] = agtxc_mutated_r
 
+            # Tau mutation:
             u_mutated_l = new_population_l[i, (agtxc + 2):] + mutation_u_l
             u_mutated_r = new_population_r[i, (agtxc + 2):] + mutation_u_r
 
@@ -449,6 +481,7 @@ class JA_Evolution(JA_Simulation):
             u_mutated_r[u_mutated_r > self.knoblin_r.TAU_RANGE[1]] = self.knoblin_r.TAU_RANGE[1]
             u_mutated_r[u_mutated_r < self.knoblin_r.TAU_RANGE[0]] = self.knoblin_r.TAU_RANGE[0]
 
+            # Inject Tau-mutation in new population:
             new_population_l[i, (agtxc + 2):] = u_mutated_l
             new_population_r[i, (agtxc + 2):] = u_mutated_r
 
@@ -563,12 +596,16 @@ class JA_Evolution(JA_Simulation):
 
         # Save in external file:
         if save and (splitter == n_cpu or not splitter):
-            self.filename = "Gen{}-{}.popsize{}.mut{}.sound_cond={}.JA.joint(Fitness{})".format(self.generation - generations + 1,
-                                                                                                self.generation,
-                                                                                                self.pop_size,
-                                                                                                mutation_var,
-                                                                                                self.condition,  # is pop_list_l[0,1]
-                                                                                                np.round(self.pop_list_l[0, 1], 2))
+            # Add Information, if weights were held symmetrical:
+            symmetry = ".sym_weights." if self.symmetrical_weights else ""
+
+            self.filename = "Gen{}-{}.popsize{}.mut{}.sound_cond={}{}.JA.joint(Fitness{})".format(self.generation - generations + 1,
+                                                                                                  self.generation,
+                                                                                                  self.pop_size,
+                                                                                                  mutation_var,
+                                                                                                  self.condition,  # is pop_list_l[0,1]
+                                                                                                  symmetry,
+                                                                                                  np.round(self.pop_list_l[0, 1], 2))
 
             pickle.dump(self.pop_list_l, open('./poplists/joint/Poplist_L.{}'.format(self.filename), 'wb'))
             pickle.dump(self.pop_list_r, open('./poplists/joint/Poplist_R.{}'.format(self.filename), 'wb'))

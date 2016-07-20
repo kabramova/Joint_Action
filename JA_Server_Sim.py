@@ -30,17 +30,21 @@ if not split:  # is False
     # If e.g. scalar = 0.336 => Target just makes one turn
     scalar = simlength_scalar_request()
 
+    # Whether sensory and motor weights suppose to be symmetrical:
+    symmetry = symmetrical_weights_request()
+
 
 else:  # if splitter is used, these values must be pre-given, here in python file
     # Manually adjust the following parameters:
-    audicon = True
-    number_of_generations = 5000
-    scalar = 1  # 1 == no scaling [Default], 1/3 == first turn
-    filename = "Gen10001-15000.popsize55.mut0.1.sound_cond=True.JA.joint(Fitness6.16)"  # or None
+    audicon = True      # True or False
+    number_of_generations = 1000
+    scalar = 1          # 1 == no scaling [Default], 1/3 == first turn
+    symmetry = True     # True or False
+    filename = None
     print("Splitter {} started!".format(split))
 
 
-ja = JA_Evolution(auditory_condition=audicon, pop_size=55, simlength_scalar=scalar)
+ja = JA_Evolution(auditory_condition=audicon, pop_size=55, simlength_scalar=scalar, symmetrical_weights=symmetry)
 
 
 if isinstance(filename, str):

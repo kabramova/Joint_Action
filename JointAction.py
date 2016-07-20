@@ -137,14 +137,17 @@ class Knoblin(CTRNN):
     2 different tones for the keys (left, right), duration = 100ms
     """
 
-    def __init__(self):
+    def __init__(self, symmetrical_weights=False):
+        """
+        :param symmetrical_weights: If true: outer-weights are same, inner-weights magnitude the same but different sign
+        """
         self.N_visual_sensor = 2
         self.N_auditory_sensor = 2
         self.N_motor = 2
 
         super(self.__class__, self).__init__(number_of_neurons=8, timestep=0.01)
 
-        # TODO: We could also apply symmetrical weights
+        # We could apply random or symmetrical weights or
         # Weights to Keypress (left,right):
         self.WM = randrange(self.W_RANGE, self.N_motor * 2, 1)
         # Weights of visual input:
@@ -152,16 +155,31 @@ class Knoblin(CTRNN):
         # Weights of auditory input, Keypress (left,right):
         self.WA = randrange(self.W_RANGE, self.N_auditory_sensor * 2, 1)
 
+        assert isinstance(symmetrical_weights,bool), "'symmetrical_weights' must be either False or True"
+        if symmetrical_weights:
+            # Motor weights
+            self.WM[1] = self.WM[0]         # Outputs from Neuron 4 to Right == 6 to Left
+            self.WM[2] = self.WM[0] * -1    # Outputs from Neuron 4 to Left
+            self.WM[3] = self.WM[0] * -1    # Outputs from Neuron 6 to Right
+            # Visual weights
+            self.WV[3] = self.WV[2]         # Inputs to Neuron 2,8
+            self.WV[1] = self.WV[0] * -1    # Inputs to Neuron 1
+            # Auditory weights
+            self.WA[2] = self.WA[0]         # Inputs to Neuron 3,7
+            self.WA[3] = self.WA[1] * -1    # Inputs to Neuron 5
+
         global h
         h = self.h
 
         self.timer_motor_l = 0
         self.timer_motor_r = 0
 
-    def press_left(self):
+    @staticmethod
+    def press_left():
             return -1
 
-    def press_right(self):
+    @staticmethod
+    def press_right():
             return 1
 
     def visual_input(self, position_tracker, position_target):  # optional: distance_to_border

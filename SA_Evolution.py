@@ -14,10 +14,12 @@ __status__ = "Development"
 
 class SA_Evolution(SA_Simulation):
 
-    def __init__(self, auditory_condition, pop_size=110, simlength_scalar=1):
+    def __init__(self, auditory_condition, pop_size=110, symmetrical_weights=False, simlength_scalar=1):
+
+        self.symmetrical_weights = symmetrical_weights
 
         # self.knoblin, self.simlength, self.condition
-        super(self.__class__, self).__init__(auditory_condition, simlength=2789)
+        super(self.__class__, self).__init__(auditory_condition, symmetrical_weights=self.symmetrical_weights, simlength=2789)
 
         self.simlength_scalar = simlength_scalar
 
@@ -43,7 +45,7 @@ class SA_Evolution(SA_Simulation):
             poplist[i, 0] = i + 1                                   # enumerate the list
             # poplist[i, 1]                                         = fitness, is initially zero
             poplist[i, 2:] = self.genome.transpose()                # the current genome will be stored
-            self.knoblin = Knoblin()                                # Create new agent
+            self.knoblin = Knoblin(symmetrical_weights=self.symmetrical_weights)  # Create new agent
             self.genome = self.create_genome(knoblin=self.knoblin)  # ... and its genome
 
         return poplist
@@ -64,12 +66,14 @@ class SA_Evolution(SA_Simulation):
 
         assert genome_string.size == self.genome.size, "Genome has not the right size"
 
-        a = self.knoblin.W.size
-        g = self.knoblin.WM.size
-        t = self.knoblin.WV.size
-        x = self.knoblin.WA.size
-        c = self.knoblin.Theta.size
-        u = self.knoblin.Tau.size
+        gens = self.gen_code()
+
+        a = gens["A"]  # self.knoblin.W.size
+        g = gens["G"]  # self.knoblin.WM.size
+        t = gens["T"]  # self.knoblin.WV.size
+        x = gens["X"]  # self.knoblin.WA.size
+        c = gens["C"]  # self.knoblin.Theta.size
+        u = gens["U"]  # elf.knoblin.Tau.size
 
         w = genome_string[:a]
         wm = genome_string[a:a + g]
@@ -120,7 +124,7 @@ class SA_Evolution(SA_Simulation):
             for i, string in enumerate(self.pop_list):
                 if string[1] == 0:  # run only if fitness is no evaluated yet
                     genome = string[2:]
-                    self.knoblin = Knoblin()
+                    self.knoblin = Knoblin(symmetrical_weights=self.symmetrical_weights)
                     self.implement_genome(genome_string=genome)
 
                     # Run all trials an save fitness in pop_list:
@@ -164,7 +168,7 @@ class SA_Evolution(SA_Simulation):
 
                 if string[1] == 0.0:          # run only if fitness is no evaluated yet
                     genome = string[2:]
-                    self.knoblin = Knoblin()
+                    self.knoblin = Knoblin(symmetrical_weights=self.symmetrical_weights)
                     self.implement_genome(genome_string=genome)
 
                     # Run all trials an save fitness in pop_list:
@@ -340,8 +344,8 @@ class SA_Evolution(SA_Simulation):
         # 4) Fill with randomly created agents, 20% (+ 1/2 fill up)
         n_fitfamily = n_family + n_fps
         for n in range(n_fitfamily, n_fitfamily+n_random):
-            self.knoblin = Knoblin()                                    # Create random new agent
-            self.genome = self.create_genome(knoblin=self.knoblin)      # ... and its genome
+            self.knoblin = Knoblin(symmetrical_weights=self.symmetrical_weights)    # Create random new agent
+            self.genome = self.create_genome(knoblin=self.knoblin)                  # ... and its genome
             new_population[n, 2:] = self.genome.transpose()
 
         # 5) All but the first two best agents will fall under a mutation with a variance of .02 (default)
@@ -364,8 +368,28 @@ class SA_Evolution(SA_Simulation):
             # ... or min.range (T_RANGE = W.RANGE =[-13, 13])
             agtxc_mutated[agtxc_mutated < self.knoblin.W_RANGE[0]] = self.knoblin.W_RANGE[0]
 
+            # For symmetrical weights the individual mutations have to be adjusted:
+            if self.symmetrical_weights:  # Same method as in JointAction.py => Knoblin()
+                # Motor weights:
+                motor = gens["A"]  # index for motor weights
+                agtxc_mutated[motor + 1] = agtxc_mutated[motor + 0]       # Outputs from Neuron 4 to Right == 6 to Left
+                agtxc_mutated[motor + 2] = agtxc_mutated[motor + 0] * -1  # Outputs from Neuron 4 to Left
+                agtxc_mutated[motor + 3] = agtxc_mutated[motor + 0] * -1  # Outputs from Neuron 6 to Right
+
+                # Visual weights
+                visual = gens["A"] + gens["G"]  # index for visual weights
+                agtxc_mutated[visual + 3] = agtxc_mutated[visual + 2]       # Inputs to Neuron 2,8
+                agtxc_mutated[visual + 1] = agtxc_mutated[visual + 0] * -1  # Inputs to Neuron 1
+
+                # Auditory weights
+                auditory = gens["A"] + gens["G"] + gens["T"]  # index for auditory weights
+                agtxc_mutated[auditory + 2] = agtxc_mutated[auditory + 0]       # Inputs to Neuron 3,7
+                agtxc_mutated[auditory + 3] = agtxc_mutated[auditory + 1] * -1  # Inputs to Neuron 5
+
+            # Inject mutation in new population:
             new_population[i, 2: agtxc+2] = agtxc_mutated
 
+            # Tau mutation:
             u_mutated = new_population[i, (agtxc + 2):] + mutation_u
 
             # Replace values beyond the range with max.range
@@ -373,6 +397,7 @@ class SA_Evolution(SA_Simulation):
             # ... or min.range (TAU_RANGE = [1, 10])
             u_mutated[u_mutated < self.knoblin.TAU_RANGE[0]] = self.knoblin.TAU_RANGE[0]
 
+            # Inject Tau-mutation in new population:
             new_population[i, (agtxc + 2):] = u_mutated
 
         # Reset enumeration and fitness (except first two agents)
@@ -476,10 +501,15 @@ class SA_Evolution(SA_Simulation):
 
         # Save in external file:  # TODO if server problem save this for each generation and delete old ones.
         if save and (splitter == n_cpu or not splitter):
-            self.filename = "Gen{}-{}.popsize{}.mut{}.sound_cond={}.JA." \
-                            "single(Fitness{})".format(self.generation - generations + 1, self.generation,
-                                                       self.pop_size, mutation_var, self.condition,
-                                                       np.round(self.pop_list[0, 1], 2))
+            # Add Information, if weights were held symmetrical:
+            symmetry = ".sym_weights." if self.symmetrical_weights else ""
+
+            self.filename = "Gen{}-{}.popsize{}.mut{}.sound_cond={}{}.JA.single(Fitness{})".format(self.generation - generations + 1,
+                                                                                                   self.generation,
+                                                                                                   self.pop_size, mutation_var,
+                                                                                                   self.condition,
+                                                                                                   symmetry,
+                                                                                                   np.round(self.pop_list[0, 1], 2))
 
             pickle.dump(self.pop_list, open('./poplists/single/Poplist.{}'.format(self.filename), 'wb'))
             pickle.dump(np.round(fitness_progress, 2), open('./poplists/single/Fitness_progress.{}'.format(
