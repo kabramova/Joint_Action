@@ -33,6 +33,8 @@ class JA_Evolution(JA_Simulation):
         self.pop_list_l = self.__create_pop_list(pop_size, "left")
         self.pop_list_r = self.__create_pop_list(pop_size, "right")
 
+        self.fitness_progress = []
+
         self.filename = ""
 
     def __create_pop_list(self, pop_size, side):
@@ -525,7 +527,10 @@ class JA_Evolution(JA_Simulation):
 
         # Run evolution:
         if splitter == n_cpu or not splitter:
-            fitness_progress = np.zeros((generations, 6))
+            if self.generation == 0:
+                self.fitness_progress = np.zeros((generations, 6))
+            else:
+                self.fitness_progress = np.append(self.fitness_progress, np.zeros((generations, 6)), axis=0)
 
         for i in range(generations):
 
@@ -564,9 +569,9 @@ class JA_Evolution(JA_Simulation):
 
             # Saves fitness progress for the five best agents:
             if splitter == n_cpu or not splitter:
-                fitness_progress[i, 1:] = np.round(self.pop_list_l[0:5, 1], 2)  # is self.pop_list_r
-                fitness_progress[i, 0] = self.generation
-                print("Generation {}: Fitness (5 best Agents): {}".format(self.generation-1, fitness_progress[i, 1:]))
+                self.fitness_progress[self.generation-1, 1:] = np.round(self.pop_list_l[0:5, 1], 2)  # is self.pop_list_r
+                self.fitness_progress[self.generation-1, 0] = self.generation
+                print("Generation {}: Fitness (5 best Agents): {}".format(self.generation-1, self.fitness_progress[i, 1:]))
 
                 # Estimate Duration of Evolution
                 end_timer = datetime.datetime.now().replace(microsecond=0)
@@ -609,7 +614,7 @@ class JA_Evolution(JA_Simulation):
 
             pickle.dump(self.pop_list_l, open('./poplists/joint/Poplist_L.{}'.format(self.filename), 'wb'))
             pickle.dump(self.pop_list_r, open('./poplists/joint/Poplist_R.{}'.format(self.filename), 'wb'))
-            pickle.dump(np.round(fitness_progress, 2), open('./poplists/joint/Fitness_progress.{}'.format(self.filename), 'wb'))
+            pickle.dump(np.round(self.fitness_progress, 2), open('./poplists/joint/Fitness_progress.{}'.format(self.filename), 'wb'))
 
             print('Evolution terminated. pop_lists saved \n'
                   '(Filename: "Poplist_...{}")'.format(self.filename))
@@ -652,8 +657,8 @@ class JA_Evolution(JA_Simulation):
 
         self.condition = False if self.filename.find("False") != -1 and self.filename.find("True") == -1 else True
 
-        fitness_progress = pickle.load(open('./poplists/joint/Fitness_progress.{}'.format(self.filename), 'rb'))
-        self.generation = int(fitness_progress[-1, 0])
+        self.fitness_progress = pickle.load(open('./poplists/joint/Fitness_progress.{}'.format(self.filename), 'rb'))
+        self.generation = int(self.fitness_progress[-1, 0])
 
         print(">> ...")
         print(">> File is successfully implemented")
@@ -662,8 +667,8 @@ class JA_Evolution(JA_Simulation):
 
             # here we plot the fitness progress of all generation
             plt.figure()
-            for i in range(1, fitness_progress.shape[1]):
-                plt.plot(fitness_progress[:, i])
+            for i in range(1, self.fitness_progress.shape[1]):
+                plt.plot(self.fitness_progress[:, i])
                 plt.ylim(0, 12)
 
             plt.savefig('./Fitness/Fitness_Progress_{}.png'.format(self.filename))
