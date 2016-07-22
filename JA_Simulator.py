@@ -26,6 +26,11 @@ class JA_Simulation:
         self.condition = auditory_condition
         self.runs = 0               # to count how many runs the agent made
 
+        # Will be initialized within setup()
+        self.environment = []
+        self.tracker = []
+        self.target = []
+
     def setup(self, trial_speed, simlength_scalar=1):
         """
         Setup the experiment: Tracker, target, environment.
@@ -259,20 +264,27 @@ class JA_Simulation:
             plt.yticks([])
 
             # Print Fitnesss, time and conditions in Plot
-            plt.annotate(xy=[0, 4], xytext=[0, 4], s="fitness = {}".format(output[0]))  # Fitness
+            plt.annotate(xy=[0, 4], xytext=[0, 4], s="fitness: {}".format(output[0]))  # Fitness
 
             # Updated time-counter:
             if counter_img == 25:
                 counter_sec += 1
-                print("Time: {} sec".format(str(counter_sec).zfill(2)))  # Time
+                print("{}% ready".format(np.round((i / self.simlength) * 100, 2)))  # gives feedback how much is plotted already.
 
             counter_img = counter_img + 1 if counter_img < 25 else 1
 
-            plt.annotate(xy=[-15, 4], xytext=[-15, 4], s="Time = {}:{}sec".format(str(counter_sec).zfill(2),
-                                                                                  str(counter_img).zfill(2)))  # Time
+            # Update simulation time:
+            sim_msec = i if i < 100 else i % 100
+            sim_sec = int(i*h)  # or int(i/100)
 
-            plt.annotate(xy=[-15, 3.5], xytext=[-15, 3.5], s="{} Trial".format(trial))                      # trial
-            plt.annotate(xy=[-15, 3.0], xytext=[-15, 3.0], s="Sound Condition: {}".format(self.condition))  # condition
+            plt.annotate(xy=[-15, 4], xytext=[-15, 4], s="{}:{}sec (Real Time)".format(str(counter_sec).zfill(2),
+                                                                                       str(counter_img).zfill(2)))         # Real Time
+
+            plt.annotate(xy=[-15, 3.5], xytext=[-15, 3.5], s="{}:{}sec (Simulation Time)".format(str(sim_sec).zfill(2),
+                                                                                                 str(sim_msec).zfill(2)))  # Simulation Time
+
+            plt.annotate(xy=[0, 3.0], xytext=[0, 3.0], s="{} Trial".format(trial))                                         # trial
+            plt.annotate(xy=[-15, 3.0], xytext=[-15, 3.0], s="Sound Condition: {}".format(self.condition))                 # condition
 
             plt.savefig('./Animation/{}.Animation.Sound_{}.{}_trial/'
                         'animation{}.png'.format(times,
@@ -285,4 +297,5 @@ class JA_Simulation:
         return output
 
     def fitness(self):
+        assert self.target and self.target, "Envorinoment must be setup() and run() first."
         return np.abs(self.target.position - self.tracker.position)
