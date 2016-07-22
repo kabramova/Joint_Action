@@ -219,10 +219,11 @@ class Knoblin(CTRNN):
 
     def motor_output(self):
         """
-        "Optimal performance was computed under the assumption of a maximal keypress rate of 5 keypresses per second" (Knoblich & Jordan, 2002))
+        "Optimal performance was computed under the assumption of a maximal keypress rate of 5 keypresses per second" (Knoblich & Jordan, 2003))
         The assumption by Knoblich & Jordan does not necessarily cover with real performance of participants. More than 2-3 clicks per second are
         highly unlikely for controlled acceleration.
-        We set timer to 0.5. That means we have max. 2 clicks per time-unit, but simultaneously clicking with other hand is possible.
+        In our case, the timer was set to 0.5.
+        That means we have max. 2 clicks per time-unit, but simultaneously clicking with other hand is possible.
 
         self.WM[0] : outer_weights_ML, N5_ML = [0]
         self.WM[1] : outer_weights_MR, N3_MR = [1]
