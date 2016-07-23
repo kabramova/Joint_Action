@@ -267,7 +267,7 @@ class JA_Simulation:
             plt.yticks([])
 
             # Print Fitnesss, time and conditions in Plot
-            plt.annotate(xy=[0, 4], xytext=[0, 4], s="fitness: {}".format(output[0]))  # Fitness
+            plt.annotate(xy=[0, 4], xytext=[0, 4], s="Trial Fitness: {}".format(output[0]))  # Fitness
 
             # Updated time-counter:
             if counter_img == 25:
