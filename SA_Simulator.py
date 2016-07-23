@@ -206,6 +206,9 @@ class SA_Simulation:
         right_border = 0 + region_width / 2
         left_border = 0 - region_width / 2
 
+        # Set initial Target Direction:
+        direction = "left" if positions[1, 1] < 0 else "right"  # Test Target Position after first update
+
         for i in np.arange(0, self.simlength, ticker):
 
             # For Fast Trials: with a simlength of 2789 the resulting gif-animation is approx. 11sec long (25frames/sec)
@@ -258,6 +261,7 @@ class SA_Simulation:
             plt.annotate(xy=[-15, 3.5], xytext=[-15, 3.5], s="{}:{}sec (Simulation Time)".format(str(sim_sec).zfill(2),
                                                                                                  str(sim_msec).zfill(2)))  # Simulation Time
 
+            plt.annotate(xy=[0, 3.5], xytext=[0, 3.5], s="Initial Target Direction: {}".format(direction))                 # Target Direction
             plt.annotate(xy=[0, 3.0], xytext=[0, 3.0], s="{} Trial".format(trial))                                         # trial
             plt.annotate(xy=[-15, 3.0], xytext=[-15, 3.0], s="Sound Condition: {}".format(self.condition))                 # condition
 
