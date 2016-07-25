@@ -261,6 +261,8 @@ for trial in trials:
     plt.savefig("./{}/{} GRAPH B_a (Neural Activity) without Input Neurons Trial {}".format(current_folder, condition, trial_name))
     plt.close(fig_b_a)
 
+    # TODO: Neural States (2D), each neuron 1 graph:
+
     # Input
     fig_b_b = plt.figure("GRAPH B_b, Trial {}".format(trial_name))
     ax = fig_b_b.add_subplot(111, projection='3d')
