@@ -37,11 +37,11 @@ if not split:  # is False
 
 else:  # if splitter is used, these values must be pre-given, here in python file
     # Manually adjust the following parameters:
-    audicon = False     # True or False
+    audicon = True     # True or False
     number_of_generations = 10000
     scalar = 1          # 1 == no scaling [Default], 1/3 == first turn
     symmetry = True     # True or False
-    filename = "Gen1001-10000.popsize110.mut0.02.sound_cond=False.sym_weights.JA.single(Fitness9.94)"  # or None
+    filename = "Gen1001-10000.popsize110.mut0.02.sound_cond=True.sym_weights.JA.single(Fitness9.94)"  # or None
     print("Splitter {} started!".format(split))
 
 
