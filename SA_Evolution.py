@@ -272,7 +272,7 @@ class SA_Evolution(SA_Simulation):
                 - Since step 1) we have a chance of genetic crossover of 100%.
                 - we use whole sections of the genome for the crossover (e.g. all W, or all Thetas)
                 - 20% of population size and max. 10
-            3) Fitness proportionate selection of 60% (+ 1/2 fill up)
+            3) Fitness proportionate selection of 40% (+ 1/2 fill up)
             4) Fill with randomly created agents, 20% (+ 1/2 fill up)
             5) All but the first two best agents will fall under a mutation with a variance of .02 (default)
                 - time constant: τ (tau) in range [1, 10]
@@ -310,11 +310,11 @@ class SA_Evolution(SA_Simulation):
             # crossover from second parent
             new_population[2+n, (index - gens[choice]):index] = copy.copy(self.pop_list[1, (index - gens[choice]):index])
 
-        # 3) Fitness proportionate selection of 60% (+ 1/2 fill up)
+        # 3) Fitness proportionate selection of 40% (+ 1/2 fill up)
 
         # Define the number of agents via fps & via random instantiation
         n_family = n_parents + n_children
-        n_fps = int(np.round(self.pop_size*0.6))
+        n_fps = int(np.round(self.pop_size*0.4))
         n_random = int(np.round(self.pop_size*0.2))
 
         if (self.pop_size - (n_family + n_fps + n_random)) != 0:
