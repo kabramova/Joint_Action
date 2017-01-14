@@ -14,7 +14,7 @@ __status__ = "Development"
 
 class JA_Evolution(JA_Simulation):
 
-    def __init__(self, auditory_condition, pop_size=55, simlength_scalar=1, symmetrical_weights=False):
+    def __init__(self, auditory_condition, pop_size=55, simlength_scalar=1, scalar_mode=1, symmetrical_weights=False):
 
         self.symmetrical_weights = symmetrical_weights
 
@@ -22,11 +22,13 @@ class JA_Evolution(JA_Simulation):
         super(self.__class__, self).__init__(auditory_condition, symmetrical_weights=self.symmetrical_weights, simlength=2789)
 
         self.simlength_scalar = simlength_scalar
+        self.simlength_scalar_mode = scalar_mode  # 1, 2 or 3 (see description in JA_Server_Sim.py)
 
         self.genome_l = self.create_genome(knoblin=self.knoblin_l)
         self.genome_r = self.create_genome(knoblin=self.knoblin_r)
 
         self.generation = 0
+        self.number_generations = []
 
         self.pop_size = pop_size
 
@@ -119,7 +121,13 @@ class JA_Evolution(JA_Simulation):
 
                 self.reset_neural_system()
 
-                self.setup(trial_speed=trial_speed, simlength_scalar=self.simlength_scalar)
+                # Return correct scalar depening on scalar_mode
+                scalar = return_scalar(scalar_mode=self.simlength_scalar_mode,
+                                       current_generation=self.generation,
+                                       max_generation=self.number_generations,
+                                       given_scalar=self.simlength_scalar)
+
+                self.setup(trial_speed=trial_speed, simlength_scalar=scalar)
                 self.target.velocity *= init_target_direction
 
                 # Run trial:
@@ -141,7 +149,8 @@ class JA_Evolution(JA_Simulation):
                 string_l = copy.copy(self.pop_list_l[i, :])
                 string_r = copy.copy(self.pop_list_r[i, :])
 
-                if string_l[1] == 0.0 or string_r[1] == 0.0:  # run only if fitness is no evaluated yet
+                # if string_l[1] == 0.0 or string_r[1] == 0.0:  # run only if fitness is no evaluated yet
+                if None is None:    # run with all agents of population (necessary for varying simulation length)
                     genome_l = string_l[2:]
                     genome_r = string_r[2:]
                     self.knoblin_l = Knoblin(symmetrical_weights=self.symmetrical_weights)
@@ -516,6 +525,8 @@ class JA_Evolution(JA_Simulation):
         :param splitter: if parallel processing
         :param n_cpu: number of parallel processes
         """
+
+        self.number_generations = generations
 
         assert isinstance(n_cpu, int) and n_cpu > 0, "n_cpu must be greater than zero (int)"
 

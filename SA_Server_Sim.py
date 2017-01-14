@@ -30,22 +30,27 @@ if not split:  # is False
 
     # If e.g. scalar = 0.336 => Target just makes one turn
     scalar = simlength_scalar_request()
+    vary_scalar_mode = scalar_mode_request()
 
     # Whether sensory and motor weights suppose to be symmetrical:
     symmetry = symmetrical_weights_request()
 
 
-else:  # if splitter is used, these values must be pre-given, here in python file
+else:  # if splitter is used, these values must be manually filled, here in python file
     # Manually adjust the following parameters:
     audicon = True     # True or False
     number_of_generations = 10000
-    scalar = 1          # 1 == no scaling [Default], 1/3 == first turn
-    symmetry = True     # True or False
-    filename = "Gen1001-10000.popsize110.mut0.02.sound_cond=True.sym_weights.JA.single(Fitness9.94)"  # or None
+    scalar = 1          # 1 == no scaling [Default] == 3 turns, 1/3 == first turn
+    vary_scalar_mode = 2  # 1, 2 or 3.
+    #                           1:= no varying of simulation-length;
+    #                           2:= scalar will increase with n_generation between [0.33, 2.0] (== [1Turn, 6Turns]);
+    #                           3:= scalar will randomly vary between [0.33, 2.0] (== [1Turn, 6Turns]);
+    symmetry = False     # True or False
+    filename = None  # or "Gen1001-10000.popsize110.mut0.02.sound_cond=True.sym_weights.JA.single(Fitness9.94)"
     print("Splitter {} started!".format(split))
 
 
-sa = SA_Evolution(auditory_condition=audicon, pop_size=110, simlength_scalar=scalar, symmetrical_weights=symmetry)
+sa = SA_Evolution(auditory_condition=audicon, pop_size=110, simlength_scalar=scalar, scalar_mode=vary_scalar_mode, symmetrical_weights=symmetry)
 
 
 if isinstance(filename, str):

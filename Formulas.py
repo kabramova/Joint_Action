@@ -265,9 +265,57 @@ def simlength_scalar_request():
         simlength_scalar = int(simlength_scalar)
 
     if simlength_scalar <= 0:
-        raise ValueError("Scalar must be greather than zero")
+        raise ValueError("Scalar must be greater than zero")
 
     return simlength_scalar
+
+
+def scalar_mode_request():
+    scalar_mode = input("Scaler Mode 1, 2 or 3 [default=1]:")
+
+    if int(scalar_mode):
+        scalar_mode = int(scalar_mode)
+
+    if scalar_mode < 1 or scalar_mode > 3:
+        raise ValueError("Scalar must be 1, 2 or 3")
+
+    return scalar_mode
+
+
+def return_scalar(scalar_mode=1, current_generation=None, max_generation=None, given_scalar=None):
+    """
+    Depending on the scalar_mode this returns different scalars to be applied.
+    :param scalar_mode: either 1, 2 or 3
+    :param current_generation: for scalar_mode 2
+    :param max_generation: for scalar_mode 2
+    :param given_scalar: for scalar_mode 1
+    :return: scalar
+    """
+    if scalar_mode != 1 or scalar_mode != 2 or scalar_mode != 3:
+        raise ValueError("Scalar must be 1, 2 or 3")
+
+    if scalar_mode == 1:
+        if not given_scalar:
+            raise ValueError("given_scalar must be given")
+        scalar = given_scalar
+
+    elif scalar_mode == 2:
+        if not current_generation or not max_generation:
+            raise ValueError("scalar_mode 2 needs current_generation and max_generation")
+        low = 1/3.0  # 0.33
+        high = 5/3.0  # 1.66
+        way_length = high - low
+        pos = current_generation / float(max_generation)
+
+        scalar = low + way_length*pos
+
+    else:  # scalar_mode == 3:
+        scalar = np.random.uniform(low=1/3.0, high=1+2/3.0)  # uniform-distribution between [0.33, 1.66]
+        # scalar = np.random.normal(loc=1.0, scale=0.25)  # normal-distribution loc==mean = 1.0, scale==sd = 0.25 =>> main curve between [0.4, 1.6]
+
+    return scalar
+
+
 
 
 def filename_request(single_or_joint):

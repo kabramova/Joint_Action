@@ -14,7 +14,7 @@ __status__ = "Development"
 
 class SA_Evolution(SA_Simulation):
 
-    def __init__(self, auditory_condition, pop_size=110, symmetrical_weights=False, simlength_scalar=1):
+    def __init__(self, auditory_condition, pop_size=110, symmetrical_weights=False, simlength_scalar=1, scalar_mode=1):
 
         self.symmetrical_weights = symmetrical_weights
 
@@ -22,10 +22,12 @@ class SA_Evolution(SA_Simulation):
         super(self.__class__, self).__init__(auditory_condition, symmetrical_weights=self.symmetrical_weights, simlength=2789)
 
         self.simlength_scalar = simlength_scalar
+        self.simlength_scalar_mode = scalar_mode  # 1, 2 or 3 (see description in SA_Server_Sim.py)
 
         self.genome = self.create_genome(knoblin=self.knoblin)
 
         self.generation = 0
+        self.number_generations = []
 
         self.pop_size = pop_size
 
@@ -106,7 +108,13 @@ class SA_Evolution(SA_Simulation):
 
                 self.reset_neural_system()
 
-                self.setup(trial_speed=trial_speed, simlength_scalar=self.simlength_scalar)
+                # Return correct scalar depening on scalar_mode
+                scalar = return_scalar(scalar_mode=self.simlength_scalar_mode,
+                                       current_generation=self.generation,
+                                       max_generation=self.number_generations,
+                                       given_scalar=self.simlength_scalar)
+
+                self.setup(trial_speed=trial_speed, simlength_scalar=scalar)
                 self.target.velocity *= init_target_direction
 
                 # Run trial:
@@ -124,7 +132,8 @@ class SA_Evolution(SA_Simulation):
 
         if not splitter:
             for i, string in enumerate(self.pop_list):
-                if string[1] == 0:  # run only if fitness is no evaluated yet
+                # if string[1] == 0:  # run only if fitness is no evaluated yet
+                if None is None:  # run for all agents in population (necessary for varying simulation length)
                     genome = string[2:]
                     self.knoblin = Knoblin(symmetrical_weights=self.symmetrical_weights)
                     self.implement_genome(genome_string=genome)
@@ -417,6 +426,8 @@ class SA_Evolution(SA_Simulation):
             print("No Splitter is used")
         else:
             save = True
+
+        self.number_generations = generations
 
         # Run evolution:
         if splitter == n_cpu or not splitter:
