@@ -439,6 +439,8 @@ class SA_Evolution(SA_Simulation):
                                                   max_generation=self.number_generations,
                                                   given_scalar=self.simlength_scalar)
 
+            print("simlength_scalar:", self.simlength_scalar)  # Testing, delete when done
+
             if splitter == n_cpu or not splitter:
                 start_timer = datetime.datetime.now().replace(microsecond=0)
 
