@@ -271,6 +271,12 @@ def simlength_scalar_request():
 
 
 def scalar_mode_request():
+    print("Choose between the following scalar_modes:")
+    print("")
+    print("     1:= no varying of simulation-length;")
+    print("     2:= scalar will increase with n_generation between [0.33, 2.0] (== [1Turn, 6Turns]);")
+    print("     3:= scalar will randomly vary between [0.33, 2.0] (== [1Turn, 6Turns]);")
+    print("")
     scalar_mode = input("Scaler Mode 1, 2 or 3 [default=1]:")
 
     if int(scalar_mode):
@@ -291,7 +297,7 @@ def return_scalar(scalar_mode=1, current_generation=None, max_generation=None, g
     :param given_scalar: for scalar_mode 1
     :return: scalar
     """
-    if scalar_mode != 1 or scalar_mode != 2 or scalar_mode != 3:
+    if scalar_mode != 1 and scalar_mode != 2 and scalar_mode != 3:
         raise ValueError("Scalar must be 1, 2 or 3")
 
     if scalar_mode == 1:
@@ -300,7 +306,7 @@ def return_scalar(scalar_mode=1, current_generation=None, max_generation=None, g
         scalar = given_scalar
 
     elif scalar_mode == 2:
-        if not current_generation or not max_generation:
+        if not current_generation and not max_generation:
             raise ValueError("scalar_mode 2 needs current_generation and max_generation")
         low = 1/3.0  # 0.33
         high = 5/3.0  # 1.66
@@ -310,12 +316,12 @@ def return_scalar(scalar_mode=1, current_generation=None, max_generation=None, g
         scalar = low + way_length*pos
 
     else:  # scalar_mode == 3:
+        # TODO: 1) must be same for all splitted operations( possible solution: create externally saved list of random values before split)
+        # TODO: 2) fitness must be normalized (comparablity between generations)
         scalar = np.random.uniform(low=1/3.0, high=1+2/3.0)  # uniform-distribution between [0.33, 1.66]
         # scalar = np.random.normal(loc=1.0, scale=0.25)  # normal-distribution loc==mean = 1.0, scale==sd = 0.25 =>> main curve between [0.4, 1.6]
 
     return scalar
-
-
 
 
 def filename_request(single_or_joint):

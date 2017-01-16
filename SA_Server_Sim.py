@@ -44,7 +44,7 @@ else:  # if splitter is used, these values must be manually filled, here in pyth
     vary_scalar_mode = 2  # 1, 2 or 3.
     #                           1:= no varying of simulation-length;
     #                           2:= scalar will increase with n_generation between [0.33, 2.0] (== [1Turn, 6Turns]);
-    #                           3:= scalar will randomly vary between [0.33, 2.0] (== [1Turn, 6Turns]);
+    #                           3:= scalar will randomly vary between [0.33, 2.0] (== [1Turn, 6Turns]); TODO: see list in Formulas.py
     symmetry = False     # True or False
     filename = None  # or "Gen1001-10000.popsize110.mut0.02.sound_cond=True.sym_weights.JA.single(Fitness9.94)"
     print("Splitter {} started!".format(split))

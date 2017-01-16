@@ -121,13 +121,7 @@ class JA_Evolution(JA_Simulation):
 
                 self.reset_neural_system()
 
-                # Return correct scalar depening on scalar_mode
-                scalar = return_scalar(scalar_mode=self.simlength_scalar_mode,
-                                       current_generation=self.generation,
-                                       max_generation=self.number_generations,
-                                       given_scalar=self.simlength_scalar)
-
-                self.setup(trial_speed=trial_speed, simlength_scalar=scalar)
+                self.setup(trial_speed=trial_speed, simlength_scalar=self.simlength_scalar)
                 self.target.velocity *= init_target_direction
 
                 # Run trial:
@@ -180,7 +174,7 @@ class JA_Evolution(JA_Simulation):
             self.pop_list_r = copy.copy(mat_sort(self.pop_list_r, index=1))     # sorts the pop_list, best agents on top
 
         # If Splitter is active:
-        if not isinstance(splitter, bool):
+        if not isinstance(splitter, bool):  # or else
 
             # n_cpu: is adaptable to the number of Processors on the server(s)
 
@@ -201,7 +195,8 @@ class JA_Evolution(JA_Simulation):
                 string_l = self.pop_list_l[i, :]
                 string_r = self.pop_list_r[i, :]
 
-                if string_l[1] == 0.0 or string_r[1] == 0.0:  # run only if fitness is no evaluated yet
+                # if string_l[1] == 0.0 or string_r[1] == 0.0:  # run only if fitness is no evaluated yet
+                if None is None:  # run for all agents in population (necessary for varying simulation length)
                     genome_l = string_l[2:]
                     genome_r = string_r[2:]
                     self.knoblin_l = Knoblin(symmetrical_weights=self.symmetrical_weights)
@@ -544,6 +539,14 @@ class JA_Evolution(JA_Simulation):
                 self.fitness_progress = np.append(self.fitness_progress, np.zeros((generations, 6)), axis=0)
 
         for i in range(generations):
+
+            # Return correct scalar depening on self.simlength_scalar_mode
+            self.simlength_scalar = return_scalar(scalar_mode=self.simlength_scalar_mode,
+                                                  current_generation=self.generation,
+                                                  max_generation=self.number_generations,
+                                                  given_scalar=self.simlength_scalar)
+
+            print("simlength_scalar:", self.simlength_scalar)  # Testing, delete when done
 
             if splitter == n_cpu or not splitter:
                 start_timer = datetime.datetime.now().replace(microsecond=0)

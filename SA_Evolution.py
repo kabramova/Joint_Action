@@ -108,13 +108,7 @@ class SA_Evolution(SA_Simulation):
 
                 self.reset_neural_system()
 
-                # Return correct scalar depening on scalar_mode
-                scalar = return_scalar(scalar_mode=self.simlength_scalar_mode,
-                                       current_generation=self.generation,
-                                       max_generation=self.number_generations,
-                                       given_scalar=self.simlength_scalar)
-
-                self.setup(trial_speed=trial_speed, simlength_scalar=scalar)
+                self.setup(trial_speed=trial_speed, simlength_scalar=self.simlength_scalar)
                 self.target.velocity *= init_target_direction
 
                 # Run trial:
@@ -177,7 +171,8 @@ class SA_Evolution(SA_Simulation):
             for i in range(start, end):
                 string = self.pop_list[i, :]
 
-                if string[1] == 0.0:          # run only if fitness is no evaluated yet
+                # if string[1] == 0.0:          # run only if fitness is no evaluated yet
+                if None is None:                # run for all agents in population (necessary for varying simulation length)
                     genome = string[2:]
                     self.knoblin = Knoblin(symmetrical_weights=self.symmetrical_weights)
                     self.implement_genome(genome_string=genome)
@@ -437,6 +432,12 @@ class SA_Evolution(SA_Simulation):
                 self.fitness_progress = np.append(self.fitness_progress, np.zeros((generations, 6)), axis=0)
 
         for i in range(generations):
+
+            # Return correct scalar depening on self.simlength_scalar_mode
+            self.simlength_scalar = return_scalar(scalar_mode=self.simlength_scalar_mode,
+                                                  current_generation=self.generation,
+                                                  max_generation=self.number_generations,
+                                                  given_scalar=self.simlength_scalar)
 
             if splitter == n_cpu or not splitter:
                 start_timer = datetime.datetime.now().replace(microsecond=0)
