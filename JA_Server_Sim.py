@@ -38,7 +38,7 @@ if not split:  # is False
 else:  # if splitter is used, these values must be manually filled, here in python file
     # Manually adjust the following parameters:
     audicon = True          # True or False
-    number_of_generations = 10000
+    number_of_generations = 10  # 10000
     scalar = 1              # 1 == no scaling [Default] == 3 turns, e.g. 1/3 == first turn
     vary_scalar_mode = 2    # 1, 2 or 3.
     #                           1:= no varying of simulation-length;
