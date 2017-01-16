@@ -9,7 +9,7 @@ __maintainer__ = "Simon Hofmann"
 __email__ = "simon.hofmann@protonmail.com"
 __status__ = "Development"
 """
-# TODO: Run evolution with long simulation, ergo scalar = 2 (>1)
+
 # For the CPU split:
 # Type in Terminal (-P*, * must be equal to n_cpu):
 #  cat args_splitter | xargs -L1 -P6 python3 SA_Server_Sim.py
