@@ -63,8 +63,6 @@ if isinstance(filename, str):
 
 # RUN:
 if not split or split == n_cpu:
-    print("Run Evolution: {} Generations, Joint Condition, Sound Condition={}, simlength-scalar {}, sym. weights={}".format(number_of_generations,
-                                                                                                                            ja.condition,
-                                                                                                                            scalar,
-                                                                                                                            symmetry))
+    print("Run Evolution: {} Generations, Joint Condition, Sound Condition={}, simlength-scalar {}, scalar_mode {}, sym. weights={}".format(
+        number_of_generations, ja.condition, scalar, vary_scalar_mode, symmetry))
 ja.run_evolution(generations=number_of_generations, splitter=split, n_cpu=n_cpu)
