@@ -619,13 +619,15 @@ class JA_Evolution(JA_Simulation):
             # Add Information, if weights were held symmetrical:
             symmetry = ".sym_weights" if self.symmetrical_weights else ""
 
-            self.filename = "Gen{}-{}.popsize{}.mut{}.sound_cond={}{}.JA.joint(Fitness{})".format(self.generation - generations + 1,
-                                                                                                  self.generation,
-                                                                                                  self.pop_size,
-                                                                                                  mutation_var,
-                                                                                                  self.condition,  # is pop_list_l[0,1]
-                                                                                                  symmetry,
-                                                                                                  np.round(self.pop_list_l[0, 1], 2))
+            self.filename = "Gen{}-{}.popsize{}.mut{}.sound_cond={}.scalar{}.mode{}{}.joint(Fitness{})".format(self.generation - generations + 1,
+                                                                                                               self.generation,
+                                                                                                               self.pop_size,
+                                                                                                               mutation_var,
+                                                                                                               self.condition,  # is pop_list_l[0,1]
+                                                                                                               self.simlength_scalar,
+                                                                                                               self.simlength_scalar_mode,
+                                                                                                               symmetry,
+                                                                                                               np.round(self.pop_list_l[0, 1], 2))
 
             pickle.dump(self.pop_list_l, open('./poplists/joint/Poplist_L.{}'.format(self.filename), 'wb'))
             pickle.dump(self.pop_list_r, open('./poplists/joint/Poplist_R.{}'.format(self.filename), 'wb'))

@@ -524,12 +524,14 @@ class SA_Evolution(SA_Simulation):
             # Add Information, if weights were held symmetrical:
             symmetry = ".sym_weights" if self.symmetrical_weights else ""
 
-            self.filename = "Gen{}-{}.popsize{}.mut{}.sound_cond={}{}.JA.single(Fitness{})".format(self.generation - generations + 1,
-                                                                                                   self.generation,
-                                                                                                   self.pop_size, mutation_var,
-                                                                                                   self.condition,
-                                                                                                   symmetry,
-                                                                                                   np.round(self.pop_list[0, 1], 2))
+            self.filename = "Gen{}-{}.popsize{}.mut{}.sound_cond={}.scalar{}.mode{}{}.single(Fitness{})".format(self.generation - generations+1,
+                                                                                                                self.generation,
+                                                                                                                self.pop_size, mutation_var,
+                                                                                                                self.condition,
+                                                                                                                self.simlength_scalar,
+                                                                                                                self.simlength_scalar_mode,
+                                                                                                                symmetry,
+                                                                                                                np.round(self.pop_list[0, 1], 2))
 
             pickle.dump(self.pop_list, open('./poplists/single/Poplist.{}'.format(self.filename), 'wb'))
             pickle.dump(np.round(self.fitness_progress, 2), open('./poplists/single/Fitness_progress.{}'.format(self.filename), 'wb'))
