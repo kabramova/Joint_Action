@@ -362,37 +362,43 @@ def filename_request(single_or_joint):
 
     assert single_or_joint in ["single", "joint"], 'Wrong input: Either "single" or "joint"'
 
-    for file in os.listdir('poplists/{}/'.format(single_or_joint)):
-        if file.find("sound") != -1 and file.find(single_or_joint) != -1:
-            count = 0
-            found += 1
-            no = False
+    request = input("Do you want to implement a file ((y)es, (n)o:")
 
-            filename = file[file.find("Gen"):]
+    if request in ["y", "Y", "yes", "Yes", "YES"]:
 
-            while count != 3 and no is False:
-                file_request = input("{} \n Do you want to implement this file ((y)es, (n)o:".format(filename))
+        for file in os.listdir('poplists/{}/'.format(single_or_joint)):
+            if file.find("sound") != -1 and file.find(single_or_joint) != -1:
+                count = 0
+                found += 1
+                no = False
 
-                if file_request in ["y", "Y", "yes", "Yes", "YES"]:
-                    print(">> File will be implemented")
-                    return filename
+                filename = file[file.find("Gen"):]
 
-                elif file_request in ["n", "N", "no", "No", "NO"]:
-                    print(">> Looking for further files")
-                    no = True
+                while count != 3 and no is False:
+                    file_request = input("{} \n Do you want to implement this file ((y)es, (n)o:".format(filename))
 
-                else:
-                    print("Input is not understood.\n"
-                          "Type either 'yes' or 'no' ({} more attempt(s))".format(2 - count))
-                    count += 1
-                    if count >= 3:
-                        raise ValueError("Function stopped, input is not understood")
+                    if file_request in ["y", "Y", "yes", "Yes", "YES"]:
+                        print(">> File will be implemented")
+                        return filename
 
-    print("There were {} file(s) to implement".format(found))
-    if found > 0:
-        print("No file was selected \n".format(found))
-    print(">> New evolution will be started")
+                    elif file_request in ["n", "N", "no", "No", "NO"]:
+                        print(">> Looking for further files")
+                        no = True
 
+                    else:
+                        print("Input is not understood.\n"
+                              "Type either 'yes' or 'no' ({} more attempt(s))".format(2 - count))
+                        count += 1
+                        if count >= 3:
+                            raise ValueError("Function stopped, input is not understood")
+
+        print("There were {} file(s) to implement".format(found))
+        if found > 0:
+            print("No file was selected \n".format(found))
+            print(">> New evolution will be started")
+
+    else:
+        print(">> New evolution will be started")
 
 def single_or_joint_request():
 
