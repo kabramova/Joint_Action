@@ -288,40 +288,73 @@ def scalar_mode_request():
     return scalar_mode
 
 
-def return_scalar(scalar_mode=1, current_generation=None, max_generation=None, given_scalar=None):
-    """
-    Depending on the scalar_mode this returns different scalars to be applied.
-    :param scalar_mode: either 1, 2 or 3
-    :param current_generation: for scalar_mode 2
-    :param max_generation: for scalar_mode 2
-    :param given_scalar: for scalar_mode 1
-    :return: scalar
-    """
-    if scalar_mode != 1 and scalar_mode != 2 and scalar_mode != 3:
-        raise ValueError("Scalar must be 1, 2 or 3")
+def return_scalar(scalar_mode=1, current_generation=None, max_generation=None, given_scalar=None, splitter=False):
+        """
+        Depending on the scalar_mode this returns different scalars to be applied.
+        :param scalar_mode: either 1, 2 or 3
+        :param current_generation: for scalar_mode 2
+        :param max_generation: for scalar_mode 2
+        :param given_scalar: for scalar_mode 1
+        :return: scalar
+        """
+        if scalar_mode != 1 and scalar_mode != 2 and scalar_mode != 3:
+            raise ValueError("Scalar must be 1, 2 or 3")
 
-    if scalar_mode == 1:
-        if not given_scalar:
-            raise ValueError("given_scalar must be given")
-        scalar = given_scalar
+        if scalar_mode == 1:
+            if not given_scalar:
+                raise ValueError("given_scalar must be given")
+            scalar = given_scalar
 
-    elif scalar_mode == 2:
-        if not current_generation and not max_generation:
-            raise ValueError("scalar_mode 2 needs current_generation and max_generation")
-        low = 1/3.0  # 0.33
-        high = 5/3.0  # 1.66
-        way_length = high - low
-        pos = current_generation / float(max_generation)
+        elif scalar_mode == 2:
+            if not current_generation and not max_generation:
+                raise ValueError("scalar_modes 2 & 3 need current_generation and max_generation")
+            low = 1 / 3.0  # 0.33
+            high = 5 / 3.0  # 1.66
+            way_length = high - low
+            pos = current_generation / float(max_generation)
 
-        scalar = low + way_length*pos
+            scalar = low + way_length * pos
 
-    else:  # scalar_mode == 3:
-        # TODO: 1) must be same for all splitted operations( possible solution: create externally saved list of random values before split)
-        # TODO: 2) fitness must be normalized (comparablity between generations)
-        scalar = np.random.uniform(low=1/3.0, high=1+2/3.0)  # uniform-distribution between [0.33, 1.66]
-        # scalar = np.random.normal(loc=1.0, scale=0.25)  # normal-distribution loc==mean = 1.0, scale==sd = 0.25 =>> main curve between [0.4, 1.6]
+        else:  # scalar_mode == 3:
+            # TODO: fitness must be normalized (comparablity between generations/simlengths)
+            if not splitter:
+                scalar = np.random.uniform(low=1/3.0, high=1 + 2/3.0)  # uniform-distribution between [0.33, 1.66]
+                # scalar = np.random.normal(loc=1.0, scale=0.25)  # normal-dist. loc==mean =1.0, scale==sd =0.25 =>> main curve between [0.4, 1.6]
 
-    return scalar
+            else:  # splitter is used
+                # Fixed random, uniform list of 100 simlengths
+                # simlengths_100 = np.linspace(start=1/3.0, stop=1 + 2 / 3.0, num=100)
+                # np.random.shuffle(simlengths_100)
+                simlengths_100 = np.array([0.42760943, 1.22222222, 1.3973064, 0.62962963, 0.46801347,
+                                           1.04713805, 1.31649832, 0.49494949, 1.02020202, 0.81818182,
+                                           0.75084175, 1.28956229, 1.14141414, 1.55892256, 1.43771044,
+                                           1.00673401, 0.61616162, 1.18181818, 1.34343434, 0.97979798,
+                                           0.72390572, 0.52188552, 1.1952862, 1.12794613, 0.34680135,
+                                           0.73737374, 0.58922559, 1.07407407, 1.27609428, 0.50841751,
+                                           0.71043771, 1.16835017, 1.54545455, 0.95286195, 1.46464646,
+                                           1.23569024, 1.20875421, 1.24915825, 0.87205387, 0.33333333,
+                                           1.57239057, 0.92592593, 1.15488215, 1.41077441, 1.47811448,
+                                           0.57575758, 1.51851852, 1.65319865, 0.54882155, 0.67003367,
+                                           1.50505051, 0.44107744, 1.06060606, 0.77777778, 0.79124579,
+                                           0.53535354, 0.93939394, 0.76430976, 0.45454545, 1.61279461,
+                                           1.5993266, 0.88552189, 0.99326599, 0.4006734, 1.38383838,
+                                           1.49158249, 1.53198653, 0.37373737, 0.96632997, 0.64309764,
+                                           1.26262626, 0.36026936, 1.42424242, 1.32996633, 0.48148148,
+                                           1.45117845, 1.58585859, 1.03367003, 0.8047138, 0.85858586,
+                                           0.68350168, 1.08754209, 1.1010101, 0.83164983, 0.8989899,
+                                           1.37037037, 1.63973064, 0.6026936, 1.35690236, 0.6969697,
+                                           0.65656566, 0.84511785, 1.62626263, 1.66666667, 1.3030303,
+                                           0.38720539, 0.91245791, 0.56228956, 1.11447811, 0.41414141])
+
+                # Take value out of simlengths_100 depending on current_generation
+                idx = current_generation % 100
+                scalar = simlengths_100[idx]
+
+        # Last round of simulation is with 3-Target-Turns for comparability
+        if current_generation == max_generation:
+            scalar = 1.0
+
+        return scalar
 
 
 def filename_request(single_or_joint):

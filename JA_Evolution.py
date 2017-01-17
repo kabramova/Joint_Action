@@ -544,7 +544,8 @@ class JA_Evolution(JA_Simulation):
             self.simlength_scalar = return_scalar(scalar_mode=self.simlength_scalar_mode,
                                                   current_generation=self.generation,
                                                   max_generation=self.number_generations,
-                                                  given_scalar=self.simlength_scalar)
+                                                  given_scalar=self.simlength_scalar,
+                                                  splitter=splitter)
 
             print("simlength_scalar:", self.simlength_scalar)  # Testing, delete when done
 
