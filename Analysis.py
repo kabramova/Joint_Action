@@ -711,3 +711,6 @@ if condition == "joint":
     plt.show()
     plt.savefig("./{}/{} GRAPH WM, Right Knoblin Motor Weights".format(folder, condition))
     plt.close()
+
+# Animations will be produced in /Animation/*
+# Terminal command to convert single images in gif-animation: convert -delay 00 animation*.png animation.gif
