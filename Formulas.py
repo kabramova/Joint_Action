@@ -351,7 +351,7 @@ def return_scalar(scalar_mode=1, current_generation=None, max_generation=None, g
                 scalar = simlengths_100[idx]
 
         # Last round of simulation is with 3-Target-Turns for comparability
-        if current_generation == max_generation:
+        if current_generation == max_generation-1:
             scalar = 1.0
 
         return scalar
@@ -399,6 +399,7 @@ def filename_request(single_or_joint):
 
     else:
         print(">> New evolution will be started")
+
 
 def single_or_joint_request():
 
