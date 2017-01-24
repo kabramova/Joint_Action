@@ -15,6 +15,10 @@ __status__ = "Development"
 #  cat args_splitter | xargs -L1 -P6 python3 JA_Server_Sim.py
 # Note: args_splitter must contain numbers from 1 to n_cpu
 
+
+# TODO: Next 25.000 generations., mode3
+# TODO: Next 50.000 generations., mode2
+
 n_cpu = 6
 
 if len(sys.argv) > 1 and sys.argv[1].isdigit():
@@ -38,9 +42,9 @@ if not split:  # is False
 else:  # if splitter is used, these values must be manually filled, here in python file
     # Manually adjust the following parameters:
     audicon = False          # True or False
-    number_of_generations = 10000
+    number_of_generations = 25000
     scalar = 1              # 1 == no scaling [Default] == 3 turns, e.g. 1/3 == first turn
-    vary_scalar_mode = 2    # 1, 2 or 3.
+    vary_scalar_mode = 3    # 1, 2 or 3.
     #                           1:= no varying of simulation-length;
     #                           2:= scalar will increase with n_generation between [0.33, 1.66] (== [1Turn, 5Turns]);
     #                           3:= scalar will randomly vary between [0.33, 1.66] (== [1Turn, 5Turns]); TODO: see return_scalar() in Formulas.py
