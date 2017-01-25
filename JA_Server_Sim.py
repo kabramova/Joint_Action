@@ -16,7 +16,7 @@ __status__ = "Development"
 # Note: args_splitter must contain numbers from 1 to n_cpu
 
 
-# TODO: Next 25.000 generations., mode3
+# TODO: Next 25.000 generations., mode3 [ALREADY STARTED: JOINT_FALSE,]
 # TODO: Next 50.000 generations., mode2
 
 n_cpu = 6
