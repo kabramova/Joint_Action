@@ -16,7 +16,6 @@ __status__ = "Development"
 # Note: args_splitter must contain numbers from 1 to n_cpu
 
 
-# TODO: Next 25.000 generations., mode3 [ALREADY STARTED: JOINT_FALSE,]
 # TODO: Next 50.000 generations., mode2
 
 n_cpu = 6
@@ -41,7 +40,7 @@ if not split:  # is False
 
 else:  # if splitter is used, these values must be manually filled, here in python file
     # Manually adjust the following parameters:
-    audicon = False          # True or False
+    audicon = True          # True or False
     number_of_generations = 25000
     scalar = 1              # 1 == no scaling [Default] == 3 turns, e.g. 1/3 == first turn
     vary_scalar_mode = 3    # 1, 2 or 3.
