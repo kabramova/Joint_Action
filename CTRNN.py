@@ -45,13 +45,15 @@ class CTRNN:
         self.TAU_RANGE = [1, 10]
         self.Tau = randrange(self.TAU_RANGE, self.N, 1)
 
-        self.T_RANGE = [-13, 13]
+        # self.T_RANGE = [-13, 13]  # former
+        self.T_RANGE = [-15, 15]
         self.Theta = randrange(self.T_RANGE, self.N, 1)
 
         # G_RANGE = [1.0, 5.0]
         self.G = np.ones((self.N, 1))
 
-        self.W_RANGE = [-13, 13]
+        # self.W_RANGE = [-13, 13]  # former
+        self.W_RANGE = [-15, 15]
         self.W = randrange(self.W_RANGE, self.N, self.N)
 
         self.I = np.matrix(np.zeros((self.N, 1)))

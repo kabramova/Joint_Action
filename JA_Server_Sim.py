@@ -18,6 +18,8 @@ __status__ = "Development"
 
 # TODO: new Fitness calculation: muliplication of each trial, sqrt^4 (+ drop slow trial if possible)
 # TODO: Next 50.000 generations., mode2
+# DONE: extended weight range to [-15, 15]
+# DONE: 25.000 generations., mode3 [Single_True successful]
 
 n_cpu = 6
 
@@ -42,9 +44,9 @@ if not split:  # is False
 else:  # if splitter is used, these values must be manually filled, here in python file
     # Manually adjust the following parameters:
     audicon = True          # True or False
-    number_of_generations = 25000
+    number_of_generations = 50000
     scalar = 1              # 1 == no scaling [Default] == 3 turns, e.g. 1/3 == first turn
-    vary_scalar_mode = 3    # 1, 2 or 3.
+    vary_scalar_mode = 2    # 1, 2 or 3.
     #                           1:= no varying of simulation-length;
     #                           2:= scalar will increase with n_generation between [0.33, 1.66] (== [1Turn, 5Turns]);
     #                           3:= scalar will randomly vary between [0.33, 1.66] (== [1Turn, 5Turns]); TODO: see return_scalar() in Formulas.py
