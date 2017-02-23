@@ -16,6 +16,7 @@ __status__ = "Development"
 # Note: args_splitter must contain numbers from 1 to n_cpu
 
 
+# TODO: new Fitness calculation: muliplication of each trial, sqrt^4 (+ drop slow trial if possible)
 # TODO: Next 50.000 generations., mode2
 
 n_cpu = 6
