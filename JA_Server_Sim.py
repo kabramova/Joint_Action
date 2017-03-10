@@ -47,7 +47,7 @@ else:  # if splitter is used, these values must be manually filled, here in pyth
     audicon = False          # True or False
     number_of_generations = 50000
     scalar = 1              # 1 == no scaling [Default] == 3 turns, e.g. 1/3 == first turn
-    vary_scalar_mode = 3    # 1, 2 or 3.
+    vary_scalar_mode = 2    # 1, 2 or 3.
     #                           1:= no varying of simulation-length;
     #                           2:= scalar will increase with n_generation between [0.33, 1.66] (== [1Turn, 5Turns]);
     #                           3:= scalar will randomly vary between [0.33, 1.66] (== [1Turn, 5Turns]); TODO: see return_scalar() in Formulas.py
