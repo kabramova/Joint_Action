@@ -18,7 +18,7 @@ __status__ = "Development"
 
 # TODO: new Fitness calculation: muliplication of each trial, sqrt^4 (+ drop slow trial if possible)
 # IN PROCESS: Next 50.000 generations., mode2
-# IN PROCESS: Next 25.000 generations., mode3 [JOINT_TRUE]
+# TODO: Next 25.000 generations., mode3 [JOINT_TRUE]
 # DONE: extended weight range to [-15, 15]
 # DONE: 25.000 generations., mode3 [Single_True successful]
 
