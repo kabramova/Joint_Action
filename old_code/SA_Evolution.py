@@ -1,5 +1,6 @@
-from SA_Simulator import *
 import pickle
+
+from old_code.SA_Simulator import *
 
 """
 __author__  = Simon Hofmann"
@@ -371,7 +372,7 @@ class SA_Evolution(SA_Simulation):
 
             # Replace values beyond the range with max.range
             agtxc_mutated[agtxc_mutated > self.knoblin.W_RANGE[1]] = self.knoblin.W_RANGE[1]
-            # ... or min.range (T_RANGE = W.RANGE =[-13, 13])
+            # ... or min.range (THETA_RANGE = W.RANGE =[-13, 13])
             agtxc_mutated[agtxc_mutated < self.knoblin.W_RANGE[0]] = self.knoblin.W_RANGE[0]
 
             # For symmetrical weights the individual mutations have to be adjusted:
@@ -533,8 +534,8 @@ class SA_Evolution(SA_Simulation):
                                                                                                                 symmetry,
                                                                                                                 np.round(self.pop_list[0, 1], 2))
 
-            pickle.dump(self.pop_list, open('./poplists/single/Poplist.{}'.format(self.filename), 'wb'))
-            pickle.dump(np.round(self.fitness_progress, 2), open('./poplists/single/Fitness_progress.{}'.format(self.filename), 'wb'))
+            pickle.dump(self.pop_list, open('./SimonPoplists/single/Poplist.{}'.format(self.filename), 'wb'))
+            pickle.dump(np.round(self.fitness_progress, 2), open('./SimonPoplists/single/Fitness_progress.{}'.format(self.filename), 'wb'))
 
             print('Evolution terminated. pop_list saved \n'
                   '(Filename: "Poplist.{}")'.format(self.filename))
@@ -566,7 +567,7 @@ class SA_Evolution(SA_Simulation):
             self.filename = filename
 
         # Reimplement: pop_list, condition, Generation
-        self.pop_list = pickle.load(open('./poplists/single/Poplist.{}'.format(self.filename), 'rb'))
+        self.pop_list = pickle.load(open('./SimonPoplists/single/Poplist.{}'.format(self.filename), 'rb'))
         self.pop_size = self.pop_list.shape[0]
 
         assert self.filename.find("False") != -1 or self.filename.find("True") != -1, \
@@ -574,7 +575,7 @@ class SA_Evolution(SA_Simulation):
 
         self.condition = False if self.filename.find("False") != -1 and self.filename.find("True") == -1 else True
 
-        self.fitness_progress = pickle.load(open('./poplists/single/Fitness_progress.{}'.format(self.filename), 'rb'))
+        self.fitness_progress = pickle.load(open('./SimonPoplists/single/Fitness_progress.{}'.format(self.filename), 'rb'))
         self.generation = int(self.fitness_progress[-1, 0])
 
         print(">> ...")

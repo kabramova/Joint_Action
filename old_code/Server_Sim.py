@@ -1,4 +1,4 @@
-from Evolution import *
+from old_code.Evolution import *
 
 """
 __author__  = Simon Hofmann"
@@ -14,7 +14,7 @@ __status__ = "Development"
 
 e1 = Evolution(simlength=5000)
 
-# os.listdir('poplists')
+# os.listdir('SimonPoplists')
 filename = None  # "sim5000.mut0.02.Gen12001-15000(Fitness 24.45)"      # Filename starts with "sim..."
 if filename != "" and isinstance(filename, str):
     e1.reimplement_population(filename=filename, plot=False)

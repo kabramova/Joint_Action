@@ -1,5 +1,7 @@
+# -*- coding: UTF-8 -*-
 from CTRNN import *
-from Formulas import *
+from old_code.Formulas import *
+
 
 
 """
@@ -145,7 +147,7 @@ class Knoblin(CTRNN):
         self.N_auditory_sensor = 2
         self.N_motor = 2
 
-        super(self.__class__, self).__init__(number_of_neurons=8, timestep=0.01)
+        super(self.__class__, self).__init__(number_of_neurons=8, step_size=0.01)
 
         # We could apply random or symmetrical weights or
         # Weights to Keypress (left,right):
@@ -169,7 +171,7 @@ class Knoblin(CTRNN):
             self.WA[3] = self.WA[1] * -1    # Inputs to Neuron 5
 
         global h
-        h = self.h
+        h = self.step_size
 
         self.timer_motor_l = 0
         self.timer_motor_r = 0
@@ -243,9 +245,9 @@ class Knoblin(CTRNN):
 
         # Update timer:
         if self.timer_motor_l > 0:
-            self.timer_motor_l -= self.h
+            self.timer_motor_l -= self.step_size
         if self.timer_motor_r > 0:
-            self.timer_motor_r -= self.h
+            self.timer_motor_r -= self.step_size
 
         # Threshold is arbitrary. Evolution should make use of any kind.
         threshold = 0           # Threshold for output

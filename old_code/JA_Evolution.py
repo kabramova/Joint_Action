@@ -1,5 +1,6 @@
-from JA_Simulator import *
 import pickle
+
+from old_code.JA_Simulator import *
 
 """
 __author__  = Simon Hofmann"
@@ -439,7 +440,7 @@ class JA_Evolution(JA_Simulation):
             agtxc_mutated_l = new_population_l[i, 2: agtxc+2] + mutation_agtxc_l
             agtxc_mutated_r = new_population_r[i, 2: agtxc+2] + mutation_agtxc_r
 
-            # Replace values beyond the range with max.range, or min.range (T_RANGE = W.RANGE =[-13, 13])
+            # Replace values beyond the range with max.range, or min.range (THETA_RANGE = W.RANGE =[-13, 13])
             agtxc_mutated_l[agtxc_mutated_l > self.knoblin_l.W_RANGE[1]] = self.knoblin_l.W_RANGE[1]
             agtxc_mutated_l[agtxc_mutated_l < self.knoblin_l.W_RANGE[0]] = self.knoblin_l.W_RANGE[0]
             agtxc_mutated_r[agtxc_mutated_r > self.knoblin_r.W_RANGE[1]] = self.knoblin_r.W_RANGE[1]
@@ -629,9 +630,9 @@ class JA_Evolution(JA_Simulation):
                                                                                                                symmetry,
                                                                                                                np.round(self.pop_list_l[0, 1], 2))
 
-            pickle.dump(self.pop_list_l, open('./poplists/joint/Poplist_L.{}'.format(self.filename), 'wb'))
-            pickle.dump(self.pop_list_r, open('./poplists/joint/Poplist_R.{}'.format(self.filename), 'wb'))
-            pickle.dump(np.round(self.fitness_progress, 2), open('./poplists/joint/Fitness_progress.{}'.format(self.filename), 'wb'))
+            pickle.dump(self.pop_list_l, open('./SimonPoplists/joint/Poplist_L.{}'.format(self.filename), 'wb'))
+            pickle.dump(self.pop_list_r, open('./SimonPoplists/joint/Poplist_R.{}'.format(self.filename), 'wb'))
+            pickle.dump(np.round(self.fitness_progress, 2), open('./SimonPoplists/joint/Fitness_progress.{}'.format(self.filename), 'wb'))
 
             print('Evolution terminated. pop_lists saved \n'
                   '(Filename: "Poplist_...{}")'.format(self.filename))
@@ -666,15 +667,15 @@ class JA_Evolution(JA_Simulation):
             self.filename = filename
 
         # Reimplement: pop_list, condition, Generation
-        self.pop_list_l = pickle.load(open('./poplists/joint/Poplist_L.{}'.format(self.filename), 'rb'))
-        self.pop_list_r = pickle.load(open('./poplists/joint/Poplist_R.{}'.format(self.filename), 'rb'))
+        self.pop_list_l = pickle.load(open('./SimonPoplists/joint/Poplist_L.{}'.format(self.filename), 'rb'))
+        self.pop_list_r = pickle.load(open('./SimonPoplists/joint/Poplist_R.{}'.format(self.filename), 'rb'))
         self.pop_size = self.pop_list_l.shape[0]  # is self.pop_list_r.shape[0]
 
         assert self.filename.find("False") != -1 or self.filename.find("True") != -1, "Condition is unknown (please add to filename (if known)"
 
         self.condition = False if self.filename.find("False") != -1 and self.filename.find("True") == -1 else True
 
-        self.fitness_progress = pickle.load(open('./poplists/joint/Fitness_progress.{}'.format(self.filename), 'rb'))
+        self.fitness_progress = pickle.load(open('./SimonPoplists/joint/Fitness_progress.{}'.format(self.filename), 'rb'))
         self.generation = int(self.fitness_progress[-1, 0])
 
         print(">> ...")

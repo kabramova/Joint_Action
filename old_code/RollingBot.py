@@ -1,5 +1,5 @@
-from Formulas import *
 from CTRNN import CTRNN
+from old_code.Formulas import *
 
 """
 __author__  = Simon Hofmann"
@@ -21,7 +21,7 @@ class CatchBot(CTRNN):
         self.position = np.array(position_agent)  # its also reasonable to implement this in class environment
         self.Angle = np.pi/2
         self.Velocity = 0
-        super(self.__class__, self).__init__(number_of_neurons=6, timestep=0.01)  # or *args
+        super(self.__class__, self).__init__(number_of_neurons=6, step_size=0.01)  # or *args
 
         # Motor-Weights, Neuron 3 & 5 to left and right Motor
         # (We could set outer and inner weights equal, respectively)
@@ -127,14 +127,14 @@ class CatchBot(CTRNN):
             thrust = (self.compute_motor_neurons()[1] + self.compute_motor_neurons()[0]) * max_thrust
 
             old_velo = copy.copy(self.Velocity)
-            self.Velocity = old_velo * 0.9 + thrust * self.h
+            self.Velocity = old_velo * 0.9 + thrust * self.step_size
 
             old_angle = copy.copy(self.Angle)
             # we normalize with modulus operator: Angle ∈ [0,2π]
-            self.Angle = np.mod((old_angle + torque * self.h), 2*np.pi)
+            self.Angle = np.mod((old_angle + torque * self.step_size), 2 * np.pi)
 
             old_pos = copy.copy(self.position)
-            self.position = old_pos + np.array([np.cos(self.Angle), np.sin(self.Angle)]) * self.Velocity * self.h
+            self.position = old_pos + np.array([np.cos(self.Angle), np.sin(self.Angle)]) * self.Velocity * self.step_size
 
             # After a movement, the visual input at the new position and
             # then the next state will be computed (ordered !)

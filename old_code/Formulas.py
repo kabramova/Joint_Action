@@ -366,7 +366,7 @@ def filename_request(single_or_joint):
 
     if request in ["y", "Y", "yes", "Yes", "YES"]:
 
-        for file in os.listdir('poplists/{}/'.format(single_or_joint)):
+        for file in os.listdir('SimonPoplists/{}/'.format(single_or_joint)):
             if file.find("sound") != -1 and file.find(single_or_joint) != -1:
                 count = 0
                 found += 1
@@ -403,7 +403,7 @@ def filename_request(single_or_joint):
 
 def single_or_joint_request():
 
-    single_or_joint = input("Analysis for '(s)ingle' or '(j)oint':")
+    single_or_joint = input("SimonAnalysis for '(s)ingle' or '(j)oint':")
 
     if single_or_joint.find("S") != -1 or single_or_joint.find("s") != -1:
         output = "single"
@@ -447,7 +447,7 @@ def load_file(single_or_joint, audio_condition):
 
     found = 0
 
-    for file in os.listdir("./Analysis/{}/".format(single_or_joint)):
+    for file in os.listdir("./SimonAnalysis/{}/".format(single_or_joint)):
         if file.find("performance") != -1 and file.find(str(audio_condition)) != -1:
             count = 0
             found += 1
@@ -460,7 +460,7 @@ def load_file(single_or_joint, audio_condition):
 
                 if file_request in ["y", "Y", "yes", "Yes", "YES"]:
                     print(">> File will be loaded")
-                    return np.load("./Analysis/{}/{}".format(single_or_joint, filename))
+                    return np.load("./SimonAnalysis/{}/{}".format(single_or_joint, filename))
 
                 elif file_request in ["n", "N", "no", "No", "NO"]:
                     print(">> Looking for further files")

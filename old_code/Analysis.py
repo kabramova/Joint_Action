@@ -1,11 +1,11 @@
 import matplotlib
 matplotlib.use('TkAgg')
-import matplotlib.pyplot as plt
 import matplotlib.cm as cmx
 from matplotlib import colors
-from mpl_toolkits.mplot3d import Axes3D  # Info: http://matplotlib.org/mpl_toolkits/mplot3d/tutorial.html
-from SA_Evolution import *
-from JA_Evolution import *
+from old_code.SA_Evolution import *
+from old_code.JA_Evolution import *
+
+
 
 
 """
@@ -16,6 +16,27 @@ __date__ "2016"
 __maintainer__ = "Simon Hofmann"
 __email__ = "simon.hofmann@protonmail.com"
 __status__ = "Development"
+
+Instructions:
+The script provides 2 options:
+- yes, run the file (running the whole analysis script from scratch)
+- no, load an existing performance file
+
+If the latter is chosen, one can manually work with ja_performance or sa_performance (joint, single), which
+are Python matrices that contain all the data about the best agent.
+
+File names:
+condTrue means sound condition
+
+# Split in different Trials:
+sl = sa_performance[0] if condition == "single" else ja_performance[0]  # speed: slow, initial target-direction: left
+sr = sa_performance[1] if condition == "single" else ja_performance[1]  # speed: slow, initial target-direction: right
+fl = sa_performance[2] if condition == "single" else ja_performance[2]  # speed: fast, initial target-direction: left
+fr = sa_performance[3] if condition == "single" else ja_performance[3]  # speed: fast, initial target-direction: right
+
+trials = [sl, sr, fl, fr]
+trial_names = ["slowleft", "slowright", "fastleft", "fastright"]
+
 """
 
 '''
@@ -38,7 +59,7 @@ audicon = audio_condition_request()
 filename = filename_request(condition)  # "joint" or "single"
 # filename = "Gen1001-2000.popsize55.mut0.02.sound_cond=False.JA.joint(Fitness6.1)"
 
-load = load_request()
+load = load_request() # True/False
 
 lesion = lesion_request()  # True/False
 lesion_name = "_lesion" if lesion else ""
@@ -53,7 +74,7 @@ if load is False:
             sa.implement_genome(genome_string=sa.pop_list[0, 2:])
             fitness = np.round(np.mean([i[0] for i in sa_performance]), 2)  # Fitness over all trials
             # fitness = np.round(sa.pop_list[0, 1], 2)
-            np.save("./Analysis/single/sa_performance_cond{}_fitness{}{}".format(sa.condition, fitness, lesion_name), sa_performance)
+            np.save("./SimonAnalysis/single/sa_performance_cond{}_fitness{}{}".format(sa.condition, fitness, lesion_name), sa_performance)
             # sa_performance[0-3] are the different trials
             # sa_performance[0-3][0-5] = fitness[0], trajectories[1], keypress[2], # sounds[3], neural_state[4],
             # neural_input_L[5]
@@ -67,7 +88,7 @@ if load is False:
             ja.implement_genome(genome_string=ja.pop_list_r[0, 2:], side="right")
             fitness = np.round(np.mean([i[0] for i in ja_performance]), 2)  # Fitness over all trials
             # fitness = np.round(ja.pop_list_l[0, 1], 2)
-            np.save("./Analysis/joint/ja_performance_cond{}_fitness{}{}".format(ja.condition, fitness, lesion_name), ja_performance)
+            np.save("./SimonAnalysis/joint/ja_performance_cond{}_fitness{}{}".format(ja.condition, fitness, lesion_name), ja_performance)
             # ja_performance[0-3] are the different trials
             # ja_performance[0-3][0-7] = fitness[0], trajectories[1], keypress[2], sounds[3], neural_state_L[4],
             # neural_state_R[5], neural_input_R[6], neural_input_L[7]
@@ -110,7 +131,7 @@ trials = [sl, sr, fl, fr]
 trial_names = ["slowleft", "slowright", "fastleft", "fastright"]
 index = -1
 
-folder = "./Analysis/graphs/{}_{}_{}{}".format(condition, audicon, fitness, lesion_name)
+folder = "./SimonAnalysis/graphs/{}_{}_{}{}".format(condition, audicon, fitness, lesion_name)
 if not os.path.exists(folder):
     os.mkdir(folder)
 

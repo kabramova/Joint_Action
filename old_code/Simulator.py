@@ -1,6 +1,7 @@
-from Formulas import *
-from RollingBot import CatchBot
 import matplotlib.pyplot as plt
+
+from old_code.Formulas import *
+from old_code.RollingBot import CatchBot
 
 """
 __author__  = Simon Hofmann"

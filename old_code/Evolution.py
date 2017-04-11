@@ -1,5 +1,6 @@
-from Simulator import *
 import pickle
+
+from old_code.Simulator import *
 
 """
 __author__  = Simon Hofmann"
@@ -75,7 +76,7 @@ class Evolution(Simulate):
         tau = genome_string[a+g+t+c:a+g+t+c+u]
 
         self.agent.W = np.matrix(np.reshape(w,          (self.agent.N, self.agent.N)))
-        self.agent.WM = np.matrix(np.reshape(wm,        (g, 1)))    # for poplists before 1.June take the reshape out (see github, also CTRNN.py)
+        self.agent.WM = np.matrix(np.reshape(wm,        (g, 1)))    # for SimonPoplists before 1.June take the reshape out (see github, also CTRNN.py)
         self.agent.WV = np.matrix(np.reshape(wv,        (t, 1)))
         self.agent.Theta = np.matrix(np.reshape(theta,  (c, 1)))
         self.agent.Tau = np.matrix(np.reshape(tau,      (u, 1)))
@@ -252,7 +253,7 @@ class Evolution(Simulate):
 
             # Replace values beyond the range with max.range
             agtc_mutated[agtc_mutated > self.agent.W_RANGE[1]] = self.agent.W_RANGE[1]
-            # ... or min.range (T_RANGE = W.RANGE =[-13, 13])
+            # ... or min.range (THETA_RANGE = W.RANGE =[-13, 13])
             agtc_mutated[agtc_mutated < self.agent.W_RANGE[0]] = self.agent.W_RANGE[0]
 
             new_population[i, 2:agtc+2] = agtc_mutated
@@ -384,9 +385,9 @@ class Evolution(Simulate):
                                                                       self.generation - generations + 1,
                                                                       self.generation, np.round(self.pop_list[0, 1], 2))
 
-            pickle.dump(self.pop_list, open('./poplists/Poplist.{}'.format(self.filename), 'wb'))
+            pickle.dump(self.pop_list, open('./SimonPoplists/Poplist.{}'.format(self.filename), 'wb'))
             pickle.dump(np.round(fitness_progress, 2),
-                        open('./poplists/Fitness_progress.{}'.format(self.filename), 'wb'))
+                        open('./SimonPoplists/Fitness_progress.{}'.format(self.filename), 'wb'))
 
             print('Evolution terminated. pop_list saved \n'
                   '(Filename: "Poplist.{}")'.format(self.filename))
@@ -401,11 +402,11 @@ class Evolution(Simulate):
             print("Reimplements its own pop_list file")
 
         # Reimplement: pop_list, simlength, Generation
-        self.pop_list = pickle.load(open('./poplists/Poplist.{}'.format(filename), 'rb'))
+        self.pop_list = pickle.load(open('./SimonPoplists/Poplist.{}'.format(filename), 'rb'))
 
         self.simlength = int(filename[filename.find('m')+1: filename.find('.')])  # depends on filename
 
-        fitness_progress = pickle.load(open('./poplists/Fitness_progress.{}'.format(filename), 'rb'))
+        fitness_progress = pickle.load(open('./SimonPoplists/Fitness_progress.{}'.format(filename), 'rb'))
         self.generation = int(fitness_progress[-1, 0])
 
         self.filename = filename
