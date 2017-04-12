@@ -3,46 +3,24 @@ This is the main file for running evolution of neural network agents in the Knob
 """
 import random
 from evolve import Evolution
-import numpy as np
+import json
 
-# evolution parameters
-POP_SIZE = 30  # population size
-MAX_GENS = 101  # maximum generations to evolve: make sure this is one more than a multiple of check_int
-MUTATION_VAR = 1  # mutation variance
-PROB_CROSSOVER = 0.8  # crossover probability
-ELITIST_FRAC = 0.1  # fraction of population to copy without modification to the new generation
-FPS_FRAC = 0.7  # fraction of population that reproduces (the rest is filled with new random agents)
-CHECK_INT = 10  # interval (in generations) of how often to save the current population to file
-
-# network parameters
-NUM_NEURONS = 8  # number of neurons in a network
-STEP_SIZE = 0.01  # Euler step size and simulation step size TODO: should they be the same?
-TAU_RANGE = (1, 10)
-THETA_RANGE = (-15, 15)
-W_RANGE = (-15, 15)
-G_RANGE = (1, 1)
-
-# evaluation parameters
-# VELOCITIES = [3.3, 4.3, -3.3, -4.3]  # target velocities
-# IMPACT = [0.7, 1.0]  # tracker's button press impact
-# SCREEN_WIDTH = [-20,20]  # width of the environment
-
-VELOCITIES = [4, -4]  # target velocities
-IMPACT = [1.0]  # tracker's button press impact
-SCREEN_WIDTH = [-20,20]  # width of the environment
-START_PERIOD = 100
+# load configuration settings
+json_data = open('config.json')
+config = json.load(json_data)
+json_data.close()
 
 
 def main():
     # set random seed
     random.seed(592)
 
-    evolution_params = [MAX_GENS, MUTATION_VAR, PROB_CROSSOVER, ELITIST_FRAC, FPS_FRAC, CHECK_INT]
-    network_params = [NUM_NEURONS, STEP_SIZE, TAU_RANGE, THETA_RANGE, W_RANGE, G_RANGE]
-    evaluation_params = [SCREEN_WIDTH, VELOCITIES, IMPACT, START_PERIOD]
-
     # set up evolution
-    evolution = Evolution(POP_SIZE, evolution_params, network_params, evaluation_params)
+    evolution = Evolution(config['evolution_params']['pop_size'],
+                          config['evolution_params'],
+                          config['network_params'],
+                          config['evaluation_params'],
+                          config['agent_params'])
 
     # run evolution
     evolution.run()

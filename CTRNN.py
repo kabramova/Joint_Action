@@ -62,7 +62,6 @@ class CTRNN:
         return self.Y
 
     # def make_genotype_from_params(self):
-    #     # TODO should genotype modules be defined in terms of nodes whose parameters are kept together in crossover?
     #     # return [self.Tau, self.G, self.Theta, self.W]
     #     # combine all parameters and reshape into a single vector
     #     stacked = np.vstack((self.Tau, self.G, self.Theta, self.W.T))

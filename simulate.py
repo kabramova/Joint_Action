@@ -3,14 +3,17 @@ import numpy as np
 
 
 class Simulation:
-    def __init__(self, width, step_size, velocities, impacts, startperiod, condition=False):
-        self.width = width  # [-20, 20]
+    def __init__(self, step_size, evaluation_params):
+        self.width = evaluation_params['screen_width']  # [-20, 20]
         self.step_size = step_size  # typically h, how fast things are happening in the simulation
-        self.trials = self.create_trials(velocities, impacts)
-        distance = (width[1]-width[0]) * 3
-        self.sim_length = [int(distance/abs(trial[0])/self.step_size) for trial in self.trials]  # simulation length depends on target velocity
-        self.condition = condition  # is it a sound condition?
-        self.startperiod = startperiod  # the period of time at the beginning of the trial in which the target stays still
+        self.trials = self.create_trials(evaluation_params['velocities'], evaluation_params['impacts'])
+        distance = (self.width[1]-self.width[0]) * evaluation_params['n_turns']
+        # simulation length depends on target velocity
+        self.sim_length = [int(distance/abs(trial[0])/self.step_size) for trial in self.trials]
+        self.condition = evaluation_params['condition']  # is it a sound condition?
+        # the period of time at the beginning of the trial in which the target stays still
+        self.startperiod = evaluation_params['start_period']
+        self.initial_state = evaluation_params['initial_state']
 
     @staticmethod
     def create_trials(velocities, impacts):
@@ -46,11 +49,9 @@ class Simulation:
 
         for i in range(len(trials)):
             target = Target(trials[i][0], self.step_size)
-            tracker = Tracker(trials[i][1], self.step_size)
+            tracker = Tracker(trials[i][1], self.step_size, self.condition)
             # set initial state in specified range
-            state_range = [-0.5, 0.5]
-            # state_range = [0, 0]
-            agent.brain.randomize_state(state_range)
+            agent.brain.randomize_state(self.initial_state)
 
             trial_data['target_pos'][i] = np.zeros((self.sim_length[i] + self.startperiod, 1))
             trial_data['tracker_pos'][i] = np.zeros((self.sim_length[i] + self.startperiod, 1))
@@ -58,7 +59,7 @@ class Simulation:
             if savedata:
                 trial_data['tracker_v'][i] = np.zeros((self.sim_length[i] + self.startperiod, 1))
                 trial_data['brain_state'][i] = np.zeros((self.sim_length[i] + self.startperiod, agent.brain.N))
-                trial_data['input_output'][i] = np.zeros((self.sim_length[i] + self.startperiod, 12))
+                trial_data['input_output'][i] = np.zeros((self.sim_length[i] + self.startperiod, agent.n_io))
                 trial_data['keypress'][i] = np.zeros((self.sim_length[i] + self.startperiod, 2))
 
             if self.startperiod > 0:
@@ -87,7 +88,7 @@ class Simulation:
                 sound_output = tracker.movement(self.width)
 
                 # 4) Agent hears
-                if self.condition:
+                if self.condition == 'sound':
                     agent.auditory_input(sound_output)
 
                 trial_data['target_pos'][i][j] = target.position
@@ -109,7 +110,7 @@ class Simulation:
 
             # 6) Fitness tacking:
             # trial_data['fitness'].append(1 - (np.sum(np.abs(trial_data['target_pos'][i] - trial_data['tracker_pos'][i])) /
-            #                                   (2*self.width[1]*self.sim_length[i])))
+            #                                   (2*self.width[1]*(self.sim_length[i] + self.startperiod))))
 
             cap_distance = 10
             scores = np.clip(-1/cap_distance * np.abs(trial_data['target_pos'][i] - trial_data['tracker_pos'][i]) + 1, 0, 1)
@@ -152,7 +153,7 @@ class Tracker:
     It starts in the middle of the screen and with initial 0 velocity.
     """
 
-    def __init__(self, impact, step_size, condition=False):
+    def __init__(self, impact, step_size, condition):
         self.position = 0
         self.velocity = 0
         self.impact = impact  # how much acceleration is added by button click
@@ -198,7 +199,7 @@ class Tracker:
         acceleration = np.dot(np.array([self.impact, self.impact]).T, inputs)
         self.velocity += acceleration
 
-        if self.condition:
+        if self.condition == "sound":
             self.set_timer(inputs)
 
     def set_timer(self, left_or_right):
@@ -214,25 +215,29 @@ class Agent:
     This is a class that implements agents in the simulation. Agents' brains are CTRNN, but they also have
     a particular anatomy and a connection to external input and output.
     """
-    def __init__(self, network):
+    def __init__(self, network, agent_parameters):
         self.brain = network
-        self.n_visual_sensors = 2
-        self.n_auditory_sensors = 2
-        self.n_motors = 2
-        self.VW = np.random.uniform(self.brain.w_range[0], self.brain.w_range[1], (self.n_visual_sensors * 2))
-        self.AW = np.random.uniform(self.brain.w_range[0], self.brain.w_range[1], (self.n_auditory_sensors * 2))
-        self.MW = np.random.uniform(self.brain.w_range[0], self.brain.w_range[1], (self.n_motors * 2))
-        self.gene_range = [0, 1]
+
+        self.VW = np.random.uniform(self.brain.w_range[0], self.brain.w_range[1],
+                                    (agent_parameters['n_visual_sensors'] * agent_parameters['n_visual_connections']))
+        self.AW = np.random.uniform(self.brain.w_range[0], self.brain.w_range[1],
+                                    (agent_parameters['n_audio_sensors'] * agent_parameters['n_audio_connections']))
+        self.MW = np.random.uniform(self.brain.w_range[0], self.brain.w_range[1],
+                                    (agent_parameters['n_effectors'] * agent_parameters['n_effector_connections']))
+        self.gene_range = agent_parameters['gene_range']
         self.genotype = self.make_genotype_from_params()
         self.fitness = 0
+        self.n_io = len(self.VW) + len(self.AW) + len(self.MW)  # how many input-output weights
 
         self.timer_motor_l = 0
         self.timer_motor_r = 0
-        self.crossover_points = [11, 22, 33, 44, 55, 66, 77, 88, 92, 96]
 
-        # n_modules = 4 * self.brain.N + 3  # 4 params per neuron and input-output modules
-        # crossover_points = [i*(3 + self.brain.N) for i in range(1, self.brain.N+1)]
-        # crossover_points.extend([crossover_points[-1]+i*len(self.VW) for i in range(4)])
+        # calculate crossover points
+        n_evp = len(agent_parameters['evolvable_params'])
+        crossover_points = [i * (n_evp + self.brain.N) for i in range(1, self.brain.N + 1)]
+        crossover_points.extend([crossover_points[-1] + len(self.VW),
+                                 crossover_points[-1] + len(self.VW) + len(self.AW)])
+        self.crossover_points = crossover_points
 
     def __eq__(self, other):
         if np.all(self.genotype == other.genotype):
@@ -243,7 +248,6 @@ class Agent:
         Combine all parameters and reshape into a single vector
         :return: [Tau_n1, G_n1, Theta_n1, W_n1..., all visual w, all auditory w, all motor w] 
         """
-        # TODO should genotype modules be defined in terms of nodes whose parameters are kept together in crossover?
         # return [self.Tau, self.G, self.Theta, self.W]
         tau = self.linmap(self.brain.Tau, self.brain.tau_range, self.gene_range)
         # skip G in evolution
@@ -260,12 +264,7 @@ class Agent:
         return genotype
 
     def make_params_from_genotype(self, genotype):
-        genorest, self.VW, self.AW, self.MW = np.hsplit(genotype, [88, 92, 96])
-        unflattened = genorest.reshape(3+self.brain.N, self.brain.N, order='F')
-        self.brain.Tau, self.brain.G, self.brain.Theta, self.brain.W = (np.squeeze(a) for a in np.vsplit(unflattened, [1, 2, 3]))
-        self.brain.W = self.brain.W.T
-
-        genorest, vw, aw, mw = np.hsplit(genotype, [80, 84, 88])
+        genorest, vw, aw, mw = np.hsplit(genotype, self.crossover_points[-3:])
         self.VW = self.linmap(vw, self.gene_range, self.brain.w_range)
         self.AW = self.linmap(aw, self.gene_range, self.brain.w_range)
         self.MW = self.linmap(mw, self.gene_range, self.brain.w_range)

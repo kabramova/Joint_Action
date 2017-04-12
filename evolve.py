@@ -8,7 +8,7 @@ import simulate
 
 
 class Evolution:
-    def __init__(self, pop_size, evolution_params, network_params, evaluation_params):
+    def __init__(self, pop_size, evolution_params, network_params, evaluation_params, agent_params):
         """
         Class that executes genetic search.
         :param pop_size: size of the new population
@@ -17,15 +17,16 @@ class Evolution:
         :param evaluation_params: parameters used for running trials during the evaluation
         """
         self.pop_size = pop_size
-        self.max_gens = evolution_params[0]
-        self.mutation_var = evolution_params[1]
-        self.prob_crossover = evolution_params[2]
-        self.elitist_fraction = evolution_params[3]
-        self.fps_fraction = evolution_params[4]
-        self.check_int = evolution_params[5]
-        self.step_size = network_params[1]
+        self.max_gens = evolution_params['max_gens']
+        self.mutation_var = evolution_params['mutation_variance']
+        self.prob_crossover = evolution_params['prob_crossover']
+        self.elitist_fraction = evolution_params['elitist_fraction']
+        self.fps_fraction = evolution_params['fps_fraction']
+        self.check_int = evolution_params['check_int']
+        self.step_size = network_params['step_size']
         self.network_params = network_params
         self.evaluation_params = evaluation_params
+        self.agent_params = agent_params
 
     def run(self):
         """
@@ -34,7 +35,7 @@ class Evolution:
         """
         gen = 0
         # create initial population
-        population = self.create_population(self.pop_size, self.network_params)
+        population = self.create_population(self.pop_size)
 
         # save the initial population
         popfile = open('./Agents/gen0', 'wb')
@@ -49,9 +50,7 @@ class Evolution:
             # print(gen)
             # evaluate all agents on the task
             for agent in population:
-                simulation_run = simulate.Simulation(self.evaluation_params[0], self.step_size,
-                                                     self.evaluation_params[1], self.evaluation_params[2],
-                                                     self.evaluation_params[3])
+                simulation_run = simulate.Simulation(self.step_size, self.evaluation_params)
                 trial_data = simulation_run.run_trials(agent, simulation_run.trials)  # returns a list of fitness in all trials
                 agent.fitness = np.mean(trial_data['fitness'])
 
@@ -77,26 +76,23 @@ class Evolution:
         pickle.dump(fits, fit_file)
         fit_file.close()
 
-    @staticmethod
-    def create_population(size, network_params):
+    def create_population(self, size):
         """
         Create random population: used for creating a random initial population and random portion of the new population
         in each generation.
         :return: population of agents
         """
-        n_neurons = network_params[0]
-        step_size = network_params[1]
-        tau_range = network_params[2]
-        theta_range = network_params[3]
-        w_range = network_params[4]
-        g_range = network_params[5]
-
         population = []
         for i in range(size):
             # create the agent's CTRNN brain
-            agent_brain = CTRNN.CTRNN(n_neurons, step_size, tau_range, g_range, theta_range, w_range)
+            agent_brain = CTRNN.CTRNN(self.network_params['num_neurons'],
+                                      self.network_params['step_size'],
+                                      self.network_params['tau_range'],
+                                      self.network_params['g_range'],
+                                      self.network_params['theta_range'],
+                                      self.network_params['w_range'])
             # create new agent
-            agent = simulate.Agent(agent_brain)
+            agent = simulate.Agent(agent_brain, self.agent_params)
             population.append(agent)
         return population
 
@@ -159,7 +155,7 @@ class Evolution:
             mating_counter += 2
 
         # 6) Fill up with random new agents
-        new_population[newpop_counter:] = self.create_population(n_fillup, self.network_params)
+        new_population[newpop_counter:] = self.create_population(n_fillup)
 
         return new_population
 
@@ -208,13 +204,18 @@ class Evolution:
         magnitude = np.random.normal(0, np.sqrt(mutation_var))
         unit_vector = np.array(self.make_rand_vector(len(agent.genotype)))
         mutant = deepcopy(agent)
-        mutant.genotype = np.clip(agent.genotype + magnitude * unit_vector, 0, 1)
+        mutant.genotype = np.clip(agent.genotype + magnitude * unit_vector,
+                                  self.agent_params['gene_range'][0], self.agent_params['gene_range'][1])
         mutant.make_params_from_genotype(mutant.genotype)
         return mutant
 
     @staticmethod
     def make_rand_vector(dims):
-        vec = [random.gauss(0, 1) for i in range(dims)]
+        """
+        Generate a random unit vector.  This works by first generating a vector each of whose elements 
+        is a random Gaussian and then normalizing the resulting vector.
+        """
+        vec = np.random.normal(0, 1, dims)
         mag = sum(x ** 2 for x in vec) ** .5
         return [x / mag for x in vec]
 
