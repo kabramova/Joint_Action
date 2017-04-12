@@ -1,12 +1,12 @@
 {
   "evolution_params": {
-    "pop_size": 10,
-    "max_gens": 5,
-    "mutation_variance": 1,
+    "pop_size": 30,
+    "max_gens": 51,
+    "mutation_variance": 0.25,
     "prob_crossover": 0.8,
     "elitist_fraction": 0.1,
-    "fps_fraction": 0.7,
-    "check_int": 1
+    "fps_fraction": 0.9,
+    "check_int": 10
   },
   "network_params": {
     "num_neurons": 8,
