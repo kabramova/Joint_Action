@@ -40,9 +40,9 @@ class Simulation:
         trial_data['fitness'] = []
         trial_data['target_pos'] = [None] * len(trials)
         trial_data['tracker_pos'] = [None] * len(trials)
+        trial_data['tracker_v'] = [None] * len(trials)
 
         if savedata:
-            trial_data['tracker_v'] = [None] * len(trials)
             trial_data['brain_state'] = [None] * len(trials)
             trial_data['input_output'] = [None] * len(trials)
             trial_data['keypress'] = [None] * len(trials)
@@ -55,9 +55,9 @@ class Simulation:
 
             trial_data['target_pos'][i] = np.zeros((self.sim_length[i] + self.startperiod, 1))
             trial_data['tracker_pos'][i] = np.zeros((self.sim_length[i] + self.startperiod, 1))
+            trial_data['tracker_v'][i] = np.zeros((self.sim_length[i] + self.startperiod, 1))
 
             if savedata:
-                trial_data['tracker_v'][i] = np.zeros((self.sim_length[i] + self.startperiod, 1))
                 trial_data['brain_state'][i] = np.zeros((self.sim_length[i] + self.startperiod, agent.brain.N))
                 trial_data['input_output'][i] = np.zeros((self.sim_length[i] + self.startperiod, agent.n_io))
                 trial_data['keypress'][i] = np.zeros((self.sim_length[i] + self.startperiod, 2))
@@ -70,8 +70,8 @@ class Simulation:
                     activation = agent.motor_output()
                     trial_data['target_pos'][i][j] = target.position
                     trial_data['tracker_pos'][i][j] = tracker.position
+                    trial_data['tracker_v'][i][j] = tracker.velocity
                     if savedata:
-                        trial_data['tracker_v'][i][j] = tracker.velocity
                         trial_data['brain_state'][i][j] = agent.brain.Y
                         trial_data['keypress'][i][j] = activation
                         trial_data['input_output'][i][j] = np.hstack((agent.VW, agent.AW, agent.MW))
@@ -93,8 +93,9 @@ class Simulation:
 
                 trial_data['target_pos'][i][j] = target.position
                 trial_data['tracker_pos'][i][j] = tracker.position
+                trial_data['tracker_v'][i][j] = tracker.velocity
+
                 if savedata:
-                    trial_data['tracker_v'][i][j] = tracker.velocity
                     trial_data['brain_state'][i][j] = agent.brain.Y
 
                 # 5) Update agent's neural system
@@ -109,12 +110,17 @@ class Simulation:
                     trial_data['input_output'][i][j] = np.hstack((agent.VW, agent.AW, agent.MW))
 
             # 6) Fitness tacking:
-            # trial_data['fitness'].append(1 - (np.sum(np.abs(trial_data['target_pos'][i] - trial_data['tracker_pos'][i])) /
-            #                                   (2*self.width[1]*(self.sim_length[i] + self.startperiod))))
+            fitness = 1 - (np.sum(np.abs(trial_data['target_pos'][i] - trial_data['tracker_pos'][i])) /
+                           (2*self.width[1]*(self.sim_length[i] + self.startperiod)))
+            penalty = list(trial_data['tracker_v'][i]).count(0)/(self.sim_length[i]+self.startperiod)  # penalty for not moving
+            overall_fitness = np.clip(fitness - penalty, 0, 1)
+            trial_data['fitness'].append(overall_fitness)
 
-            cap_distance = 10
-            scores = np.clip(-1/cap_distance * np.abs(trial_data['target_pos'][i] - trial_data['tracker_pos'][i]) + 1, 0, 1)
-            trial_data['fitness'].append(np.mean(scores))
+            # cap_distance = 10
+            # scores = list(np.clip(-1/cap_distance * np.abs(trial_data['target_pos'][i] - trial_data['tracker_pos'][i]) + 1, 0, 1))
+            # # scores.sort(reverse=True)
+            # trial_data['fitness'].append(np.mean(scores))
+            # # trial_data['fitness'].append(np.mean(weighted_scores))
 
         return trial_data
 
@@ -282,6 +288,10 @@ class Agent:
         :param position_target: absolute position of the target
         :return:
         """
+        # add noise to the visual input
+        position_tracker = self.add_noise(position_tracker)
+        position_target = self.add_noise(position_target)
+
         self.brain.I[7] = self.VW[0] * position_tracker  # to n8
         self.brain.I[1] = self.VW[1] * position_target  # to n2
         # self.brain.I[0] = np.sum([self.VW[2] * position_target, self.VW[3] * position_tracker])  # to n1
@@ -308,8 +318,13 @@ class Agent:
         activation = [0, 0]  # Initial activation is zero
         threshold = 0  # Threshold for output
 
-        n4 = self.brain.Y[3]  # from n4
-        n6 = self.brain.Y[5]  # from n6
+        # n4 = self.brain.Y[3]  # from n4
+        # n6 = self.brain.Y[5]  # from n6
+
+        # add a small perturbation to motor output, drawn from a Gaussian distribution with (mu=0, var=0.05)
+        # apply before application of motor gains
+        n4 = self.add_noise(self.brain.Y[3])  # from n4
+        n6 = self.add_noise(self.brain.Y[5])  # from n6
 
         # activation_left = np.sum([n4 * self.MW[0], n6 * self.MW[2]])
         # activation_right = np.sum([n4 * self.MW[1], n6 * self.MW[3]])
@@ -351,3 +366,8 @@ class Agent:
         c = rout[0]
         d = rout[1]
         return ((c + d) + (d - c) * ((2 * vin - (a + b)) / (b - a))) / 2
+
+    @staticmethod
+    def add_noise(state):
+        magnitude = np.random.normal(0, 0.05)
+        return state + magnitude

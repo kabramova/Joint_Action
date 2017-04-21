@@ -37,27 +37,27 @@ class Evolution:
         # create initial population
         population = self.create_population(self.pop_size)
 
-        # save the initial population
-        popfile = open('./Agents/gen0', 'wb')
-        pickle.dump(population, popfile)
-        popfile.close()
-
         # collect average and best fitness
         avg_fitness = []
         best_fitness = []
 
-        while gen < self.max_gens:
+        while gen < self.max_gens+1:
             # print(gen)
             # evaluate all agents on the task
             for agent in population:
                 simulation_run = simulate.Simulation(self.step_size, self.evaluation_params)
                 trial_data = simulation_run.run_trials(agent, simulation_run.trials)  # returns a list of fitness in all trials
-                agent.fitness = np.mean(trial_data['fitness'])
+                # agent.fitness = np.mean(trial_data['fitness'])
+                # agent.fitness = self.harmonic_mean(trial_data['fitness'])
+                agent.fitness = min(trial_data['fitness'])
 
             # log fitness results
             population_avg_fitness = np.mean([agent.fitness for agent in population])
+            # sort agents by fitness from best to worst
+            population.sort(key=lambda agent: agent.fitness, reverse=True)
+
             avg_fitness.append(round(population_avg_fitness, 3))
-            best_fitness.append(round(max([agent.fitness for agent in population]), 3))
+            best_fitness.append(round(population[0].fitness, 3))
 
             # reproduce population
             population = self.reproduce(population)
@@ -113,10 +113,6 @@ class Evolution:
 
         new_population = [None] * self.pop_size
 
-        # sort agents by fitness from best to worst
-        population.sort(key=lambda agent: agent.fitness, reverse=True)
-        # print("Best fitness in this generation is {}".format(population[0].fitness))
-
         # calculate all fractions
         n_best = math.floor(self.pop_size * self.elitist_fraction + 0.5)
         n_crossed = int(math.floor(self.pop_size * self.fps_fraction + 0.5)) & (-2)  # floor to the nearest even number
@@ -128,9 +124,10 @@ class Evolution:
         new_population[:n_best] = best_agents
         newpop_counter = n_best  # track where we are in the new population
 
-        # 2) Select mating population
+        # 2) Select mating population from the remaining population
 
-        mating_pool = self.select_mating_pool(population)
+        updated_fitness = self.update_fitness(population[n_best:], "rank", 1.1)
+        mating_pool = self.select_mating_pool(population[n_best:], updated_fitness, "sus")
 
         # 3) Shuffle
         random.shuffle(mating_pool)
@@ -160,27 +157,65 @@ class Evolution:
         return new_population
 
     @staticmethod
-    def select_mating_pool(population):
+    def update_fitness(population, method, max_exp_offspring=None):
         """
-        Select a mating pool population based on fitness proportionate selection method.
-        The probability of an individual being selected for reproduction is agent.fitness/total_population_fitness
-        :param population: the population from which to select the parents 
+        Update agent fitness to relative values, retain sorting from best to worst.
+        :param population: the population whose fitness needs updating
+        :param method: fitness proportionate or rank-based
+        :param max_exp_offspring: 
+        :return: 
+        """
+        rel_fitness = []
+        if method == 'fps':
+            fitnesses = [agent.fitness for agent in population]
+            total_fitness = float(sum(fitnesses))
+            rel_fitness = [f/total_fitness for f in fitnesses]
+
+        elif method == 'rank':
+            # Baker's linear ranking method: f(pos) = 2-SP+2*(SP-1)*(pos-1)/(n-1)
+            # the highest ranked individual receives max_exp_offspring (typically 1.1), the lowest receives 2 - max_exp_offspring
+            # normalized to sum to 1
+            ranks = list(range(1, len(population)+1))
+            rel_fitness = [(max_exp_offspring + (2 - 2 * max_exp_offspring) * (ranks[i]-1) / (len(population)-1)) / len(population)
+                           for i in range(len(population))]
+
+        return rel_fitness
+
+    @staticmethod
+    def select_mating_pool(population, updated_fitness, method):
+        """
+        Select a mating pool population.
+        :param population: the population from which to select the parents
+        :param updated_fitness: the relative updated fitness
         :return: selected parents for reproduction
         """
-        fitnesses = [agent.fitness for agent in population]
-        total_fitness = float(sum(fitnesses))
-        rel_fitness = [f/total_fitness for f in fitnesses]
-
-        # Generate probability intervals for each individual
-        probs = [sum(rel_fitness[:i + 1]) for i in range(len(rel_fitness))]
-        # Draw new population
         new_population = []
-        for _ in range(len(population)):
-            r = np.random.random()
-            for (i, agent) in enumerate(population):
-                if r <= probs[i]:
-                    new_population.append(agent)
-                    break
+
+        if method == "rws":
+            # roulette wheel selection
+            probs = [sum(updated_fitness[:i + 1]) for i in range(len(updated_fitness))]
+            # Draw new population
+            new_population = []
+            for _ in range(len(population)):
+                r = np.random.random()
+                for (i, agent) in enumerate(population):
+                    if r <= probs[i]:
+                        new_population.append(agent)
+                        break
+
+        elif method == "sus":
+            # stochastic universal sampling selection
+            probs = [sum(updated_fitness[:i + 1]) for i in range(len(updated_fitness))]
+            p_dist = 1/len(population)  # distance between the pointers
+            start = np.random.uniform(0, p_dist)
+            pointers = [start + i*p_dist for i in range(len(population))]
+
+            for p in pointers:
+                for (i, agent) in enumerate(population):
+                    if p <= probs[i]:
+                        new_population.append(agent)
+                        break
+
         return new_population
 
     @staticmethod
@@ -219,3 +254,6 @@ class Evolution:
         mag = sum(x ** 2 for x in vec) ** .5
         return [x / mag for x in vec]
 
+    @staticmethod
+    def harmonic_mean(fitlist):
+        return len(fitlist) / np.sum(1.0 / np.array(fitlist))

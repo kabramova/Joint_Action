@@ -1,7 +1,7 @@
 {
   "evolution_params": {
     "pop_size": 30,
-    "max_gens": 51,
+    "max_gens": 100,
     "mutation_variance": 0.25,
     "prob_crossover": 0.8,
     "elitist_fraction": 0.1,
@@ -22,7 +22,7 @@
     "impacts": [1],
     "screen_width": [-20, 20],
     "start_period": 100,
-    "initial_state": [-0.5, 0.5],
+    "initial_state": [0, 0],
     "n_turns": 3
   },
   "agent_params": {
