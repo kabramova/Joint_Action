@@ -1,10 +1,6 @@
 import numpy as np
 
 
-def sigmoid(x):
-    return 1 / (1 + np.exp(-x))
-
-
 class CTRNN:
 
     def __init__(self, number_of_neurons=0, step_size=0.01, tau_range=(1, 1), gain_range=(1, 1), theta_range=(0, 0), w_range=(0, 0)):
@@ -53,13 +49,17 @@ class CTRNN:
     def euler_step(self):
         # Compute the next state of the network given its current state and the simple euler equation
         # update the outputs of all neurons
-        o = sigmoid(np.multiply(self.G, self.Y + self.Theta))
+        o = self.sigmoid(np.multiply(self.G, self.Y + self.Theta))
         # update the state of all neurons
         self.dy_dt = np.multiply(1 / self.Tau, - self.Y + np.dot(self.W, o) + self.I) * self.step_size
         self.Y += self.dy_dt
 
     def get_state(self):
         return self.Y
+
+    @staticmethod
+    def sigmoid(x):
+        return 1 / (1 + np.exp(-x))
 
     # def make_genotype_from_params(self):
     #     # return [self.Tau, self.G, self.Theta, self.W]

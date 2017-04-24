@@ -2,7 +2,7 @@
   "evolution_params": {
     "pop_size": 30,
     "max_gens": 100,
-    "mutation_variance": 0.25,
+    "mutation_variance": 1,
     "prob_crossover": 0.8,
     "elitist_fraction": 0.1,
     "fps_fraction": 0.9,
@@ -33,6 +33,8 @@
     "n_audio_connections": 2,
     "n_effector_connections": 2,
     "gene_range": [0, 1],
-    "evolvable_params": ["tau", "theta"]
+    "evolvable_params": ["tau", "theta"],
+    "r_range": [-10, 10],
+    "e_range": [0, 10]
   }
 }

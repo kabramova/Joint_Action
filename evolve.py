@@ -48,8 +48,8 @@ class Evolution:
                 simulation_run = simulate.Simulation(self.step_size, self.evaluation_params)
                 trial_data = simulation_run.run_trials(agent, simulation_run.trials)  # returns a list of fitness in all trials
                 # agent.fitness = np.mean(trial_data['fitness'])
-                # agent.fitness = self.harmonic_mean(trial_data['fitness'])
-                agent.fitness = min(trial_data['fitness'])
+                agent.fitness = self.harmonic_mean(trial_data['fitness'])
+                # agent.fitness = min(trial_data['fitness'])
 
             # log fitness results
             population_avg_fitness = np.mean([agent.fitness for agent in population])
@@ -92,7 +92,8 @@ class Evolution:
                                       self.network_params['theta_range'],
                                       self.network_params['w_range'])
             # create new agent
-            agent = simulate.Agent(agent_brain, self.agent_params)
+            # agent = simulate.Agent(agent_brain, self.agent_params)
+            agent = simulate.EmbodiedAgent(agent_brain, self.agent_params)
             population.append(agent)
         return population
 
@@ -256,4 +257,7 @@ class Evolution:
 
     @staticmethod
     def harmonic_mean(fitlist):
-        return len(fitlist) / np.sum(1.0 / np.array(fitlist))
+        if 0 in fitlist:
+            return 0
+        else:
+            return len(fitlist) / np.sum(1.0 / np.array(fitlist))

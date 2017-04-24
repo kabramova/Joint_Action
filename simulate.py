@@ -41,40 +41,53 @@ class Simulation:
         trial_data['target_pos'] = [None] * len(trials)
         trial_data['tracker_pos'] = [None] * len(trials)
         trial_data['tracker_v'] = [None] * len(trials)
+        trial_data['keypress'] = [None] * len(trials)
 
         if savedata:
             trial_data['brain_state'] = [None] * len(trials)
-            trial_data['input_output'] = [None] * len(trials)
-            trial_data['keypress'] = [None] * len(trials)
+            trial_data['input'] = [None] * len(trials)
+            trial_data['output'] = [None] * len(trials)
+
+            trial_data['button_state'] = [None] * len(trials)
 
         for i in range(len(trials)):
             target = Target(trials[i][0], self.step_size)
             tracker = Tracker(trials[i][1], self.step_size, self.condition)
             # set initial state in specified range
             agent.brain.randomize_state(self.initial_state)
+            agent.initialize_buttons()
 
             trial_data['target_pos'][i] = np.zeros((self.sim_length[i] + self.startperiod, 1))
             trial_data['tracker_pos'][i] = np.zeros((self.sim_length[i] + self.startperiod, 1))
             trial_data['tracker_v'][i] = np.zeros((self.sim_length[i] + self.startperiod, 1))
+            trial_data['keypress'][i] = np.zeros((self.sim_length[i] + self.startperiod, 2))
 
             if savedata:
                 trial_data['brain_state'][i] = np.zeros((self.sim_length[i] + self.startperiod, agent.brain.N))
-                trial_data['input_output'][i] = np.zeros((self.sim_length[i] + self.startperiod, agent.n_io))
-                trial_data['keypress'][i] = np.zeros((self.sim_length[i] + self.startperiod, 2))
+                trial_data['input'][i] = np.zeros((self.sim_length[i] + self.startperiod, agent.brain.N))
+                trial_data['output'][i] = np.zeros((self.sim_length[i] + self.startperiod, 2))
+
+                trial_data['button_state'][i] = np.zeros((self.sim_length[i] + self.startperiod, 2))
 
             if self.startperiod > 0:
                 # don't move the target
                 for j in range(self.startperiod):
                     agent.visual_input(tracker.position, target.position)
                     agent.brain.euler_step()
-                    activation = agent.motor_output()
+                    activation, motor_activity = agent.motor_output()
+                    tracker.accelerate(activation)
+
                     trial_data['target_pos'][i][j] = target.position
                     trial_data['tracker_pos'][i][j] = tracker.position
                     trial_data['tracker_v'][i][j] = tracker.velocity
+                    trial_data['keypress'][i][j] = activation
+
                     if savedata:
                         trial_data['brain_state'][i][j] = agent.brain.Y
-                        trial_data['keypress'][i][j] = activation
-                        trial_data['input_output'][i][j] = np.hstack((agent.VW, agent.AW, agent.MW))
+
+                        trial_data['input'][i][j] = agent.brain.I
+                        trial_data['output'][i][j] = motor_activity
+                        trial_data['button_state'][i][j] = agent.button_state
 
             for j in range(self.startperiod, self.sim_length[i] + self.startperiod):
 
@@ -84,7 +97,7 @@ class Simulation:
                 # 2) Agent sees
                 agent.visual_input(tracker.position, target.position)
 
-                # 3) Agents clicks button
+                # 3) Agents moves
                 sound_output = tracker.movement(self.width)
 
                 # 4) Agent hears
@@ -102,19 +115,24 @@ class Simulation:
                 agent.brain.euler_step()
 
                 # 6) Agent reacts
-                activation = agent.motor_output()
+                activation, motor_activity = agent.motor_output()
                 tracker.accelerate(activation)
+                trial_data['keypress'][i][j] = activation
 
                 if savedata:
-                    trial_data['keypress'][i][j] = activation
-                    trial_data['input_output'][i][j] = np.hstack((agent.VW, agent.AW, agent.MW))
+
+                    trial_data['input'][i][j] = agent.brain.I
+                    trial_data['output'][i][j] = motor_activity
+                    trial_data['button_state'][i][j] = agent.button_state
 
             # 6) Fitness tacking:
-            fitness = 1 - (np.sum(np.abs(trial_data['target_pos'][i] - trial_data['tracker_pos'][i])) /
-                           (2*self.width[1]*(self.sim_length[i] + self.startperiod)))
-            penalty = list(trial_data['tracker_v'][i]).count(0)/(self.sim_length[i]+self.startperiod)  # penalty for not moving
-            overall_fitness = np.clip(fitness - penalty, 0, 1)
-            trial_data['fitness'].append(overall_fitness)
+            # fitness = 1 - (np.sum(np.abs(trial_data['target_pos'][i] - trial_data['tracker_pos'][i])) /
+            #                (2*self.width[1]*(self.sim_length[i] + self.startperiod)))
+            # penalty = list(trial_data['tracker_v'][i]).count(0)/(self.sim_length[i]+self.startperiod)  # penalty for not moving
+            # overall_fitness = np.clip(fitness - penalty, 0, 1)
+            # trial_data['fitness'].append(overall_fitness)
+
+            trial_data['fitness'].append(np.mean(trial_data['keypress'][i]))
 
             # cap_distance = 10
             # scores = list(np.clip(-1/cap_distance * np.abs(trial_data['target_pos'][i] - trial_data['tracker_pos'][i]) + 1, 0, 1))
@@ -222,13 +240,25 @@ class Agent:
     a particular anatomy and a connection to external input and output.
     """
     def __init__(self, network, agent_parameters):
-        self.brain = network
+        # "agent_params": {
+        #     "n_visual_sensors": 2,
+        #     "n_audio_sensors": 2,
+        #     "n_effectors": 2,
+        #     "n_visual_connections": 2,
+        #     "n_audio_connections": 2,
+        #     "n_effector_connections": 2,
+        #     "gene_range": [0, 1],
+        #     "evolvable_params": ["tau", "theta"]}
 
-        self.VW = np.random.uniform(self.brain.w_range[0], self.brain.w_range[1],
+        self.brain = network
+        self.r_range = agent_parameters['r_range']
+        self.e_range = agent_parameters['e_range']
+
+        self.VW = np.random.uniform(self.r_range[0], self.r_range[1],
                                     (agent_parameters['n_visual_sensors'] * agent_parameters['n_visual_connections']))
-        self.AW = np.random.uniform(self.brain.w_range[0], self.brain.w_range[1],
+        self.AW = np.random.uniform(self.r_range[0], self.r_range[1],
                                     (agent_parameters['n_audio_sensors'] * agent_parameters['n_audio_connections']))
-        self.MW = np.random.uniform(self.brain.w_range[0], self.brain.w_range[1],
+        self.MW = np.random.uniform(self.e_range[0], self.e_range[1],
                                     (agent_parameters['n_effectors'] * agent_parameters['n_effector_connections']))
         self.gene_range = agent_parameters['gene_range']
         self.genotype = self.make_genotype_from_params()
@@ -244,10 +274,14 @@ class Agent:
         crossover_points.extend([crossover_points[-1] + len(self.VW),
                                  crossover_points[-1] + len(self.VW) + len(self.AW)])
         self.crossover_points = crossover_points
+        self.button_state = [False, False]  # both buttons off in the beginning
 
     def __eq__(self, other):
         if np.all(self.genotype == other.genotype):
             return True
+
+    def initialize_buttons(self):
+        self.button_state = [False, False]
 
     def make_genotype_from_params(self):
         """
@@ -260,9 +294,9 @@ class Agent:
         # g = self.linmap(self.brain.G, self.brain.g_range, [0, 1])
         theta = self.linmap(self.brain.Theta, self.brain.theta_range, self.gene_range)
         w = self.linmap(self.brain.W.T, self.brain.w_range, self.gene_range)
-        vw = self.linmap(self.VW, self.brain.w_range, self.gene_range)
-        aw = self.linmap(self.AW, self.brain.w_range, self.gene_range)
-        mw = self.linmap(self.MW, self.brain.w_range, self.gene_range)
+        vw = self.linmap(self.VW, self.r_range, self.gene_range)
+        aw = self.linmap(self.AW, self.r_range, self.gene_range)
+        mw = self.linmap(self.MW, self.e_range, self.gene_range)
 
         stacked = np.vstack((tau, theta, w))
         flattened = stacked.reshape(stacked.size, order='F')
@@ -271,9 +305,9 @@ class Agent:
 
     def make_params_from_genotype(self, genotype):
         genorest, vw, aw, mw = np.hsplit(genotype, self.crossover_points[-3:])
-        self.VW = self.linmap(vw, self.gene_range, self.brain.w_range)
-        self.AW = self.linmap(aw, self.gene_range, self.brain.w_range)
-        self.MW = self.linmap(mw, self.gene_range, self.brain.w_range)
+        self.VW = self.linmap(vw, self.gene_range, self.r_range)
+        self.AW = self.linmap(aw, self.gene_range, self.r_range)
+        self.MW = self.linmap(mw, self.gene_range, self.e_range)
 
         unflattened = genorest.reshape(2+self.brain.N, self.brain.N, order='F')
         tau, theta, w = (np.squeeze(a) for a in np.vsplit(unflattened, [1, 2]))
@@ -349,7 +383,7 @@ class Agent:
                 self.timer_motor_r = 0.5
                 activation[1] = 1  # set right to one to influence velocity to the right
 
-        return activation
+        return activation, [activation_left, activation_right]
 
     @staticmethod
     def linmap(vin, rin, rout):
@@ -371,3 +405,67 @@ class Agent:
     def add_noise(state):
         magnitude = np.random.normal(0, 0.05)
         return state + magnitude
+
+
+class EmbodiedAgent(Agent):
+    """
+    This is a class that implements agents in the simulation. Agents' brains are CTRNN, but they also have
+    a particular anatomy and a connection to external input and output.
+    """
+    def __init__(self, network, agent_parameters):
+        # change visual input: 3 distance sensors for border_left, border_right, target
+        # each sensor connected with one connection to 3 different neurons (8, 1, 2)
+        agent_parameters["n_visual_sensors"] = 3
+        agent_parameters["n_visual_connections"] = 1
+        agent_parameters["n_effector_connections"] = 1
+        Agent.__init__(self, network, agent_parameters)
+
+    def visual_input(self, position_tracker, position_target):
+        """
+        The visual input to the agent
+        :param position_tracker: absolute position of the tracker 
+        :param position_target: absolute position of the target
+        :return:
+        """
+        # TODO: replace screen border values with a variable
+        dleft_border = self.add_noise(abs(-20 - position_tracker))
+        dright_border = self.add_noise(abs(20 - position_tracker))
+        dtarget = self.add_noise(position_target - position_tracker)
+
+        self.brain.I[7] = self.VW[0] * dleft_border  # to n8
+        self.brain.I[1] = self.VW[2] * dright_border  # to n2
+        self.brain.I[0] = self.VW[1] * dtarget  # to n1
+
+    def motor_output(self):
+        """
+        The motor output of the agent.
+        If a button neuron's output (range [0, 1]) increases to more than or equal to 0.75, 
+        then its button is turned “on” and produces a “click.” The button is turned “off” when 
+        that neuron's output falls below 0.75. 
+        :return: output
+        """
+        # Set activation threshold
+        activation = [0, 0]  # Initial activation is zero
+        threshold = 0.5  # Threshold for output
+
+        o = self.brain.sigmoid(np.multiply(self.MW, self.brain.Y[[3, 5]] + self.brain.Theta[[3, 5]]))
+        # add a small perturbation to motor output
+        # activation_right = self.add_noise(o[0])
+        # activation_left = self.add_noise(o[1])
+
+        activation_right = o[0]
+        activation_left = o[1]
+
+        if activation_left >= threshold and not self.button_state[0]:
+            activation[0] = -1   # set left activation to -1 to influence velocity to the left
+            self.button_state[0] = True
+        elif activation_left < threshold and self.button_state[0]:
+            self.button_state[0] = False
+
+        if activation_right >= threshold and not self.button_state[1]:
+            activation[1] = 1  # set right to one to influence velocity to the right
+            self.button_state[1] = True
+        elif activation_right < threshold and self.button_state[1]:
+            self.button_state[1] = False
+
+        return activation, [activation_left, activation_right]
