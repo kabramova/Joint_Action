@@ -5,6 +5,7 @@ import math
 from copy import deepcopy
 import CTRNN
 import simulate
+np.seterr(over='ignore')
 
 
 class Evolution:
@@ -17,12 +18,7 @@ class Evolution:
         :param evaluation_params: parameters used for running trials during the evaluation
         """
         self.pop_size = pop_size
-        self.max_gens = evolution_params['max_gens']
-        self.mutation_var = evolution_params['mutation_variance']
-        self.prob_crossover = evolution_params['prob_crossover']
-        self.elitist_fraction = evolution_params['elitist_fraction']
-        self.fps_fraction = evolution_params['fps_fraction']
-        self.check_int = evolution_params['check_int']
+        self.evolution_params = evolution_params
         self.step_size = network_params['step_size']
         self.network_params = network_params
         self.evaluation_params = evaluation_params
@@ -38,18 +34,19 @@ class Evolution:
         population = self.create_population(self.pop_size)
 
         # collect average and best fitness
-        avg_fitness = []
-        best_fitness = []
+        avg_fitness = [0]
+        best_fitness = [0]
+        best_counter = 0
 
-        while gen < self.max_gens+1:
-            # print(gen)
+        while gen < self.evolution_params['max_gens']+1:
+            print(gen)
             # evaluate all agents on the task
             for agent in population:
                 simulation_run = simulate.Simulation(self.step_size, self.evaluation_params)
                 trial_data = simulation_run.run_trials(agent, simulation_run.trials)  # returns a list of fitness in all trials
                 # agent.fitness = np.mean(trial_data['fitness'])
-                agent.fitness = self.harmonic_mean(trial_data['fitness'])
-                # agent.fitness = min(trial_data['fitness'])
+                # agent.fitness = self.harmonic_mean(trial_data['fitness'])
+                agent.fitness = min(trial_data['fitness'])
 
             # log fitness results
             population_avg_fitness = np.mean([agent.fitness for agent in population])
@@ -57,24 +54,45 @@ class Evolution:
             population.sort(key=lambda agent: agent.fitness, reverse=True)
 
             avg_fitness.append(round(population_avg_fitness, 3))
-            best_fitness.append(round(population[0].fitness, 3))
+            bf = round(population[0].fitness, 3)
 
-            # reproduce population
-            population = self.reproduce(population)
+            if bf == best_fitness[-1]:
+                best_counter += 1
 
-            # save the intermediate population
-            if gen % self.check_int == 0:
+                # if fitness hasn't increased in a set number of generations, stop the search
+                if best_counter > self.evolution_params['evolution_break']:
+                    popfile = open('./Agents/gen{}'.format(gen), 'wb')
+                    pickle.dump(population, popfile)
+                    popfile.close()
+                    print("Stopped the search at generation {}".format(gen))
+
+                    best_fitness.append(bf)
+
+                    fits = [avg_fitness, best_fitness]
+                    fit_file = open('./Agents/fitnesses', 'wb')
+                    pickle.dump(fits, fit_file)
+                    fit_file.close()
+                    break
+            else:
+                best_counter = 0
+
+            best_fitness.append(bf)
+
+            # save the intermediate population and fitness
+            if gen % self.evolution_params['check_int'] == 0:
                 popfile = open('./Agents/gen{}'.format(gen), 'wb')
                 pickle.dump(population, popfile)
                 popfile.close()
                 print("Saved generation {}".format(gen))
 
-            gen += 1
+                fits = [avg_fitness, best_fitness]
+                fit_file = open('./Agents/fitnesses', 'wb')
+                pickle.dump(fits, fit_file)
+                fit_file.close()
 
-        fits = [avg_fitness, best_fitness]
-        fit_file = open('./Agents/fitnesses', 'wb')
-        pickle.dump(fits, fit_file)
-        fit_file.close()
+            # reproduce population
+            population = self.reproduce(population)
+            gen += 1
 
     def create_population(self, size):
         """
@@ -115,8 +133,8 @@ class Evolution:
         new_population = [None] * self.pop_size
 
         # calculate all fractions
-        n_best = math.floor(self.pop_size * self.elitist_fraction + 0.5)
-        n_crossed = int(math.floor(self.pop_size * self.fps_fraction + 0.5)) & (-2)  # floor to the nearest even number
+        n_best = math.floor(self.pop_size * self.evolution_params['elitist_fraction'] + 0.5)
+        n_crossed = int(math.floor(self.pop_size * self.evolution_params['fps_fraction'] + 0.5)) & (-2)  # floor to the nearest even number
         n_fillup = self.pop_size - (n_best + n_crossed)
 
         # 1) Elitist selection
@@ -127,8 +145,8 @@ class Evolution:
 
         # 2) Select mating population from the remaining population
 
-        updated_fitness = self.update_fitness(population[n_best:], "rank", 1.1)
-        mating_pool = self.select_mating_pool(population[n_best:], updated_fitness, "sus")
+        updated_fitness = self.update_fitness(population, self.evolution_params['fitness_update'], 1.1)
+        mating_pool = self.select_mating_pool(population, updated_fitness, n_crossed, self.evolution_params['selection'])
 
         # 3) Shuffle
         random.shuffle(mating_pool)
@@ -138,19 +156,25 @@ class Evolution:
         mating_finish = newpop_counter + n_crossed
 
         while newpop_counter < mating_finish:
-            r = np.random.random()
-            parent1 = mating_pool[mating_counter]
-            parent2 = mating_pool[mating_counter + 1]
+            if (mating_finish - newpop_counter) == 1:
+                new_population[newpop_counter] = self.mutate(mating_pool[mating_counter], self.evolution_params['mutation_variance'])
+                newpop_counter += 1
+                mating_counter += 1
 
-            if r < self.prob_crossover and parent1 != parent2:
-                child1, child2 = self.crossover(parent1, parent2)
             else:
-                # if the two parents are the same, mutate them to get children
-                child1 = self.mutate(parent1, self.mutation_var)
-                child2 = self.mutate(parent2, self.mutation_var)
-            new_population[newpop_counter], new_population[newpop_counter+1] = child1, child2
-            newpop_counter += 2
-            mating_counter += 2
+                r = np.random.random()
+                parent1 = mating_pool[mating_counter]
+                parent2 = mating_pool[mating_counter + 1]
+
+                if r < self.evolution_params['prob_crossover'] and parent1 != parent2:
+                    child1, child2 = self.crossover(parent1, parent2)
+                else:
+                    # if the two parents are the same, mutate them to get children
+                    child1 = self.mutate(parent1, self.evolution_params['mutation_variance'])
+                    child2 = self.mutate(parent2, self.evolution_params['mutation_variance'])
+                new_population[newpop_counter], new_population[newpop_counter+1] = child1, child2
+                newpop_counter += 2
+                mating_counter += 2
 
         # 6) Fill up with random new agents
         new_population[newpop_counter:] = self.create_population(n_fillup)
@@ -180,14 +204,30 @@ class Evolution:
             rel_fitness = [(max_exp_offspring + (2 - 2 * max_exp_offspring) * (ranks[i]-1) / (len(population)-1)) / len(population)
                            for i in range(len(population))]
 
+        elif method == 'sigma':
+            # for every individual 1 + (I(f) - P(avg_f))/2*P(std) is calculated
+            # if value is below zero, a small positive constant is given so the individual has some probability
+            # of being chosen. The numbers are then normalized
+            fitnesses = [agent.fitness for agent in population]
+            avg = np.mean(fitnesses)
+            std = max(0.0001, np.std(fitnesses))
+            exp_values = list((1 + ((f - avg) / (2 * std))) for f in fitnesses)
+
+            for i, v in enumerate(exp_values):
+                if v <= 0:
+                    exp_values[i] = 1 / len(population)
+            s = sum(exp_values)
+            rel_fitness = list(e / s for e in exp_values)
+
         return rel_fitness
 
     @staticmethod
-    def select_mating_pool(population, updated_fitness, method):
+    def select_mating_pool(population, updated_fitness, n_parents, method):
         """
         Select a mating pool population.
         :param population: the population from which to select the parents
         :param updated_fitness: the relative updated fitness
+        :param n_parents: how many parents to select
         :return: selected parents for reproduction
         """
         new_population = []
@@ -197,7 +237,7 @@ class Evolution:
             probs = [sum(updated_fitness[:i + 1]) for i in range(len(updated_fitness))]
             # Draw new population
             new_population = []
-            for _ in range(len(population)):
+            for _ in range(n_parents):
                 r = np.random.random()
                 for (i, agent) in enumerate(population):
                     if r <= probs[i]:
@@ -207,9 +247,9 @@ class Evolution:
         elif method == "sus":
             # stochastic universal sampling selection
             probs = [sum(updated_fitness[:i + 1]) for i in range(len(updated_fitness))]
-            p_dist = 1/len(population)  # distance between the pointers
+            p_dist = 1/n_parents  # distance between the pointers
             start = np.random.uniform(0, p_dist)
-            pointers = [start + i*p_dist for i in range(len(population))]
+            pointers = [start + i*p_dist for i in range(n_parents)]
 
             for p in pointers:
                 for (i, agent) in enumerate(population):

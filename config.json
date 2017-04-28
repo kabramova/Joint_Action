@@ -1,17 +1,20 @@
 {
   "evolution_params": {
-    "pop_size": 30,
-    "max_gens": 100,
+    "pop_size": 80,
+    "max_gens": 500,
     "mutation_variance": 1,
     "prob_crossover": 0.8,
-    "elitist_fraction": 0.1,
+    "elitist_fraction": 0.05,
     "fps_fraction": 0.9,
-    "check_int": 10
+    "fitness_update": "rank",
+    "selection": "sus",
+    "check_int": 25,
+    "evolution_break": 30
   },
   "network_params": {
     "num_neurons": 8,
     "step_size": 0.01,
-    "tau_range": [1, 10],
+    "tau_range": [1, 100],
     "theta_range": [-15, 15],
     "w_range": [-15, 15],
     "g_range": [1, 1]
@@ -34,7 +37,7 @@
     "n_effector_connections": 2,
     "gene_range": [0, 1],
     "evolvable_params": ["tau", "theta"],
-    "r_range": [-10, 10],
-    "e_range": [0, 10]
+    "r_range": [-100, 100],
+    "e_range": [-10, 10]
   }
 }

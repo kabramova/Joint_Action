@@ -74,7 +74,8 @@ class Simulation:
                 for j in range(self.startperiod):
                     agent.visual_input(tracker.position, target.position)
                     agent.brain.euler_step()
-                    activation, motor_activity = agent.motor_output()
+                    # activation, motor_activity = agent.motor_output()
+                    activation = agent.motor_output()
                     tracker.accelerate(activation)
 
                     trial_data['target_pos'][i][j] = target.position
@@ -86,7 +87,7 @@ class Simulation:
                         trial_data['brain_state'][i][j] = agent.brain.Y
 
                         trial_data['input'][i][j] = agent.brain.I
-                        trial_data['output'][i][j] = motor_activity
+                        # trial_data['output'][i][j] = motor_activity
                         trial_data['button_state'][i][j] = agent.button_state
 
             for j in range(self.startperiod, self.sim_length[i] + self.startperiod):
@@ -115,24 +116,25 @@ class Simulation:
                 agent.brain.euler_step()
 
                 # 6) Agent reacts
-                activation, motor_activity = agent.motor_output()
+                # activation, motor_activity = agent.motor_output()
+                activation = agent.motor_output()
                 tracker.accelerate(activation)
                 trial_data['keypress'][i][j] = activation
 
                 if savedata:
 
                     trial_data['input'][i][j] = agent.brain.I
-                    trial_data['output'][i][j] = motor_activity
+                    # trial_data['output'][i][j] = motor_activity
                     trial_data['button_state'][i][j] = agent.button_state
 
             # 6) Fitness tacking:
-            # fitness = 1 - (np.sum(np.abs(trial_data['target_pos'][i] - trial_data['tracker_pos'][i])) /
-            #                (2*self.width[1]*(self.sim_length[i] + self.startperiod)))
-            # penalty = list(trial_data['tracker_v'][i]).count(0)/(self.sim_length[i]+self.startperiod)  # penalty for not moving
-            # overall_fitness = np.clip(fitness - penalty, 0, 1)
-            # trial_data['fitness'].append(overall_fitness)
+            fitness = 1 - (np.sum(np.abs(trial_data['target_pos'][i] - trial_data['tracker_pos'][i])) /
+                           (2*self.width[1]*(self.sim_length[i] + self.startperiod)))
+            penalty = list(trial_data['tracker_v'][i]).count(0)/(self.sim_length[i]+self.startperiod)  # penalty for not moving
+            overall_fitness = np.clip(fitness - penalty, 0, 1)
+            trial_data['fitness'].append(overall_fitness)
 
-            trial_data['fitness'].append(np.mean(trial_data['keypress'][i]))
+            # trial_data['fitness'].append(np.mean(trial_data['keypress'][i]))
 
             # cap_distance = 10
             # scores = list(np.clip(-1/cap_distance * np.abs(trial_data['target_pos'][i] - trial_data['tracker_pos'][i]) + 1, 0, 1))
@@ -350,21 +352,22 @@ class Agent:
         """
         # Set activation threshold
         activation = [0, 0]  # Initial activation is zero
-        threshold = 0  # Threshold for output
+        # threshold = 0  # Threshold for output
+        threshold = 0.5  # Threshold for output
 
-        # n4 = self.brain.Y[3]  # from n4
-        # n6 = self.brain.Y[5]  # from n6
+        n4 = self.brain.Y[3]  # from n4
+        n6 = self.brain.Y[5]  # from n6
 
         # add a small perturbation to motor output, drawn from a Gaussian distribution with (mu=0, var=0.05)
         # apply before application of motor gains
-        n4 = self.add_noise(self.brain.Y[3])  # from n4
-        n6 = self.add_noise(self.brain.Y[5])  # from n6
+        # n4 = self.add_noise(self.brain.Y[3])  # from n4
+        # n6 = self.add_noise(self.brain.Y[5])  # from n6
 
         # activation_left = np.sum([n4 * self.MW[0], n6 * self.MW[2]])
         # activation_right = np.sum([n4 * self.MW[1], n6 * self.MW[3]])
 
-        activation_left = n4 * self.MW[0] + n6 * self.MW[2]
-        activation_right = n4 * self.MW[1] + n6 * self.MW[3]
+        activation_left = self.brain.sigmoid(n4 * self.MW[0] + n6 * self.MW[2])
+        activation_right = self.brain.sigmoid(n4 * self.MW[1] + n6 * self.MW[3])
 
         # Update timer:
         if self.timer_motor_l > 0:
@@ -383,7 +386,7 @@ class Agent:
                 self.timer_motor_r = 0.5
                 activation[1] = 1  # set right to one to influence velocity to the right
 
-        return activation, [activation_left, activation_right]
+        return activation
 
     @staticmethod
     def linmap(vin, rin, rout):
@@ -417,7 +420,7 @@ class EmbodiedAgent(Agent):
         # each sensor connected with one connection to 3 different neurons (8, 1, 2)
         agent_parameters["n_visual_sensors"] = 3
         agent_parameters["n_visual_connections"] = 1
-        agent_parameters["n_effector_connections"] = 1
+        # agent_parameters["n_effector_connections"] = 1
         Agent.__init__(self, network, agent_parameters)
 
     def visual_input(self, position_tracker, position_target):
@@ -428,44 +431,47 @@ class EmbodiedAgent(Agent):
         :return:
         """
         # TODO: replace screen border values with a variable
-        dleft_border = self.add_noise(abs(-20 - position_tracker))
-        dright_border = self.add_noise(abs(20 - position_tracker))
+        # dleft_border = self.add_noise(abs(-20 - position_tracker))
+        # dright_border = self.add_noise(abs(20 - position_tracker))
+        dleft_border = self.add_noise(-20 - position_tracker)
+        dright_border = self.add_noise(20 - position_tracker)
+
         dtarget = self.add_noise(position_target - position_tracker)
 
         self.brain.I[7] = self.VW[0] * dleft_border  # to n8
         self.brain.I[1] = self.VW[2] * dright_border  # to n2
         self.brain.I[0] = self.VW[1] * dtarget  # to n1
 
-    def motor_output(self):
-        """
-        The motor output of the agent.
-        If a button neuron's output (range [0, 1]) increases to more than or equal to 0.75, 
-        then its button is turned “on” and produces a “click.” The button is turned “off” when 
-        that neuron's output falls below 0.75. 
-        :return: output
-        """
-        # Set activation threshold
-        activation = [0, 0]  # Initial activation is zero
-        threshold = 0.5  # Threshold for output
-
-        o = self.brain.sigmoid(np.multiply(self.MW, self.brain.Y[[3, 5]] + self.brain.Theta[[3, 5]]))
-        # add a small perturbation to motor output
-        # activation_right = self.add_noise(o[0])
-        # activation_left = self.add_noise(o[1])
-
-        activation_right = o[0]
-        activation_left = o[1]
-
-        if activation_left >= threshold and not self.button_state[0]:
-            activation[0] = -1   # set left activation to -1 to influence velocity to the left
-            self.button_state[0] = True
-        elif activation_left < threshold and self.button_state[0]:
-            self.button_state[0] = False
-
-        if activation_right >= threshold and not self.button_state[1]:
-            activation[1] = 1  # set right to one to influence velocity to the right
-            self.button_state[1] = True
-        elif activation_right < threshold and self.button_state[1]:
-            self.button_state[1] = False
-
-        return activation, [activation_left, activation_right]
+    # def motor_output(self):
+    #     """
+    #     The motor output of the agent.
+    #     If a button neuron's output (range [0, 1]) increases to more than or equal to 0.75,
+    #     then its button is turned “on” and produces a “click.” The button is turned “off” when
+    #     that neuron's output falls below 0.75.
+    #     :return: output
+    #     """
+    #     # Set activation threshold
+    #     activation = [0, 0]  # Initial activation is zero
+    #     threshold = 0.5  # Threshold for output
+    #
+    #     o = self.brain.sigmoid(np.multiply(self.MW, self.brain.Y[[3, 5]] + self.brain.Theta[[3, 5]]))
+    #     # add a small perturbation to motor output
+    #     # activation_right = self.add_noise(o[0])
+    #     # activation_left = self.add_noise(o[1])
+    #
+    #     activation_right = o[0]
+    #     activation_left = o[1]
+    #
+    #     if activation_left >= threshold and not self.button_state[0]:
+    #         activation[0] = -1   # set left activation to -1 to influence velocity to the left
+    #         self.button_state[0] = True
+    #     elif activation_left < threshold and self.button_state[0]:
+    #         self.button_state[0] = False
+    #
+    #     if activation_right >= threshold and not self.button_state[1]:
+    #         activation[1] = 1  # set right to one to influence velocity to the right
+    #         self.button_state[1] = True
+    #     elif activation_right < threshold and self.button_state[1]:
+    #         self.button_state[1] = False
+    #
+    #     return activation, [activation_left, activation_right]

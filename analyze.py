@@ -3,6 +3,7 @@ import simulate
 import matplotlib.pyplot as plt
 import json
 from evolve import Evolution
+import numpy as np
 
 
 def run_single_agent(generation_num, agent_num, toplot):
@@ -13,7 +14,6 @@ def run_single_agent(generation_num, agent_num, toplot):
     pop_file = open('./Agents/gen{}'.format(generation_num), 'rb')
     population = pickle.load(pop_file)
     pop_file.close()
-    population.sort(key=lambda agent: agent.fitness, reverse=True)
     agent = population[agent_num]
 
     simulation_run = simulate.Simulation(config['network_params']['step_size'], config['evaluation_params'])
@@ -42,6 +42,9 @@ def run_single_agent(generation_num, agent_num, toplot):
         plt.legend()
         plt.show()
 
+    elif toplot == 'none':
+        pass
+
     else:
         plt.plot(trial_data['target_pos'][toplot], label='Target position')
         plt.plot(trial_data['tracker_pos'][toplot], label='Tracker position')
@@ -57,7 +60,7 @@ def run_single_agent(generation_num, agent_num, toplot):
         plt.legend()
         plt.show()
 
-    return trial_data
+    return trial_data, agent
 
 
 td = run_single_agent(100, 0, "all")
@@ -139,6 +142,24 @@ def run_random_population(size, toplot):
     return trial_data, agent
 
 td2, ag = run_random_population(1, 0)
-td2 = run_random_population(1, "all")
+td2, ag = run_random_population(1, "all")
 
-td3 = run_random_population(100, "all")
+td3, ag = run_random_population(100, "all")
+
+
+def plot_weights(gens):
+    weights = np.zeros((len(gens), 64))
+    for i in range(len(gens)):
+        td, ag = run_single_agent(gens[i], 0, "none")
+        weights[i, :] = np.reshape(ag.brain.W, (1, 64))
+    return weights
+
+w = plot_weights([0, 50, 100, 150, 200, 250])
+
+
+def load_population(gen):
+    pop_file = open('./Agents/gen{}'.format(gen), 'rb')
+    population = pickle.load(pop_file)
+    pop_file.close()
+    population.sort(key=lambda agent: agent.fitness, reverse=True)
+    return population

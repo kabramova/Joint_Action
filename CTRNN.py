@@ -38,8 +38,9 @@ class CTRNN:
         # a uniform distribution over the allowed ranges
         self.Tau = np.random.uniform(self.tau_range[0], self.tau_range[1], self.N)
         self.G = np.random.uniform(self.g_range[0], self.g_range[1], self.N)
-        self.Theta = np.random.uniform(self.theta_range[0], self.theta_range[1], self.N)
         self.W = np.random.uniform(self.w_range[0], self.w_range[1], (self.N, self.N))
+        # self.Theta = np.random.uniform(self.theta_range[0], self.theta_range[1], self.N)
+        self.Theta = self.center_cross(self.W)
         # self.genotype = self.make_genotype_from_params()  # these are the evolvable parameters
 
     def randomize_state(self, state_range):
@@ -61,13 +62,7 @@ class CTRNN:
     def sigmoid(x):
         return 1 / (1 + np.exp(-x))
 
-    # def make_genotype_from_params(self):
-    #     # return [self.Tau, self.G, self.Theta, self.W]
-    #     # combine all parameters and reshape into a single vector
-    #     stacked = np.vstack((self.Tau, self.G, self.Theta, self.W.T))
-    #     flattened = stacked.reshape(stacked.size, order='F')
-    #     return flattened
-    #
-    # def make_params_from_genotype(self, genotype):
-    #     unflattened = genotype.reshape(3+self.N, self.N, order='F')
-    #     self.Tau, self.G, self.Theta, self.W = np.vsplit(unflattened, [1, 2, 3])
+    @staticmethod
+    def center_cross(weights):
+        theta = -np.sum(weights, axis=1)/2
+        return theta
