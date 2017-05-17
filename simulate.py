@@ -131,21 +131,21 @@ class Simulation:
                     trial_data['button_state'][i][j] = agent.button_state
 
             # 6) Fitness tacking:
-            # fitness = 1 - (np.sum(np.abs(trial_data['target_pos'][i] - trial_data['tracker_pos'][i])) /
-            #                (2*self.width[1]*(self.sim_length[i] + self.startperiod)))
-            # # penalty for not moving in the trial not counting the delay period
-            # penalty = list(trial_data['tracker_v'][i][self.startperiod:]).count(0)/(self.sim_length[i])
-            # # if penalty decreases the score below 0, set it to 0
-            # overall_fitness = np.clip(fitness - penalty, 0, 1)
-            # trial_data['fitness'].append(overall_fitness)
+            fitness = 1 - (np.sum(np.abs(trial_data['target_pos'][i] - trial_data['tracker_pos'][i])) /
+                           (2*self.width[1]*(self.sim_length[i] + self.startperiod)))
+            # penalty for not moving in the trial not counting the delay period
+            penalty = list(trial_data['tracker_v'][i][self.startperiod:]).count(0)/(self.sim_length[i])
+            # if penalty decreases the score below 0, set it to 0
+            overall_fitness = np.clip(fitness - penalty, 0, 1)
+            trial_data['fitness'].append(overall_fitness)
 
             # trial_data['fitness'].append(np.mean(trial_data['keypress'][i]))
 
-            cap_distance = 10
-            total_dist = np.abs(trial_data['target_pos'][i] - trial_data['tracker_pos'][i])
-            scores = np.clip(-1/cap_distance * total_dist + 1, 0, 1)
+            # cap_distance = 10
+            # total_dist = np.abs(trial_data['target_pos'][i] - trial_data['tracker_pos'][i])
+            # scores = np.clip(-1/cap_distance * total_dist + 1, 0, 1)
+            # trial_data['fitness'].append(np.mean(scores))
             # scores.sort(reverse=True)
-            trial_data['fitness'].append(np.mean(scores))
             # trial_data['fitness'].append(np.mean(weighted_scores))
 
         return trial_data
