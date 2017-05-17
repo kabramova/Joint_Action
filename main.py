@@ -4,6 +4,8 @@ This is the main file for running evolution of neural network agents in the Knob
 import random
 from evolve import Evolution
 import json
+# from profilestats import profile
+
 
 # load configuration settings
 json_data = open('config.json')
@@ -11,6 +13,7 @@ config = json.load(json_data)
 json_data.close()
 
 
+# @profile(print_stats=10)
 def main():
     # set random seed
     random.seed(592)
@@ -24,7 +27,6 @@ def main():
 
     # run evolution
     evolution.run()
-
     return
 
 

@@ -45,8 +45,8 @@ class Evolution:
                 simulation_run = simulate.Simulation(self.step_size, self.evaluation_params)
                 trial_data = simulation_run.run_trials(agent, simulation_run.trials)  # returns a list of fitness in all trials
                 # agent.fitness = np.mean(trial_data['fitness'])
-                # agent.fitness = self.harmonic_mean(trial_data['fitness'])
-                agent.fitness = min(trial_data['fitness'])
+                agent.fitness = self.harmonic_mean(trial_data['fitness'])
+                # agent.fitness = min(trial_data['fitness'])
 
             # log fitness results
             population_avg_fitness = np.mean([agent.fitness for agent in population])
@@ -79,7 +79,7 @@ class Evolution:
             best_fitness.append(bf)
 
             # save the intermediate population and fitness
-            if gen % self.evolution_params['check_int'] == 0:
+            if gen % self.evolution_params['check_int'] == 0 or gen == self.evolution_params['max_gens']:
                 popfile = open('./Agents/gen{}'.format(gen), 'wb')
                 pickle.dump(population, popfile)
                 popfile.close()
@@ -111,7 +111,10 @@ class Evolution:
                                       self.network_params['w_range'])
             # create new agent
             # agent = simulate.Agent(agent_brain, self.agent_params)
-            agent = simulate.EmbodiedAgent(agent_brain, self.agent_params)
+            # agent = simulate.EmbodiedAgentV1(agent_brain, self.agent_params, self.evaluation_params['screen_width'])
+            # agent = simulate.EmbodiedAgentV2(agent_brain, self.agent_params, self.evaluation_params['screen_width'])
+            # agent = simulate.ButtonOnOffAgent(agent_brain, self.agent_params, self.evaluation_params['screen_width'])
+            agent = simulate.DirectVelocityAgent(agent_brain, self.agent_params, self.evaluation_params['screen_width'])
             population.append(agent)
         return population
 
@@ -119,7 +122,7 @@ class Evolution:
         """
         Reproduce a single generation in the following way:
         1) Copy the proportion equal to elitist_fraction of the current population to the new population (these are best_agents)
-        2) Select the rest of the population for crossover using fitness proportionate selection (FPS), excluding the best_agents
+        2) Select part of the population for crossover using some selection method (set in config)
         3) Shuffle the selected population in preparation for cross-over
         4) Create crossover_fraction children of selected population with probability of crossover equal to prob_crossover.
         Crossover takes place at genome module boundaries (single neurons).
