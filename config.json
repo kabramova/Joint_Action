@@ -1,15 +1,15 @@
 {
   "evolution_params": {
     "pop_size": 50,
-    "max_gens": 100,
+    "max_gens": 500,
     "mutation_variance": 1,
     "prob_crossover": 0.8,
     "elitist_fraction": 0.05,
     "fps_fraction": 0.9,
     "fitness_update": "rank",
     "selection": "sus",
-    "check_int": 10,
-    "evolution_break": 50
+    "check_int": 50,
+    "evolution_break": 100
   },
   "network_params": {
     "num_neurons": 8,
@@ -22,12 +22,14 @@
   "evaluation_params": {
     "condition": "no-sound",
     "velocities": [-2, -3, -4, 2, 3, 4],
-    "impacts": [1],
+    "impacts": [1, 2, 3],
+    "tg_start_range": [-5, 5],
+    "tg_start_variants": [2],
     "screen_width": [-20, 20],
     "start_period": 100,
-    "initial_state": [-0.5, 0.5],
+    "initial_state": [0, 0],
     "n_turns": 3,
-    "velocity_control": "direct"
+    "velocity_control": "buttons"
   },
   "agent_params": {
     "n_visual_sensors": 2,

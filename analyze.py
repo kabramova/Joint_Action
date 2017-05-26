@@ -2,7 +2,7 @@ import pickle
 import simulate
 import matplotlib.pyplot as plt
 import json
-from evolve import Evolution
+import evolve
 import numpy as np
 import datetime
 import os
@@ -28,7 +28,7 @@ def pop_fitness(population):
     return [agent.fitness for agent in population]
 
 
-def plot_data(trial_data, to_plot, fig_title):
+def plot_data(trial_data, to_plot, fig_title, lims):
 
     if to_plot == "all":
         num_trials = len(trial_data['target_pos'])
@@ -39,6 +39,7 @@ def plot_data(trial_data, to_plot, fig_title):
 
         for p in range(num_trials):
             ax = fig.add_subplot(2, num_cols, p+1)
+            ax.set_ylim(lims)
             ax.plot(trial_data['target_pos'][p], label='Target position')
             ax.plot(trial_data['tracker_pos'][p], label='Tracker position')
             ax.plot(trial_data['tracker_v'][p], label='Tracker velocity')
@@ -54,7 +55,6 @@ def plot_data(trial_data, to_plot, fig_title):
             # ax.plot(trial_data['input'][p][:, 7], label='Input to n8')
             # ax.plot(trial_data['output'][p][:, 0], label='Output of n7')
             # ax.plot(trial_data['output'][p][:, 1], label='Output of n8')
-
         plt.legend()
         plt.show()
 
@@ -79,7 +79,7 @@ def run_random_population(size, to_plot):
     :return: 
     """
     config = load_config()
-    evolution = Evolution(config['evolution_params']['pop_size'],
+    evolution = evolve.Evolution(config['evolution_params']['pop_size'],
                           config['evolution_params'],
                           config['network_params'],
                           config['evaluation_params'],
@@ -87,6 +87,7 @@ def run_random_population(size, to_plot):
     population = evolution.create_population(size)
     for agent in population:
         simulation_run = simulate.Simulation(evolution.step_size, evolution.evaluation_params)
+        # simulation_run = simulate.SimpleSimulation(evolution.step_size, evolution.evaluation_params)
         trial_data = simulation_run.run_trials(agent, simulation_run.trials)  # returns a list of fitness in all trials
         # agent.fitness = np.mean(trial_data['fitness'])
         agent.fitness = evolution.harmonic_mean(trial_data['fitness'])
@@ -95,15 +96,13 @@ def run_random_population(size, to_plot):
     agent = population[0]
     print(agent.fitness)
     simulation_run = simulate.Simulation(evolution.step_size, evolution.evaluation_params)
+    # simulation_run = simulate.SimpleSimulation(evolution.step_size, evolution.evaluation_params)
     trial_data = simulation_run.run_trials(agent, simulation_run.trials, savedata=True)  # returns a list of fitness in all trials
     fig_title = "Best agent from random population"
-    plot_data(trial_data, to_plot, fig_title)
+    lims = [config['evaluation_params']['screen_width'][0]-1, config['evaluation_params']['screen_width'][1]+1]
+    plot_data(trial_data, to_plot, fig_title, lims)
 
     return trial_data, agent
-
-td2, ag2 = run_random_population(1, 0)
-td3, ag3 = run_random_population(1, "all")
-td4, ag4 = run_random_population(100, "all")
 
 
 def run_single_agent(generation_num, agent_num, to_plot):
@@ -118,13 +117,13 @@ def run_single_agent(generation_num, agent_num, to_plot):
     population = load_population(generation_num)
     agent = population[agent_num]
     simulation_run = simulate.Simulation(config['network_params']['step_size'], config['evaluation_params'])
+    # simulation_run = simulate.SimpleSimulation(config['network_params']['step_size'], config['evaluation_params'])
     trial_data = simulation_run.run_trials(agent, simulation_run.trials, savedata=True)
     fig_title = "Generation {}, agent {}".format(generation_num, agent_num)
-    plot_data(trial_data, to_plot, fig_title)
+    lims = [config['evaluation_params']['screen_width'][0]-1, config['evaluation_params']['screen_width'][1]+1]
+    plot_data(trial_data, to_plot, fig_title, lims)
 
     return trial_data, agent
-
-td1, ag1 = run_single_agent(100, 0, "all")
 
 
 def plot_fitness():
@@ -140,6 +139,10 @@ def plot_fitness():
     plt.show()
 
 plot_fitness()
+td1, ag1 = run_single_agent(100, 0, "all")
+td2, ag2 = run_random_population(1, 0)
+td3, ag3 = run_random_population(1, "all")
+td4, ag4 = run_random_population(100, "all")
 
 
 def plot_weights(gens, agent_num):
@@ -177,7 +180,7 @@ def animate_trial(generation_num, agent_num, trial_num):
     target_pos = trial_data['target_pos'][trial_num]
     tracker_pos = trial_data['tracker_pos'][trial_num]
     keypress = trial_data['keypress'][trial_num]
-    sim_length = simulation_run.sim_length[trial_num] + simulation_run.startperiod
+    sim_length = simulation_run.sim_length[trial_num] + simulation_run.start_period
 
     # Save the current state of the system
     times = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
@@ -197,7 +200,7 @@ def animate_trial(generation_num, agent_num, trial_num):
     left_border = round(0 - region_width / 2, 2)
 
     # Set initial target direction:
-    if target_pos[simulation_run.startperiod] > 0:
+    if target_pos[simulation_run.start_period] > 0:
         direction = "right"
     else:
         direction = "left"

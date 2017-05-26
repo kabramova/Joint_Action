@@ -24,71 +24,70 @@ class Evolution:
         self.evaluation_params = evaluation_params
         self.agent_params = agent_params
 
-    def run(self):
+    def run(self, gen_to_load):
         """
         Execute a full search run until some condition is reached.
+        :param gen_to_load: which generation to load if starting from an existing population
         :return: the last population in the search
         """
         gen = 0
-        # create initial population
-        population = self.create_population(self.pop_size)
+        # create initial population or load existing one
+        if gen_to_load is None:
+            population = self.create_population(self.pop_size)
+        else:
+            population = self.load_population(gen)
 
         # collect average and best fitness
         avg_fitness = [0]
         best_fitness = [0]
         best_counter = 0
 
-        while gen < self.evolution_params['max_gens']+1:
-            print(gen)
+        while gen < self.evolution_params['max_gens'] + 1:
+            #  print(gen)
             # evaluate all agents on the task
             for agent in population:
+                # initialize a type of simulation
                 simulation_run = simulate.Simulation(self.step_size, self.evaluation_params)
-                trial_data = simulation_run.run_trials(agent, simulation_run.trials)  # returns a list of fitness in all trials
+                # simulation_run = simulate.SimpleSimulation(self.step_size, self.evaluation_params)
+
+                # run the trials and return fitness in all trials
+                trial_data = simulation_run.run_trials(agent, simulation_run.trials)
+
+                # calculate overall fitness
                 # agent.fitness = np.mean(trial_data['fitness'])
                 agent.fitness = self.harmonic_mean(trial_data['fitness'])
                 # agent.fitness = min(trial_data['fitness'])
 
-            # log fitness results
+            # log fitness results: average population fitness
             population_avg_fitness = np.mean([agent.fitness for agent in population])
-            # sort agents by fitness from best to worst
-            population.sort(key=lambda agent: agent.fitness, reverse=True)
-
             avg_fitness.append(round(population_avg_fitness, 3))
-            bf = round(population[0].fitness, 3)
 
-            if bf == best_fitness[-1]:
+            # sort agents by fitness from best to worst
+            population.sort(key=lambda ag: ag.fitness, reverse=True)
+            # log fitness results: best agent fitness
+            bf = round(population[0].fitness, 3)
+            best_fitness.append(bf)
+
+            # stop the search if fitness hasn't increased in a set number of generations
+            if bf == best_fitness[-2]:
                 best_counter += 1
 
-                # if fitness hasn't increased in a set number of generations, stop the search
                 if best_counter > self.evolution_params['evolution_break']:
-                    popfile = open('./Agents/gen{}'.format(gen), 'wb')
-                    pickle.dump(population, popfile)
-                    popfile.close()
+                    # save the last population
+                    self.save_population(population, gen)
                     print("Stopped the search at generation {}".format(gen))
 
-                    best_fitness.append(bf)
-
-                    fits = [avg_fitness, best_fitness]
-                    fit_file = open('./Agents/fitnesses', 'wb')
-                    pickle.dump(fits, fit_file)
-                    fit_file.close()
+                    # save the average and best fitness lists
+                    self.log_fitness(avg_fitness, best_fitness)
                     break
             else:
                 best_counter = 0
 
-            best_fitness.append(bf)
-
-            # save the intermediate population and fitness
+            # save the intermediate or last population and fitness
             if gen % self.evolution_params['check_int'] == 0 or gen == self.evolution_params['max_gens']:
-                popfile = open('./Agents/gen{}'.format(gen), 'wb')
-                pickle.dump(population, popfile)
-                popfile.close()
+                self.save_population(population, gen)
                 print("Saved generation {}".format(gen))
-
-                fits = [avg_fitness, best_fitness]
-                fit_file = open('./Agents/fitnesses', 'wb')
-                pickle.dump(fits, fit_file)
-                fit_file.close()
+                self.log_fitness(avg_fitness, best_fitness)
 
             # reproduce population
             population = self.reproduce(population)
@@ -96,8 +95,9 @@ class Evolution:
 
     def create_population(self, size):
         """
-        Create random population: used for creating a random initial population and random portion of the new population
-        in each generation.
+        Create random population: used for creating a random initial population and random portion 
+        of the new population in each generation.
+        :param size: the size of the population to create
         :return: population of agents
         """
         population = []
@@ -109,14 +109,36 @@ class Evolution:
                                       self.network_params['g_range'],
                                       self.network_params['theta_range'],
                                       self.network_params['w_range'])
-            # create new agent
+
+            # create new agent of a certain type
             # agent = simulate.Agent(agent_brain, self.agent_params)
             # agent = simulate.EmbodiedAgentV1(agent_brain, self.agent_params, self.evaluation_params['screen_width'])
-            # agent = simulate.EmbodiedAgentV2(agent_brain, self.agent_params, self.evaluation_params['screen_width'])
+            agent = simulate.EmbodiedAgentV2(agent_brain, self.agent_params, self.evaluation_params['screen_width'])
             # agent = simulate.ButtonOnOffAgent(agent_brain, self.agent_params, self.evaluation_params['screen_width'])
-            agent = simulate.DirectVelocityAgent(agent_brain, self.agent_params, self.evaluation_params['screen_width'])
+            # agent = simulate.DirectVelocityAgent(agent_brain, self.agent_params, self.evaluation_params['screen_width'])
             population.append(agent)
         return population
+
+    @staticmethod
+    def load_population(gen):
+        pop_file = open('./Agents/gen{}'.format(gen), 'rb')
+        population = pickle.load(pop_file)
+        pop_file.close()
+        population.sort(key=lambda agent: agent.fitness, reverse=True)
+        return population
+
+    @staticmethod
+    def save_population(population, gen):
+        pop_file = open('./Agents/gen{}'.format(gen), 'wb')
+        pickle.dump(population, pop_file)
+        pop_file.close()
+
+    @staticmethod
+    def log_fitness(avg, best):
+        fits = [avg, best]
+        fit_file = open('./Agents/fitnesses', 'wb')
+        pickle.dump(fits, fit_file)
+        fit_file.close()
 
     def reproduce(self, population):
         """
@@ -231,6 +253,7 @@ class Evolution:
         :param population: the population from which to select the parents
         :param updated_fitness: the relative updated fitness
         :param n_parents: how many parents to select
+        :param method: which method to use for selection (roulette wheel or stochastic universal sampling)
         :return: selected parents for reproduction
         """
         new_population = []
@@ -299,8 +322,8 @@ class Evolution:
         return [x / mag for x in vec]
 
     @staticmethod
-    def harmonic_mean(fitlist):
-        if 0 in fitlist:
+    def harmonic_mean(fit_list):
+        if 0 in fit_list:
             return 0
         else:
-            return len(fitlist) / np.sum(1.0 / np.array(fitlist))
+            return len(fit_list) / np.sum(1.0 / np.array(fit_list))

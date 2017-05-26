@@ -25,8 +25,9 @@ def main():
                           config['evaluation_params'],
                           config['agent_params'])
 
-    # run evolution
-    evolution.run()
+    # run evolution from scratch or starting from a given population
+    evolution.run(None)
+    # evolution.run(150)
     return
 
 

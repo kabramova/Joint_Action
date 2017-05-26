@@ -1,28 +1,43 @@
 import numpy as np
+import random
 
 
 class Simulation:
     def __init__(self, step_size, evaluation_params):
         self.width = evaluation_params['screen_width']  # [-20, 20]
         self.step_size = step_size  # how fast things are happening in the simulation
-        self.trials = self.create_trials(evaluation_params['velocities'], evaluation_params['impacts'])
+        # self.trials = self.create_trials(evaluation_params['velocities'], evaluation_params['impacts'])
+        self.trials = self.create_trials(evaluation_params['velocities'], evaluation_params['impacts'],
+                                         evaluation_params['tg_start_range'], evaluation_params['tg_start_variants'])
         distance = (self.width[1]-self.width[0]) * evaluation_params['n_turns']  # total distance travelled by target
         # simulation length depends on target velocity
         self.sim_length = [int(distance/abs(trial[0])/self.step_size) for trial in self.trials]
         # self.sim_length = [500] * len(self.trials)
         self.condition = evaluation_params['condition']  # is it a sound condition?
         # the period of time at the beginning of the trial in which the target stays still
-        self.startperiod = evaluation_params['start_period']
+        self.start_period = evaluation_params['start_period']
         self.initial_state = evaluation_params['initial_state']
         self.velocity_control = evaluation_params['velocity_control']
 
+    # @staticmethod
+    # def create_trials(velocities, impacts):
+    #     """
+    #     Create a list of trials the environment will run.
+    #     :return:
+    #     """
+    #     trials = [(x, y) for x in velocities for y in impacts]
+    #     return trials
+
     @staticmethod
-    def create_trials(velocities, impacts):
+    def create_trials(velocities, impacts, start_range, size):
         """
         Create a list of trials the environment will run.
-        :return: 
+        :return:
         """
-        trials = [(x, y) for x in velocities for y in impacts]
+        left_positions = np.random.choice(np.arange(start_range[0], 1), size, replace=False)
+        right_positions = np.random.choice(np.arange(0, start_range[1]+1), size, replace=False)
+        target_positions = np.concatenate((left_positions, right_positions))
+        trials = [(x, y, z) for x in velocities for y in impacts for z in target_positions]
         return trials
 
     def run_trials(self, agent, trials, savedata=False):
@@ -32,7 +47,7 @@ class Simulation:
 
         :param agent: an agent with a CTRNN brain and particular anatomy
         :param trials: a list of trials to perform
-        :param savedata: should the trial data be saved
+        :param savedata: should all the trial data be saved
         :return: fitness
         """
 
@@ -51,29 +66,32 @@ class Simulation:
 
         for i in range(len(trials)):
             # create target and tracker
-            target = Target(trials[i][0], self.step_size)
+            # target = Target(trials[i][0], self.step_size, 0)
+            target = Target(trials[i][0], self.step_size, trials[i][2])
+
             if self.velocity_control == "buttons":
                 tracker = Tracker(trials[i][1], self.step_size, self.condition)
             elif self.velocity_control == "direct":
-                tracker = DirectTracker(trials[i][1], self.step_size, self.condition)
+                tracker = DirectTracker(None, self.step_size, self.condition)
+
             # set initial state in specified range
             agent.brain.randomize_state(self.initial_state)
             agent.initialize_buttons()
 
-            trial_data['target_pos'][i] = np.zeros((self.sim_length[i] + self.startperiod, 1))
-            trial_data['tracker_pos'][i] = np.zeros((self.sim_length[i] + self.startperiod, 1))
-            trial_data['tracker_v'][i] = np.zeros((self.sim_length[i] + self.startperiod, 1))
-            trial_data['keypress'][i] = np.zeros((self.sim_length[i] + self.startperiod, 2))
+            trial_data['target_pos'][i] = np.zeros((self.sim_length[i] + self.start_period, 1))
+            trial_data['tracker_pos'][i] = np.zeros((self.sim_length[i] + self.start_period, 1))
+            trial_data['tracker_v'][i] = np.zeros((self.sim_length[i] + self.start_period, 1))
+            trial_data['keypress'][i] = np.zeros((self.sim_length[i] + self.start_period, 2))
 
             if savedata:
-                trial_data['brain_state'][i] = np.zeros((self.sim_length[i] + self.startperiod, agent.brain.N))
-                trial_data['input'][i] = np.zeros((self.sim_length[i] + self.startperiod, agent.brain.N))
-                trial_data['output'][i] = np.zeros((self.sim_length[i] + self.startperiod, 2))
-                trial_data['button_state'][i] = np.zeros((self.sim_length[i] + self.startperiod, 2))
+                trial_data['brain_state'][i] = np.zeros((self.sim_length[i] + self.start_period, agent.brain.N))
+                trial_data['input'][i] = np.zeros((self.sim_length[i] + self.start_period, agent.brain.N))
+                trial_data['output'][i] = np.zeros((self.sim_length[i] + self.start_period, 2))
+                trial_data['button_state'][i] = np.zeros((self.sim_length[i] + self.start_period, 2))
 
-            if self.startperiod > 0:
+            if self.start_period > 0:
                 # don't move the target and don't allow tracker to move
-                for j in range(self.startperiod):
+                for j in range(self.start_period):
                     agent.visual_input(tracker.position, target.position)
                     agent.brain.euler_step()
                     # activation, motor_activity = agent.motor_output()
@@ -91,10 +109,11 @@ class Simulation:
                         # trial_data['output'][i][j] = motor_activity
                         trial_data['button_state'][i][j] = agent.button_state
 
-            for j in range(self.startperiod, self.sim_length[i] + self.startperiod):
+            for j in range(self.start_period, self.sim_length[i] + self.start_period):
 
                 # 1) Target movement
                 target.movement(self.width)
+                # target.movement([self.width[0] + 10, self.width[1] - 10])
 
                 # 2) Agent sees
                 agent.visual_input(tracker.position, target.position)
@@ -132,9 +151,9 @@ class Simulation:
 
             # 6) Fitness tacking:
             fitness = 1 - (np.sum(np.abs(trial_data['target_pos'][i] - trial_data['tracker_pos'][i])) /
-                           (2*self.width[1]*(self.sim_length[i] + self.startperiod)))
+                           (2 * self.width[1] * (self.sim_length[i] + self.start_period)))
             # penalty for not moving in the trial not counting the delay period
-            penalty = list(trial_data['tracker_v'][i][self.startperiod:]).count(0)/(self.sim_length[i])
+            penalty = list(trial_data['tracker_v'][i][self.start_period:]).count(0) / (self.sim_length[i])
             # if penalty decreases the score below 0, set it to 0
             overall_fitness = np.clip(fitness - penalty, 0, 1)
             trial_data['fitness'].append(overall_fitness)
@@ -151,6 +170,131 @@ class Simulation:
         return trial_data
 
 
+class SimpleSimulation:
+    """
+    This is a class that implements a simple simulation version, in which the target appears at a random position
+    and remains immobile for the duration of the trial. The tracker's task is to approach the target and stay close.
+    """
+    def __init__(self, step_size, evaluation_params):
+        self.width = evaluation_params['screen_width']  # [-20, 20]
+        self.step_size = step_size  # how fast things are happening in the simulation
+        self.trials = self.create_trials(5)
+        self.sim_length = 1000
+        self.condition = evaluation_params['condition']  # is it a sound condition?
+        # the period of time at the beginning of the trial in which the target stays still
+        self.initial_state = evaluation_params['initial_state']
+        self.velocity_control = evaluation_params['velocity_control']
+
+    @staticmethod
+    def create_trials(size):
+        """
+        Create a list of trials the environment will run.
+        :return: 
+        """
+        left_positions = np.random.choice(np.arange(-20, 0), size, replace=False)
+        right_positions = np.random.choice(np.arange(1, 21), size, replace=False)
+        target_positions = np.concatenate((left_positions, right_positions))
+        return target_positions
+
+    def run_trials(self, agent, trials, savedata=False):
+        """
+        An evaluation function that accepts an agent and returns a real number representing
+        the performance of that parameter vector on the task. Here the task is the Knoblich and Jordan task.
+
+        :param agent: an agent with a CTRNN brain and particular anatomy
+        :param trials: a list of trials to perform
+        :param savedata: should the trial data be saved
+        :return: fitness
+        """
+
+        trial_data = dict()
+        trial_data['fitness'] = []
+        trial_data['target_pos'] = [None] * len(trials)
+        trial_data['tracker_pos'] = [None] * len(trials)
+        trial_data['tracker_v'] = [None] * len(trials)
+        trial_data['keypress'] = [None] * len(trials)
+
+        if savedata:
+            trial_data['brain_state'] = [None] * len(trials)
+            trial_data['input'] = [None] * len(trials)
+            trial_data['output'] = [None] * len(trials)
+            trial_data['button_state'] = [None] * len(trials)
+
+        for i in range(len(trials)):
+            # create target and tracker
+            target = ImmobileTarget(trials[i])
+            if self.velocity_control == "buttons":
+                tracker = Tracker(1, self.step_size, self.condition)
+            elif self.velocity_control == "direct":
+                tracker = DirectTracker(None, self.step_size, self.condition)
+            # set initial state in specified range
+            agent.brain.randomize_state(self.initial_state)
+            agent.initialize_buttons()
+
+            trial_data['target_pos'][i] = np.zeros((self.sim_length, 1))
+            trial_data['tracker_pos'][i] = np.zeros((self.sim_length, 1))
+            trial_data['tracker_v'][i] = np.zeros((self.sim_length, 1))
+            trial_data['keypress'][i] = np.zeros((self.sim_length, 2))
+
+            if savedata:
+                trial_data['brain_state'][i] = np.zeros((self.sim_length, agent.brain.N))
+                trial_data['input'][i] = np.zeros((self.sim_length, agent.brain.N))
+                trial_data['output'][i] = np.zeros((self.sim_length, 2))
+                trial_data['button_state'][i] = np.zeros((self.sim_length, 2))
+
+            for j in range(self.sim_length):
+
+                # 2) Agent sees
+                agent.visual_input(tracker.position, target.position)
+
+                # 3) Agents moves
+                sound_output = tracker.movement(self.width)
+
+                # 4) Agent hears
+                if self.condition == 'sound':
+                    agent.auditory_input(sound_output)
+
+                trial_data['target_pos'][i][j] = target.position
+                trial_data['tracker_pos'][i][j] = tracker.position
+                trial_data['tracker_v'][i][j] = tracker.velocity
+
+                if savedata:
+                    trial_data['brain_state'][i][j] = agent.brain.Y
+
+                # 5) Update agent's neural system
+                agent.brain.euler_step()
+
+                # 6) Agent reacts
+                # activation, motor_activity = agent.motor_output()
+                activation = agent.motor_output()
+                tracker.accelerate(activation)
+                # this will save -1 or 1 for button-controlling agents
+                # but left and right velocities for direct velocity control agent
+                trial_data['keypress'][i][j] = activation
+
+                if savedata:
+
+                    trial_data['input'][i][j] = agent.brain.I
+                    # trial_data['output'][i][j] = motor_activity
+                    trial_data['button_state'][i][j] = agent.button_state
+
+            # 6) Fitness tacking:
+            fitness = 1 - (np.sum(np.abs(trial_data['target_pos'][i] - trial_data['tracker_pos'][i])) /
+                           (2*self.width[1]*self.sim_length))
+            # penalty for not moving in the trial not counting the delay period
+            penalty = list(trial_data['tracker_v'][i]).count(0)/self.sim_length
+            # if penalty decreases the score below 0, set it to 0
+            overall_fitness = np.clip(fitness - penalty, 0, 1)
+            trial_data['fitness'].append(overall_fitness)
+
+        return trial_data
+
+
+class ImmobileTarget:
+    def __init__(self, position):
+        self.position = position
+
+
 class Target:
     """
     Target moves with constant velocity and starts from the middle.
@@ -158,8 +302,8 @@ class Target:
     the target's initial movement direction is left or right respectively.
     """
 
-    def __init__(self, velocity, step_size):
-        self.position = 0
+    def __init__(self, velocity, step_size, start_pos):
+        self.position = start_pos
         self.velocity = velocity
         self.step_size = step_size
 
@@ -204,8 +348,10 @@ class Tracker:
         # Tacker does not continue moving, when at the edges of the environment.
         if self.position < border_range[0]:
             self.position = border_range[0]
+            self.velocity = 0  # added by GK
         if self.position > border_range[1]:
             self.position = border_range[1]
+            self.velocity = 0  # added by GK
 
         sound_output = [0, 0]
 
@@ -317,6 +463,7 @@ class Agent:
         self.button_state = [False, False]  # both buttons off in the beginning
 
     def __eq__(self, other):
+        # two agents are the same if they have the same genotype
         if np.all(self.genotype == other.genotype):
             return True
 
@@ -401,6 +548,8 @@ class Agent:
         o7 = self.brain.Y[6] + self.brain.Theta[6]  # output of n7
         o8 = self.brain.Y[7] + self.brain.Theta[7]  # output of n8
 
+        # activation_left = self.brain.sigmoid(o7 * self.MW[0])
+        # activation_right = self.brain.sigmoid(o8 * self.MW[1])
         activation_left = self.brain.sigmoid(o7 * self.MW[0] + o8 * self.MW[2])
         activation_right = self.brain.sigmoid(o7 * self.MW[1] + o8 * self.MW[3])
 
@@ -410,11 +559,30 @@ class Agent:
         if self.timer_motor_r > 0:
             self.timer_motor_r -= self.brain.step_size
 
+        # # We set timer to 0.5. That means we have max. 2 clicks per time-unit
+        # # changed by GK
+        # if activation_left >= threshold:
+        #     if activation_right >= threshold:  # both over threshold: choose one in proportion to relative activation
+        #         if random.random() <= activation_left / (activation_left + activation_right):
+        #             if self.timer_motor_l <= 0:  # left wins
+        #                 self.timer_motor_l = 0.5
+        #                 activation[0] = -1
+        #         elif self.timer_motor_r <= 0:  # right wins
+        #             self.timer_motor_r = 0.5
+        #             activation[1] = 1
+        #     elif self.timer_motor_l <= 0:  # only left is over threshold
+        #         self.timer_motor_l = 0.5
+        #         activation[0] = -1
+        # elif activation_right >= threshold:
+        #     if self.timer_motor_r <= 0:
+        #         self.timer_motor_r = 0.5
+        #         activation[1] = 1
+
         # We set timer to 0.5. That means we have max. 2 clicks per time-unit
         if activation_left > threshold:
             if self.timer_motor_l <= 0:
                 self.timer_motor_l = 0.5  # reset the timer
-                activation[0] = -1   # set left activation to -1 to influence velocity to the left
+                activation[0] = -1  # set left activation to -1 to influence velocity to the left
 
         if activation_right > threshold:
             if self.timer_motor_r <= 0:
@@ -484,7 +652,7 @@ class EmbodiedAgentV2(Agent):
     The agent receives positions of target and environment borders in terms of their distance to the position
     of the tracker (which implements the agent's "body"). Compared to V1 it also has:
     - inverted visual stimulation (the smaller the distance, the larger the stimulation; linearly scaled to be max 10)
-    - reduced auditory and motor connections.
+    - reduced auditory connections.
     See network3.pdf for a picture.
     """
     def __init__(self, network, agent_parameters, screen_width):
@@ -496,7 +664,7 @@ class EmbodiedAgentV2(Agent):
         agent_parameters["n_visual_connections"] = 1
         agent_parameters["n_audio_sensors"] = 2
         agent_parameters["n_audio_connections"] = 1
-        agent_parameters["n_effector_connections"] = 1
+        agent_parameters["n_effector_connections"] = 2
         Agent.__init__(self, network, agent_parameters)
         self.screen_width = screen_width
         self.max_dist = self.screen_width[1] - self.screen_width[0]
@@ -539,42 +707,6 @@ class EmbodiedAgentV2(Agent):
 
         self.brain.I[4] = self.AW[0] * left_click  # to n5
         self.brain.I[5] = self.AW[1] * right_click  # to n6
-
-    def motor_output(self):
-        """
-        The motor output of the agent
-        :return: output
-        """
-        # Set activation threshold
-        activation = [0, 0]  # Initial activation is zero
-        # threshold = 0  # Threshold for output
-        threshold = 0.5  # Threshold for output
-
-        # consider adding noise to output before multiplying by motor gains,
-        # drawn from a Gaussian distribution with (mu=0, var=0.05)
-        o7 = self.brain.Y[6] + self.brain.Theta[6]  # output of n7
-        o8 = self.brain.Y[7] + self.brain.Theta[7]  # output of n8
-        activation_left = self.brain.sigmoid(o7 * self.MW[0])
-        activation_right = self.brain.sigmoid(o8 * self.MW[1])
-
-        # Update timer:
-        if self.timer_motor_l > 0:
-            self.timer_motor_l -= self.brain.step_size
-        if self.timer_motor_r > 0:
-            self.timer_motor_r -= self.brain.step_size
-
-        # We set timer to 0.5. That means we have max. 2 clicks per time-unit
-        if activation_left > threshold:
-            if self.timer_motor_l <= 0:
-                self.timer_motor_l = 0.5  # reset the timer
-                activation[0] = -1  # set left activation to -1 to influence velocity to the left
-
-        if activation_right > threshold:
-            if self.timer_motor_r <= 0:
-                self.timer_motor_r = 0.5
-                activation[1] = 1  # set right to one to influence velocity to the right
-
-        return activation
 
 
 class ButtonOnOffAgent(EmbodiedAgentV2):
