@@ -34,10 +34,13 @@ class Simulation:
         Create a list of trials the environment will run.
         :return:
         """
-        left_positions = np.random.choice(np.arange(start_range[0], 1), size, replace=False)
-        right_positions = np.random.choice(np.arange(0, start_range[1]+1), size, replace=False)
-        target_positions = np.concatenate((left_positions, right_positions))
-        trials = [(x, y, z) for x in velocities for y in impacts for z in target_positions]
+        if start_range[1]-start_range[0] == 0:
+            trials = [(x, y, start_range[0]) for x in velocities for y in impacts]
+        else:
+            left_positions = np.random.choice(np.arange(start_range[0], 1), size, replace=False)
+            right_positions = np.random.choice(np.arange(0, start_range[1] + 1), size, replace=False)
+            target_positions = np.concatenate((left_positions, right_positions))
+            trials = [(x, y, z) for x in velocities for y in impacts for z in target_positions]
         return trials
 
     def run_trials(self, agent, trials, savedata=False):

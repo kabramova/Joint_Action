@@ -110,12 +110,14 @@ class Evolution:
                                       self.network_params['theta_range'],
                                       self.network_params['w_range'])
 
-            # create new agent of a certain type
-            # agent = simulate.Agent(agent_brain, self.agent_params)
-            # agent = simulate.EmbodiedAgentV1(agent_brain, self.agent_params, self.evaluation_params['screen_width'])
-            agent = simulate.EmbodiedAgentV2(agent_brain, self.agent_params, self.evaluation_params['screen_width'])
-            # agent = simulate.ButtonOnOffAgent(agent_brain, self.agent_params, self.evaluation_params['screen_width'])
-            # agent = simulate.DirectVelocityAgent(agent_brain, self.agent_params, self.evaluation_params['screen_width'])
+            if self.evaluation_params['velocity_control'] == "direct":
+                agent = simulate.DirectVelocityAgent(agent_brain, self.agent_params, self.evaluation_params['screen_width'])
+            else:
+                # create new agent of a certain type
+                # agent = simulate.Agent(agent_brain, self.agent_params)
+                # agent = simulate.EmbodiedAgentV1(agent_brain, self.agent_params, self.evaluation_params['screen_width'])
+                agent = simulate.EmbodiedAgentV2(agent_brain, self.agent_params, self.evaluation_params['screen_width'])
+                # agent = simulate.ButtonOnOffAgent(agent_brain, self.agent_params, self.evaluation_params['screen_width'])
             population.append(agent)
         return population
 

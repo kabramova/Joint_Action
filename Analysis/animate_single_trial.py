@@ -6,20 +6,7 @@ import pickle
 import datetime
 import os
 
-step_size = 0.01
-# evaluation parameters
-screen_width = [-20, 20]
-velocities = [3.3, 4.3, -3.3, -4.3]
-impact = [0.7, 1.0]
-condition = "no-sound"
-
-# trials
-# [(3.3, 0.7), (3.3, 1.0), (4.3, 0.7), (4.3, 1.0), (-3.3, 0.7), (-3.3, 1.0), (-4.3, 0.7), (-4.3, 1.0)]
-v_names = ["slow", "fast", "slow", "fast"]
-im_names = ["low", "high"]
-trial_names = [x + "." + y for x in v_names for y in im_names]
-
-popfile = open('./Agents/gen430', 'rb')
+popfile = open('./Agents/gen0', 'rb')
 population = pickle.load(popfile)
 popfile.close()
 
