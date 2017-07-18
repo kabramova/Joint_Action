@@ -424,14 +424,36 @@ class DirectTracker(Tracker):
     #     elif velocity_change < 0:
     #         self.timer_sound_l = 0.1
 
+    # def set_timer(self, inputs):
+    #     """ Emit tone of 100-ms duration """
+    #     if inputs[1] > inputs[0]:  # are we trying to move right?
+    #         self.timer_sound_r = 0.1
+    #     elif inputs[1] < inputs[0]:
+    #         self.timer_sound_l = 0.1
+    #     else:
+    #         pass
+
     def set_timer(self, inputs):
-        """ Emit tone of 100-ms duration """
-        if inputs[1] > inputs[0]:  # are we trying to move right?
-            self.timer_sound_r = 0.1
-        elif inputs[1] < inputs[0]:
-            self.timer_sound_l = 0.1
-        else:
-            pass
+        """ Emit tones proportional to the motor activation """
+        self.timer_sound_l = inputs[0] * 0.1
+        self.timer_sound_r = inputs[1] * 0.1
+
+    def movement(self, border_range):
+        """ Update self.position and self.timer(sound) """
+
+        self.position += self.velocity * self.step_size
+
+        # Tacker does not continue moving, when at the edges of the environment.
+        if self.position < border_range[0]:
+            self.position = border_range[0]
+            self.velocity = 0  # added by GK
+        if self.position > border_range[1]:
+            self.position = border_range[1]
+            self.velocity = 0  # added by GK
+
+        sound_output = [self.timer_sound_l, self.timer_sound_r]
+
+        return sound_output
 
 
 class Agent:
