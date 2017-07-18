@@ -1,15 +1,15 @@
 {
   "evolution_params": {
-    "pop_size": 10,
-    "max_gens": 10,
+    "pop_size": 100,
+    "max_gens": 5000,
     "mutation_variance": 1,
     "prob_crossover": 0.8,
     "elitist_fraction": 0.05,
     "fps_fraction": 0.9,
     "fitness_update": "rank",
     "selection": "sus",
-    "check_int": 1,
-    "evolution_break": 100
+    "check_int": 50,
+    "evolution_break": 250
   },
   "network_params": {
     "num_neurons": 8,
@@ -29,7 +29,7 @@
     "start_period": 100,
     "initial_state": [0, 0],
     "n_turns": 3,
-    "velocity_control": "direct"
+    "velocity_control": "buttons"
   },
   "agent_params": {
     "n_visual_sensors": 2,

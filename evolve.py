@@ -79,7 +79,7 @@ class Evolution:
                 if best_counter > self.evolution_params['evolution_break']:
                     # save the last population
                     self.save_population(population, self.foldername, gen)
-                    print("Stopped the search at generation {}".format(gen))
+                    # print("Stopped the search at generation {}".format(gen))
 
                     # save the average and best fitness lists
                     self.log_fitness(self.foldername, avg_fitness, best_fitness)
@@ -90,7 +90,7 @@ class Evolution:
             # save the intermediate or last population and fitness
             if gen % self.evolution_params['check_int'] == 0 or gen == self.evolution_params['max_gens']:
                 self.save_population(population, self.foldername, gen)
-                print("Saved generation {}".format(gen))
+                # print("Saved generation {}".format(gen))
                 self.log_fitness(self.foldername, avg_fitness, best_fitness)
 
             # reproduce population
