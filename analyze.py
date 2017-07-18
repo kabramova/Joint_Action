@@ -6,7 +6,7 @@ import evolve
 import numpy as np
 import datetime
 import os
-from images2gif import writeGif
+#from images2gif import writeGif
 
 
 def load_config():
@@ -67,6 +67,9 @@ def plot_data(trial_data, to_plot, fig_title, lims):
         plt.plot(trial_data['tracker_v'][to_plot], label='Tracker velocity')
         plt.plot(trial_data['keypress'][to_plot][:, 0], label='Left keypress')
         plt.plot(trial_data['keypress'][to_plot][:, 1], label='Right keypress')
+        plt.plot(trial_data['input'][to_plot][:, 4], label='Input to n5')
+        plt.plot(trial_data['input'][to_plot][:, 5], label='Input to n6')
+
         plt.legend()
         plt.show()
 

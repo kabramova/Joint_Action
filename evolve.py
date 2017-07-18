@@ -23,6 +23,10 @@ class Evolution:
         self.network_params = network_params
         self.evaluation_params = evaluation_params
         self.agent_params = agent_params
+        self.foldername = None
+
+    def set_foldername(self, text):
+        self.foldername = text
 
     def run(self, gen_to_load):
         """
@@ -35,7 +39,7 @@ class Evolution:
         if gen_to_load is None:
             population = self.create_population(self.pop_size)
         else:
-            population = self.load_population(gen)
+            population = self.load_population(self.foldername, gen_to_load)
 
         # collect average and best fitness
         avg_fitness = [0]
@@ -74,20 +78,20 @@ class Evolution:
 
                 if best_counter > self.evolution_params['evolution_break']:
                     # save the last population
-                    self.save_population(population, gen)
+                    self.save_population(population, self.foldername, gen)
                     print("Stopped the search at generation {}".format(gen))
 
                     # save the average and best fitness lists
-                    self.log_fitness(avg_fitness, best_fitness)
+                    self.log_fitness(self.foldername, avg_fitness, best_fitness)
                     break
             else:
                 best_counter = 0
 
             # save the intermediate or last population and fitness
             if gen % self.evolution_params['check_int'] == 0 or gen == self.evolution_params['max_gens']:
-                self.save_population(population, gen)
+                self.save_population(population, self.foldername, gen)
                 print("Saved generation {}".format(gen))
-                self.log_fitness(avg_fitness, best_fitness)
+                self.log_fitness(self.foldername, avg_fitness, best_fitness)
 
             # reproduce population
             population = self.reproduce(population)
@@ -122,23 +126,23 @@ class Evolution:
         return population
 
     @staticmethod
-    def load_population(gen):
-        pop_file = open('./Agents/gen{}'.format(gen), 'rb')
+    def load_population(foldername, gen):
+        pop_file = open('{}/gen{}'.format(foldername, gen), 'rb')
         population = pickle.load(pop_file)
         pop_file.close()
         population.sort(key=lambda agent: agent.fitness, reverse=True)
         return population
 
     @staticmethod
-    def save_population(population, gen):
-        pop_file = open('./Agents/gen{}'.format(gen), 'wb')
+    def save_population(population, foldername, gen):
+        pop_file = open('{}/gen{}'.format(foldername, gen), 'wb')
         pickle.dump(population, pop_file)
         pop_file.close()
 
     @staticmethod
-    def log_fitness(avg, best):
+    def log_fitness(foldername, avg, best):
         fits = [avg, best]
-        fit_file = open('./Agents/fitnesses', 'wb')
+        fit_file = open('{}/fitnesses'.format(foldername), 'wb')
         pickle.dump(fits, fit_file)
         fit_file.close()
 
@@ -193,7 +197,8 @@ class Evolution:
                 parent1 = mating_pool[mating_counter]
                 parent2 = mating_pool[mating_counter + 1]
 
-                if r < self.evolution_params['prob_crossover'] and parent1 != parent2:
+                # if r < self.evolution_params['prob_crossover'] and parent1 != parent2:
+                if r < self.evolution_params['prob_crossover']:
                     child1, child2 = self.crossover(parent1, parent2)
                 else:
                     # if the two parents are the same, mutate them to get children

@@ -392,7 +392,8 @@ class Tracker:
 
 class DirectTracker(Tracker):
     """
-    Tracker moves as a result of its set velocity and can accelerate based on agent button clicks.
+    DirectTracker moves as a result of its set velocity, which can change based on agent's output
+    to left and right motors.
     It starts in the middle of the screen and with initial 0 velocity.
     """
 
@@ -403,24 +404,34 @@ class DirectTracker(Tracker):
         """
         Sets the tracker velocity depending on the activation of the agent's motor neurons.
         The overall velocity is a difference between left and right velocities.
+        Whenever the right velocity is greater than left, the tracker moves right and vice versa.
         :param inputs: an array of size two with activation values
         :return: update self.velocity
         """
-        new_velocity = inputs[0] - inputs[1]
-        velocity_change = new_velocity - self.velocity
+        new_velocity = inputs[1] - inputs[0]
+        # velocity_change = new_velocity - self.velocity
 
         if self.condition == "sound":
-            self.set_timer(velocity_change)
+            # self.set_timer(velocity_change)
+            self.set_timer(inputs)
 
         self.velocity = new_velocity
 
-    # TODO: check if this is reasonable
-    def set_timer(self, velocity_change):
+    # def set_timer(self, velocity_change):
+    #     """ Emit tone of 100-ms duration """
+    #     if velocity_change > 0:
+    #         self.timer_sound_r = 0.1
+    #     elif velocity_change < 0:
+    #         self.timer_sound_l = 0.1
+
+    def set_timer(self, inputs):
         """ Emit tone of 100-ms duration """
-        if velocity_change > 0:
+        if inputs[1] > inputs[0]:  # are we trying to move right?
             self.timer_sound_r = 0.1
-        elif velocity_change < 0:
+        elif inputs[1] < inputs[0]:
             self.timer_sound_l = 0.1
+        else:
+            pass
 
 
 class Agent:
@@ -551,8 +562,6 @@ class Agent:
         o7 = self.brain.Y[6] + self.brain.Theta[6]  # output of n7
         o8 = self.brain.Y[7] + self.brain.Theta[7]  # output of n8
 
-        # activation_left = self.brain.sigmoid(o7 * self.MW[0])
-        # activation_right = self.brain.sigmoid(o8 * self.MW[1])
         activation_left = self.brain.sigmoid(o7 * self.MW[0] + o8 * self.MW[2])
         activation_right = self.brain.sigmoid(o7 * self.MW[1] + o8 * self.MW[3])
 
@@ -561,25 +570,6 @@ class Agent:
             self.timer_motor_l -= self.brain.step_size
         if self.timer_motor_r > 0:
             self.timer_motor_r -= self.brain.step_size
-
-        # # We set timer to 0.5. That means we have max. 2 clicks per time-unit
-        # # changed by GK
-        # if activation_left >= threshold:
-        #     if activation_right >= threshold:  # both over threshold: choose one in proportion to relative activation
-        #         if random.random() <= activation_left / (activation_left + activation_right):
-        #             if self.timer_motor_l <= 0:  # left wins
-        #                 self.timer_motor_l = 0.5
-        #                 activation[0] = -1
-        #         elif self.timer_motor_r <= 0:  # right wins
-        #             self.timer_motor_r = 0.5
-        #             activation[1] = 1
-        #     elif self.timer_motor_l <= 0:  # only left is over threshold
-        #         self.timer_motor_l = 0.5
-        #         activation[0] = -1
-        # elif activation_right >= threshold:
-        #     if self.timer_motor_r <= 0:
-        #         self.timer_motor_r = 0.5
-        #         activation[1] = 1
 
         # We set timer to 0.5. That means we have max. 2 clicks per time-unit
         if activation_left > threshold:
@@ -628,6 +618,10 @@ class EmbodiedAgentV1(Agent):
         # each sensor connected with one connection to 3 different neurons (1, 2, 3)
         agent_parameters["n_visual_sensors"] = 3
         agent_parameters["n_visual_connections"] = 1
+        agent_parameters["n_audio_sensors"] = 2
+        agent_parameters["n_audio_connections"] = 1
+        agent_parameters["n_effector_connections"] = 1
+
         Agent.__init__(self, network, agent_parameters)
         self.screen_width = screen_width
 
@@ -648,14 +642,71 @@ class EmbodiedAgentV1(Agent):
         self.brain.I[1] = self.VW[1] * dleft_border  # to n2
         self.brain.I[2] = self.VW[2] * dright_border  # to n3
 
+    def auditory_input(self, sound_input):
+        """
+        The auditory input to the agent
+        :param sound_input: Tone(s) induced by left and/or right click
+        """
+        left_click, right_click = sound_input[0], sound_input[1]
+
+        self.brain.I[3] = self.AW[0] * left_click  # to n4
+        self.brain.I[5] = self.AW[1] * right_click  # to n6
+
+    def motor_output(self):
+        """
+        The motor output of the agent
+        :return: output
+        """
+        # Set activation threshold
+        activation = [0, 0]  # Initial activation is zero
+        # threshold = 0  # Threshold for output
+        threshold = 0.5  # Threshold for output
+
+        # consider adding noise to output before multiplying by motor gains,
+        # drawn from a Gaussian distribution with (mu=0, var=0.05)
+        o7 = self.brain.Y[6] + self.brain.Theta[6]  # output of n7
+        o8 = self.brain.Y[7] + self.brain.Theta[7]  # output of n8
+
+        activation_left = self.brain.sigmoid(o7 * self.MW[0])
+        activation_right = self.brain.sigmoid(o8 * self.MW[1])
+        # activation_left = self.brain.sigmoid(o7 * self.MW[0] + o8 * self.MW[2])
+        # activation_right = self.brain.sigmoid(o7 * self.MW[1] + o8 * self.MW[3])
+
+        # Update timer:
+        if self.timer_motor_l > 0:
+            self.timer_motor_l -= self.brain.step_size
+        if self.timer_motor_r > 0:
+            self.timer_motor_r -= self.brain.step_size
+
+        # We set timer to 0.5. That means we have max. 2 clicks per time-unit
+        # Version by GK
+        if activation_left >= threshold:
+            if activation_right >= threshold:  # both over threshold: choose one in proportion to relative activation
+                if random.random() <= activation_left / (activation_left + activation_right):
+                    if self.timer_motor_l <= 0:  # left wins
+                        self.timer_motor_l = 0.5
+                        activation[0] = -1
+                elif self.timer_motor_r <= 0:  # right wins
+                    self.timer_motor_r = 0.5
+                    activation[1] = 1
+            elif self.timer_motor_l <= 0:  # only left is over threshold
+                self.timer_motor_l = 0.5
+                activation[0] = -1
+        elif activation_right >= threshold:
+            if self.timer_motor_r <= 0:
+                self.timer_motor_r = 0.5
+                activation[1] = 1
+
+        return activation
+
 
 class EmbodiedAgentV2(Agent):
     """
     This is a version of the agent that is more embodied.
     The agent receives positions of target and environment borders in terms of their distance to the position
-    of the tracker (which implements the agent's "body"). Compared to V1 it also has:
-    - inverted visual stimulation (the smaller the distance, the larger the stimulation; linearly scaled to be max 10)
-    - reduced auditory connections.
+    of the tracker (which implements the agent's "body"). Compared to V1 its perception is in terms of separate
+    distance to the target on the left or right and inverted visual stimulation (the smaller the distance,
+    the larger the stimulation; linearly scaled to be max 10).
     See network3.pdf for a picture.
     """
     def __init__(self, network, agent_parameters, screen_width):
@@ -667,7 +718,8 @@ class EmbodiedAgentV2(Agent):
         agent_parameters["n_visual_connections"] = 1
         agent_parameters["n_audio_sensors"] = 2
         agent_parameters["n_audio_connections"] = 1
-        agent_parameters["n_effector_connections"] = 2
+        agent_parameters["n_effector_connections"] = 1
+
         Agent.__init__(self, network, agent_parameters)
         self.screen_width = screen_width
         self.max_dist = self.screen_width[1] - self.screen_width[0]
@@ -686,15 +738,15 @@ class EmbodiedAgentV2(Agent):
         if position_target > position_tracker:
             # target is to the right of the tracker
             dleft_target = 0
-            dright_target = self.add_noise((40-abs(position_target-position_tracker))/4)
+            dright_target = self.add_noise((self.max_dist-abs(position_target-position_tracker))/self.visual_scale)
         elif position_target < position_tracker:
             # target is to the left of the tracker
-            dleft_target = self.add_noise((40-abs(position_target-position_tracker))/4)
+            dleft_target = self.add_noise((self.max_dist-abs(position_target-position_tracker))/self.visual_scale)
             dright_target = 0
         else:
             # if tracker is on top of the target, both eyes are activated to the maximum
-            dleft_target = self.add_noise((40-abs(position_target-position_tracker))/4)
-            dright_target = self.add_noise((40-abs(position_target-position_tracker))/4)
+            dleft_target = self.add_noise((self.max_dist-abs(position_target-position_tracker))/self.visual_scale)
+            dright_target = self.add_noise((self.max_dist-abs(position_target-position_tracker))/self.visual_scale)
 
         self.brain.I[0] = self.VW[0] * dleft_border  # to n1
         self.brain.I[1] = self.VW[1] * dright_border  # to n2
@@ -710,6 +762,53 @@ class EmbodiedAgentV2(Agent):
 
         self.brain.I[4] = self.AW[0] * left_click  # to n5
         self.brain.I[5] = self.AW[1] * right_click  # to n6
+
+    def motor_output(self):
+        """
+        The motor output of the agent
+        :return: output
+        """
+        # Set activation threshold
+        activation = [0, 0]  # Initial activation is zero
+        # threshold = 0  # Threshold for output
+        threshold = 0.5  # Threshold for output
+
+        # consider adding noise to output before multiplying by motor gains,
+        # drawn from a Gaussian distribution with (mu=0, var=0.05)
+        o7 = self.brain.Y[6] + self.brain.Theta[6]  # output of n7
+        o8 = self.brain.Y[7] + self.brain.Theta[7]  # output of n8
+
+        activation_left = self.brain.sigmoid(o7 * self.MW[0])
+        activation_right = self.brain.sigmoid(o8 * self.MW[1])
+        # activation_left = self.brain.sigmoid(o7 * self.MW[0] + o8 * self.MW[2])
+        # activation_right = self.brain.sigmoid(o7 * self.MW[1] + o8 * self.MW[3])
+
+        # Update timer:
+        if self.timer_motor_l > 0:
+            self.timer_motor_l -= self.brain.step_size
+        if self.timer_motor_r > 0:
+            self.timer_motor_r -= self.brain.step_size
+
+        # We set timer to 0.5. That means we have max. 2 clicks per time-unit
+        # Version by GK
+        if activation_left >= threshold:
+            if activation_right >= threshold:  # both over threshold: choose one in proportion to relative activation
+                if random.random() <= activation_left / (activation_left + activation_right):
+                    if self.timer_motor_l <= 0:  # left wins
+                        self.timer_motor_l = 0.5
+                        activation[0] = -1
+                elif self.timer_motor_r <= 0:  # right wins
+                    self.timer_motor_r = 0.5
+                    activation[1] = 1
+            elif self.timer_motor_l <= 0:  # only left is over threshold
+                self.timer_motor_l = 0.5
+                activation[0] = -1
+        elif activation_right >= threshold:
+            if self.timer_motor_r <= 0:
+                self.timer_motor_r = 0.5
+                activation[1] = 1
+
+        return activation
 
 
 class ButtonOnOffAgent(EmbodiedAgentV2):
@@ -774,5 +873,22 @@ class DirectVelocityAgent(EmbodiedAgentV2):
         o8 = self.brain.sigmoid(self.brain.Y[7] + self.brain.Theta[7])  # output of n8
         activation_left = self.linmap(o7, [0, 1], [-1, 1]) * self.MW[0]
         activation_right = self.linmap(o8, [0, 1], [-1, 1]) * self.MW[1]
+
         activation = [activation_left, activation_right]
         return activation
+
+    # def motor_output(self):
+    #     """
+    #     One neuron controls leftward, the other rightward velocity. Each velocity is calculated by mapping the activation
+    #     in the range of [0, 1] to the range [-1, 1] and then multiplying by output gain.
+    #     :return: output
+    #     """
+    #     # consider adding noise to output before multiplying by motor gains,
+    #     # drawn from a Gaussian distribution with (mu=0, var=0.05)
+    #     o7 = self.brain.sigmoid(self.brain.Y[6] + self.brain.Theta[6])  # output of n7
+    #     o8 = self.brain.sigmoid(self.brain.Y[7] + self.brain.Theta[7])  # output of n8
+    #     activation_left = o7 * self.MW[0]
+    #     activation_right = o8 * self.MW[1]
+    #
+    #     activation = [activation_left, activation_right]
+    #     return activation
