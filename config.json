@@ -1,6 +1,6 @@
 {
   "evolution_params": {
-    "pop_size": 10,
+    "pop_size": 100,
     "max_gens": 100,
     "mutation_variance": 1,
     "prob_crossover": 0.8,
@@ -8,7 +8,7 @@
     "fps_fraction": 0.9,
     "fitness_update": "rank",
     "selection": "sus",
-    "check_int": 20,
+    "check_int": 25,
     "evolution_break": 250
   },
   "network_params": {

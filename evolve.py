@@ -63,16 +63,20 @@ class Evolution:
             #     agent.fitness = self.harmonic_mean(trial_data['fitness'])
             #     # agent.fitness = min(trial_data['fitness'])
 
-            population = Parallel(n_jobs=self.pop_size)(delayed(self.process_agent)(a) for a in population)
+            tested_population = []
+            test_counter = 0
+            while test_counter < 4:
+                tested_population.extend(Parallel(n_jobs=self.pop_size/4)(delayed(self.process_agent)(a) for a in population))
+                test_counter += 1
 
             # log fitness results: average population fitness
-            population_avg_fitness = np.mean([agent.fitness for agent in population])
+            population_avg_fitness = np.mean([agent.fitness for agent in tested_population])
             avg_fitness.append(round(population_avg_fitness, 3))
 
             # sort agents by fitness from best to worst
-            population.sort(key=lambda ag: ag.fitness, reverse=True)
+            tested_population.sort(key=lambda ag: ag.fitness, reverse=True)
             # log fitness results: best agent fitness
-            bf = round(population[0].fitness, 3)
+            bf = round(tested_population[0].fitness, 3)
             best_fitness.append(bf)
 
             # stop the search if fitness hasn't increased in a set number of generations
@@ -81,7 +85,7 @@ class Evolution:
 
                 if best_counter > self.evolution_params['evolution_break']:
                     # save the last population
-                    self.save_population(population, self.foldername, gen)
+                    self.save_population(tested_population, self.foldername, gen)
                     # print("Stopped the search at generation {}".format(gen))
 
                     # save the average and best fitness lists
@@ -92,12 +96,12 @@ class Evolution:
 
             # save the intermediate or last population and fitness
             if gen % self.evolution_params['check_int'] == 0 or gen == self.evolution_params['max_gens']:
-                self.save_population(population, self.foldername, gen)
+                self.save_population(tested_population, self.foldername, gen)
                 # print("Saved generation {}".format(gen))
                 self.log_fitness(self.foldername, avg_fitness, best_fitness)
 
             # reproduce population
-            population = self.reproduce(population)
+            population = self.reproduce(tested_population)
             gen += 1
 
     def process_agent(self, agent):
