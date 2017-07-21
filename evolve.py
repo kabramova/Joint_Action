@@ -64,10 +64,10 @@ class Evolution:
             #     # agent.fitness = min(trial_data['fitness'])
 
             tested_population = []
-            test_counter = 0
-            while test_counter < 4:
-                tested_population.extend(Parallel(n_jobs=self.pop_size/4)(delayed(self.process_agent)(a) for a in population))
-                test_counter += 1
+            popslice_size = int(self.pop_size / 4)
+            for test_counter in range(4):
+                population_slice = population[test_counter*popslice_size:(test_counter+1)*popslice_size]
+                tested_population.extend(Parallel(n_jobs=self.pop_size/4)(delayed(self.process_agent)(a) for a in population_slice))
 
             # log fitness results: average population fitness
             population_avg_fitness = np.mean([agent.fitness for agent in tested_population])
