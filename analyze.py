@@ -16,8 +16,8 @@ def load_config():
     return config
 
 
-def load_population(gen):
-    pop_file = open('./Agents/gen{}'.format(gen), 'rb')
+def load_population(type, seed, gen):
+    pop_file = open('./Agents/{}/{}/gen{}'.format(type, seed, gen), 'rb')
     population = pickle.load(pop_file)
     pop_file.close()
     population.sort(key=lambda agent: agent.fitness, reverse=True)
@@ -108,7 +108,7 @@ def run_random_population(size, to_plot):
     return trial_data, agent
 
 
-def run_single_agent(generation_num, agent_num, to_plot):
+def run_single_agent(type, seed, generation_num, agent_num, to_plot):
     """
     Load a specified generation and plot a specified agent behavior (the first one is the best performing).
     :param generation_num: which generation to use
@@ -117,7 +117,7 @@ def run_single_agent(generation_num, agent_num, to_plot):
     :return: 
     """
     config = load_config()
-    population = load_population(generation_num)
+    population = load_population(type, seed, generation_num)
     agent = population[agent_num]
     simulation_run = simulate.Simulation(config['network_params']['step_size'], config['evaluation_params'])
     # simulation_run = simulate.SimpleSimulation(config['network_params']['step_size'], config['evaluation_params'])
@@ -129,9 +129,9 @@ def run_single_agent(generation_num, agent_num, to_plot):
     return trial_data, agent
 
 
-def plot_fitness():
+def plot_fitness(type, seed):
 
-    fit_file = open('./Agents/fitnesses', 'rb')
+    fit_file = open('./Agents/{}/{}/fitnesses'.format(type, seed), 'rb')
     fits = pickle.load(fit_file)
     fit_file.close()
 
@@ -141,8 +141,9 @@ def plot_fitness():
     plt.title("Fitness over generations")
     plt.show()
 
-plot_fitness()
-td1, ag1 = run_single_agent(100, 0, "all")
+
+plot_fitness('buttons', '4264')
+td1, ag1 = run_single_agent('buttons', '4264', 200, 0, "all")
 td2, ag2 = run_random_population(1, 0)
 td3, ag3 = run_random_population(1, "all")
 td4, ag4 = run_random_population(100, "all")

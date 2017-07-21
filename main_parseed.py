@@ -1,5 +1,6 @@
 """
 This is the main file for running evolution of neural network agents in the Knoblich and Jordan (2003) task.
+This version parallelizes the seeds.
 """
 import random
 from evolve import Evolution

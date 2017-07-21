@@ -5,6 +5,7 @@ import math
 from copy import deepcopy
 import CTRNN
 import simulate
+from joblib import Parallel, delayed
 np.seterr(over='ignore')
 
 
@@ -49,18 +50,20 @@ class Evolution:
         while gen < self.evolution_params['max_gens'] + 1:
             #  print(gen)
             # evaluate all agents on the task
-            for agent in population:
-                # initialize a type of simulation
-                simulation_run = simulate.Simulation(self.step_size, self.evaluation_params)
-                # simulation_run = simulate.SimpleSimulation(self.step_size, self.evaluation_params)
+            # for agent in population:
+            #     # initialize a type of simulation
+            #     simulation_run = simulate.Simulation(self.step_size, self.evaluation_params)
+            #     # simulation_run = simulate.SimpleSimulation(self.step_size, self.evaluation_params)
+            #
+            #     # run the trials and return fitness in all trials
+            #     trial_data = simulation_run.run_trials(agent, simulation_run.trials)
+            #
+            #     # calculate overall fitness
+            #     # agent.fitness = np.mean(trial_data['fitness'])
+            #     agent.fitness = self.harmonic_mean(trial_data['fitness'])
+            #     # agent.fitness = min(trial_data['fitness'])
 
-                # run the trials and return fitness in all trials
-                trial_data = simulation_run.run_trials(agent, simulation_run.trials)
-
-                # calculate overall fitness
-                # agent.fitness = np.mean(trial_data['fitness'])
-                agent.fitness = self.harmonic_mean(trial_data['fitness'])
-                # agent.fitness = min(trial_data['fitness'])
+            population = Parallel(n_jobs=self.pop_size)(delayed(self.process_agent)(a) for a in population)
 
             # log fitness results: average population fitness
             population_avg_fitness = np.mean([agent.fitness for agent in population])
@@ -96,6 +99,21 @@ class Evolution:
             # reproduce population
             population = self.reproduce(population)
             gen += 1
+
+    def process_agent(self, agent):
+        # for agent in population:
+        # initialize a type of simulation
+        simulation_run = simulate.Simulation(self.step_size, self.evaluation_params)
+        # simulation_run = simulate.SimpleSimulation(self.step_size, self.evaluation_params)
+
+        # run the trials and return fitness in all trials
+        trial_data = simulation_run.run_trials(agent, simulation_run.trials)
+
+        # calculate overall fitness
+        # agent.fitness = np.mean(trial_data['fitness'])
+        agent.fitness = self.harmonic_mean(trial_data['fitness'])
+        # agent.fitness = min(trial_data['fitness'])
+        return agent
 
     def create_population(self, size):
         """
