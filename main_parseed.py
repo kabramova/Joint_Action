@@ -44,7 +44,7 @@ def do_evolution(parent_dir, agent_type, seed_num, mutation_variance, prob_cross
     os.makedirs(foldername)
 
     # run evolution from scratch or starting from a given population
-    evolution.run(None)
+    evolution.run(None, parallel_agents=False)
     # evolution.run(150)
 
 

@@ -642,7 +642,7 @@ class EmbodiedAgentV1(Agent):
         agent_parameters["n_visual_connections"] = 1
         agent_parameters["n_audio_sensors"] = 2
         agent_parameters["n_audio_connections"] = 1
-        agent_parameters["n_effector_connections"] = 1
+        agent_parameters["n_effector_connections"] = 2
 
         Agent.__init__(self, network, agent_parameters)
         self.screen_width = screen_width
@@ -689,10 +689,10 @@ class EmbodiedAgentV1(Agent):
         o7 = self.brain.Y[6] + self.brain.Theta[6]  # output of n7
         o8 = self.brain.Y[7] + self.brain.Theta[7]  # output of n8
 
-        activation_left = self.brain.sigmoid(o7 * self.MW[0])
-        activation_right = self.brain.sigmoid(o8 * self.MW[1])
-        # activation_left = self.brain.sigmoid(o7 * self.MW[0] + o8 * self.MW[2])
-        # activation_right = self.brain.sigmoid(o7 * self.MW[1] + o8 * self.MW[3])
+        # activation_left = self.brain.sigmoid(o7 * self.MW[0])
+        # activation_right = self.brain.sigmoid(o8 * self.MW[1])
+        activation_left = self.brain.sigmoid(o7 * self.MW[0] + o8 * self.MW[2])
+        activation_right = self.brain.sigmoid(o7 * self.MW[1] + o8 * self.MW[3])
 
         # Update timer:
         if self.timer_motor_l > 0:
@@ -740,7 +740,7 @@ class EmbodiedAgentV2(Agent):
         agent_parameters["n_visual_connections"] = 1
         agent_parameters["n_audio_sensors"] = 2
         agent_parameters["n_audio_connections"] = 1
-        agent_parameters["n_effector_connections"] = 1
+        agent_parameters["n_effector_connections"] = 2
 
         Agent.__init__(self, network, agent_parameters)
         self.screen_width = screen_width
@@ -800,10 +800,10 @@ class EmbodiedAgentV2(Agent):
         o7 = self.brain.Y[6] + self.brain.Theta[6]  # output of n7
         o8 = self.brain.Y[7] + self.brain.Theta[7]  # output of n8
 
-        activation_left = self.brain.sigmoid(o7 * self.MW[0])
-        activation_right = self.brain.sigmoid(o8 * self.MW[1])
-        # activation_left = self.brain.sigmoid(o7 * self.MW[0] + o8 * self.MW[2])
-        # activation_right = self.brain.sigmoid(o7 * self.MW[1] + o8 * self.MW[3])
+        # activation_left = self.brain.sigmoid(o7 * self.MW[0])
+        # activation_right = self.brain.sigmoid(o8 * self.MW[1])
+        activation_left = self.brain.sigmoid(o7 * self.MW[0] + o8 * self.MW[2])
+        activation_right = self.brain.sigmoid(o7 * self.MW[1] + o8 * self.MW[3])
 
         # Update timer:
         if self.timer_motor_l > 0:

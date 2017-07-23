@@ -29,7 +29,7 @@ class Evolution:
     def set_foldername(self, text):
         self.foldername = text
 
-    def run(self, gen_to_load):
+    def run(self, gen_to_load, parallel_agents):
         """
         Execute a full search run until some condition is reached.
         :param gen_to_load: which generation to load if starting from an existing population
@@ -50,25 +50,29 @@ class Evolution:
         while gen < self.evolution_params['max_gens'] + 1:
             #  print(gen)
             # evaluate all agents on the task
-            # for agent in population:
-            #     # initialize a type of simulation
-            #     simulation_run = simulate.Simulation(self.step_size, self.evaluation_params)
-            #     # simulation_run = simulate.SimpleSimulation(self.step_size, self.evaluation_params)
-            #
-            #     # run the trials and return fitness in all trials
-            #     trial_data = simulation_run.run_trials(agent, simulation_run.trials)
-            #
-            #     # calculate overall fitness
-            #     # agent.fitness = np.mean(trial_data['fitness'])
-            #     agent.fitness = self.harmonic_mean(trial_data['fitness'])
-            #     # agent.fitness = min(trial_data['fitness'])
 
             tested_population = []
-            num_cores = int(self.pop_size / 4)
-            
-            for test_counter in range(4):
-                population_slice = population[test_counter*num_cores:(test_counter+1)*num_cores]
-                tested_population.extend(Parallel(n_jobs=num_cores)(delayed(self.process_agent)(a) for a in population_slice))
+
+            if parallel_agents:
+                num_cores = int(self.pop_size / 4)
+                for test_counter in range(4):
+                    population_slice = population[test_counter*num_cores:(test_counter+1)*num_cores]
+                    tested_population.extend(Parallel(n_jobs=num_cores)(delayed(self.process_agent)(a) for a in population_slice))
+            else:
+                for agent in population:
+                    # initialize a type of simulation
+                    simulation_run = simulate.Simulation(self.step_size, self.evaluation_params)
+                    # simulation_run = simulate.SimpleSimulation(self.step_size, self.evaluation_params)
+
+                    # run the trials and return fitness in all trials
+                    trial_data = simulation_run.run_trials(agent, simulation_run.trials)
+
+                    # calculate overall fitness
+                    # agent.fitness = np.mean(trial_data['fitness'])
+                    agent.fitness = self.harmonic_mean(trial_data['fitness'])
+                    # agent.fitness = min(trial_data['fitness'])
+
+                    tested_population.extend([agent])
 
             # log fitness results: average population fitness
             population_avg_fitness = np.mean([agent.fitness for agent in tested_population])

@@ -7,12 +7,10 @@ from evolve import Evolution
 import json
 import argparse
 import os
-
-
 # from profilestats import profile
+# @profile(print_stats=10, dump_stats=True)
 
 
-# @profile(print_stats=10)
 def main(agent_type, seed_num, mutation_variance, prob_crossover):
     # load configuration settings
     json_data = open('config.json')
@@ -48,7 +46,7 @@ def main(agent_type, seed_num, mutation_variance, prob_crossover):
         os.makedirs(foldername)
 
         # run evolution from scratch or starting from a given population
-        evolution.run(None)
+        evolution.run(None, parallel_agents=True)
         # evolution.run(150)
     return
 
