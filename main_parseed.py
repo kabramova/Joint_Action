@@ -22,6 +22,13 @@ def do_evolution(parent_dir, agent_type, seed_num, mutation_variance, prob_cross
     # set random seed
     random.seed(seed_num)
 
+    config['evaluation_params']['velocity_control'] = agent_type
+
+    if mutation_variance:
+        config['evolution_params']['mutation_variance'] = mutation_variance
+    if prob_crossover:
+        config['evolution_params']['prob_crossover'] = prob_crossover
+
     # set up evolution
     evolution = Evolution(config['evolution_params']['pop_size'],
                           config['evolution_params'],
@@ -29,19 +36,15 @@ def do_evolution(parent_dir, agent_type, seed_num, mutation_variance, prob_cross
                           config['evaluation_params'],
                           config['agent_params'])
 
-    evolution.evaluation_params['velocity_control'] = agent_type
-
-    if mutation_variance:
-        evolution.evolution_params['mutation_variance'] = mutation_variance
-    if prob_crossover:
-        evolution.evolution_params['prob_crossover'] = prob_crossover
-
     # create the right directory
     foldername = parent_dir + '/' + str(seed_num)
     evolution.set_foldername(foldername)
     if os.path.exists(foldername):
         shutil.rmtree(foldername)
     os.makedirs(foldername)
+
+    with open(foldername + '/usedconfig.json', 'w') as fp:
+        json.dump(config, fp)
 
     # run evolution from scratch or starting from a given population
     evolution.run(None, parallel_agents=False)

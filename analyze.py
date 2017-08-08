@@ -6,22 +6,32 @@ import evolve
 import numpy as np
 import datetime
 import os
-#from images2gif import writeGif
+# from images2gif import writeGif
 
 
-def load_config():
-    json_data = open('config.json')
+def load_config(condition, agent_type, seed):
+    if condition is not None:
+        json_data = open('./Agents/{}/{}/{}/usedconfig.json'.format(condition, agent_type, seed), 'rb')
+    else:
+        json_data = open('config.json', 'rb')
     config = json.load(json_data)
     json_data.close()
     return config
 
 
-def load_population(type, seed, gen):
-    pop_file = open('./Agents/{}/{}/gen{}'.format(type, seed, gen), 'rb')
+def load_population(condition, agent_type, seed, gen):
+    pop_file = open('./Agents/{}/{}/{}/gen{}'.format(condition, agent_type, seed, gen), 'rb')
     population = pickle.load(pop_file)
     pop_file.close()
-    population.sort(key=lambda agent: agent.fitness, reverse=True)
-    return population
+    if condition == 'single':
+        population.sort(key=lambda agent: agent.fitness, reverse=True)
+        return population
+    else:
+        left_pop = population['left']
+        right_pop = population['right']
+        left_pop.sort(key=lambda agent: agent.fitness, reverse=True)
+        right_pop.sort(key=lambda agent: agent.fitness, reverse=True)
+        return left_pop, right_pop
 
 
 def pop_fitness(population):
@@ -81,12 +91,12 @@ def run_random_population(size, to_plot):
     :param to_plot: which trials to plot
     :return: 
     """
-    config = load_config()
+    config = load_config(None, None, None)
     evolution = evolve.Evolution(config['evolution_params']['pop_size'],
-                          config['evolution_params'],
-                          config['network_params'],
-                          config['evaluation_params'],
-                          config['agent_params'])
+                                 config['evolution_params'],
+                                 config['network_params'],
+                                 config['evaluation_params'],
+                                 config['agent_params'])
     population = evolution.create_population(size)
     for agent in population:
         simulation_run = simulate.Simulation(evolution.step_size, evolution.evaluation_params)
@@ -108,16 +118,19 @@ def run_random_population(size, to_plot):
     return trial_data, agent
 
 
-def run_single_agent(type, seed, generation_num, agent_num, to_plot):
+def run_single_agent(condition, agent_type, seed, generation_num, agent_num, to_plot):
     """
     Load a specified generation and plot a specified agent behavior (the first one is the best performing).
+    :param condition: which condition (single, joint)
+    :param agent_type: what kind of agent (buttons, direct)
+    :param seed: which seed
     :param generation_num: which generation to use
     :param agent_num: which agent to plot
     :param to_plot: which trials to plot
     :return: 
     """
-    config = load_config()
-    population = load_population(type, seed, generation_num)
+    config = load_config(condition, agent_type, seed)
+    population = load_population(condition, agent_type, seed, generation_num)
     agent = population[agent_num]
     simulation_run = simulate.Simulation(config['network_params']['step_size'], config['evaluation_params'])
     # simulation_run = simulate.SimpleSimulation(config['network_params']['step_size'], config['evaluation_params'])
@@ -129,53 +142,56 @@ def run_single_agent(type, seed, generation_num, agent_num, to_plot):
     return trial_data, agent
 
 
-def plot_fitness(type, seed):
-
-    fit_file = open('./Agents/{}/{}/fitnesses'.format(type, seed), 'rb')
+def plot_fitness(condition, agent_type, seed):
+    fit_file = open('./Agents/{}/{}/{}/fitnesses'.format(condition, agent_type, seed), 'rb')
     fits = pickle.load(fit_file)
     fit_file.close()
 
-    plt.plot(fits[0], label="Average population fitness")
-    plt.plot(fits[1], label="Best agent fitness")
+    if condition == 'single':
+        plt.plot(fits['average'], label="Average population fitness")
+        plt.plot(fits['best'], label="Best agent fitness")
+    else:
+        plt.plot(fits['average']['combined'], 'ro-', label="Average trial fitness")
+        plt.plot(fits['average']['left'], 'bo-', label="Average left population fitness")
+        plt.plot(fits['average']['right'], 'go-', label="Average right population fitness",)
+
+        plt.plot(fits['best']['combined'], 'ro--', label="Best trial fitness")
+        plt.plot(fits['best']['left'], 'bo--', label="Best left agent fitness")
+        plt.plot(fits['best']['right'], 'go--', label="Best right agent fitness")
+
     plt.legend()
     plt.title("Fitness over generations")
     plt.show()
 
 
-plot_fitness('buttons', '4264')
-td1, ag1 = run_single_agent('buttons', '4264', 200, 0, "all")
-td2, ag2 = run_random_population(1, 0)
-td3, ag3 = run_random_population(1, "all")
-td4, ag4 = run_random_population(100, "all")
-
-
-def plot_weights(gens, agent_num):
+def plot_weights(condition, agent_type, seed, gens, agent_num):
     weights = np.zeros((len(gens), 64))
     for i in range(len(gens)):
-        td, ag = run_single_agent(gens[i], agent_num, "none")
+        trd, ag = run_single_agent(condition, agent_type, seed, gens[i], agent_num, "none")
         weights[i, :] = np.reshape(ag.brain.W, (1, 64))
 
-    plt.plot(w)
+    plt.plot(weights)
     plt.xticks(list(range(len(gens))), gens)
     plt.show()
 
     return weights
 
-w = plot_weights([0, 10, 20, 30, 40], 1)
 
-
-def animate_trial(generation_num, agent_num, trial_num):
+def animate_trial(condition, agent_type, seed, generation_num, agent_num, trial_num):
     """
     Load a specified generation and create an animation of a specified agent behavior (the first one is the best performing)
     in a specified trial. The animation is created as a sequence of png files that later need to be manually converted
     into gif.
+    :param condition: which condition (single, joint)
+    :param agent_type: which agent (buttons, direct)
+    :param seed: which seed number
     :param generation_num: which generation to use
     :param agent_num: which agent to plot
     :param trial_num: which trials to plot
     :return: 
     """
-    config = load_config()
-    population = load_population(generation_num)
+    config = load_config(condition, agent_type, seed)
+    population = load_population(condition, agent_type, seed, generation_num)
     agent = population[agent_num]
     simulation_run = simulate.Simulation(config['network_params']['step_size'], config['evaluation_params'])
     trial_data = simulation_run.run_trials(agent, simulation_run.trials, savedata=True)
@@ -183,7 +199,7 @@ def animate_trial(generation_num, agent_num, trial_num):
     fitness = trial_data['fitness'][trial_num]
     target_pos = trial_data['target_pos'][trial_num]
     tracker_pos = trial_data['tracker_pos'][trial_num]
-    keypress = trial_data['keypress'][trial_num]
+    # keypress = trial_data['keypress'][trial_num]
     sim_length = simulation_run.sim_length[trial_num] + simulation_run.start_period
 
     # Save the current state of the system
@@ -269,10 +285,122 @@ def animate_trial(generation_num, agent_num, trial_num):
 
         plt.close()
         print("Animation complete")
-
-animate_trial(0, 0, 0)
 # in terminal:
 # convert -delay 5 -loop 0 animation*.jpg animated.gif
 
 # images = os.listdir('./Animations/2017-05-16_16-33-18')
 # writeGif("images.gif", images, duration=1, dither=0)
+
+
+def check_generalization(condition, agent_type, seed, agent):
+    config = load_config(condition, agent_type, seed)
+    config["evaluation_params"]["impacts"] = [0.5, 2]
+    simulation_run = simulate.Simulation(config['network_params']['step_size'], config['evaluation_params'])
+    trial_data = simulation_run.run_trials(agent, simulation_run.trials, savedata=True)
+    fig_title = "Generalization over impact"
+    lims = [config['evaluation_params']['screen_width'][0] - 1, config['evaluation_params']['screen_width'][1] + 1]
+    plot_data(trial_data, "all", fig_title, lims)
+
+    config["evaluation_params"]["impacts"] = [1]
+    config["evaluation_params"]["tg_start_range"] = [-3, 3]
+    config["evaluation_params"]["tg_start_variants"] = [2]
+
+    simulation_run = simulate.Simulation(config['network_params']['step_size'], config['evaluation_params'])
+    trial_data = simulation_run.run_trials(agent, simulation_run.trials, savedata=True)
+    fig_title = "Generalization over starting position"
+    lims = [config['evaluation_params']['screen_width'][0] - 1, config['evaluation_params']['screen_width'][1] + 1]
+    plot_data(trial_data, "all", fig_title, lims)
+
+
+def run_random_pair(size, to_plot):
+    """
+    Creates a population of composed of random agents, run them through the experiment and plot the best one.
+    :param size: the size of the population to generate
+    :param to_plot: which trials to plot
+    :return:
+    """
+    config = load_config(None, None, None)
+    evolution = evolve.Evolution(config['evolution_params']['pop_size'],
+                                 config['evolution_params'],
+                                 config['network_params'],
+                                 config['evaluation_params'],
+                                 config['agent_params'])
+    population_left = evolution.create_population(size)
+    population_right = evolution.create_population(size)
+
+    for agent1 in population_left:
+        for agent2 in population_right:
+            simulation_run = simulate.Simulation(evolution.step_size, evolution.evaluation_params)
+            # simulation_run = simulate.SimpleSimulation(evolution.step_size, evolution.evaluation_params)
+            trial_data = simulation_run.run_joint_trials(agent1, agent2, simulation_run.trials)  # returns a list of fitness in all trials
+            # agent.fitness = np.mean(trial_data['fitness'])
+            trial_fitness = evolution.harmonic_mean(trial_data['fitness'])
+            agent1.fitness = agent1.fitness + trial_fitness
+            agent2.fitness = agent2.fitness + trial_fitness
+            # agent.fitness = min(trial_data['fitness'])
+        agent1.fitness = agent1.fitness/size
+
+    for agent in population_right:
+        agent.fitness = agent.fitness/size
+
+    population_left.sort(key=lambda ag: ag.fitness, reverse=True)
+    population_right.sort(key=lambda ag: ag.fitness, reverse=True)
+
+    agent1 = population_left[0]
+    agent2 = population_right[0]
+
+    print(agent1.fitness, agent2.fitness)
+
+    simulation_run = simulate.Simulation(evolution.step_size, evolution.evaluation_params)
+    # simulation_run = simulate.SimpleSimulation(evolution.step_size, evolution.evaluation_params)
+    # returns a list of fitness in all trials
+    trial_data = simulation_run.run_joint_trials(agent1, agent2, simulation_run.trials, savedata=True)
+    fig_title = "Best agent pair from random population"
+    lims = [config['evaluation_params']['screen_width'][0]-1, config['evaluation_params']['screen_width'][1]+1]
+    plot_data(trial_data, to_plot, fig_title, lims)
+
+    return trial_data, agent1, agent2
+
+
+def run_single_pair(agent_type, seed, generation_num, agent_num, to_plot):
+    """
+    Load a specified generation and plot a specified agent behavior (the first one is the best performing).
+    :param condition: which condition (single, joint)
+    :param agent_type: what kind of agent (buttons, direct)
+    :param seed: which seed
+    :param generation_num: which generation to use
+    :param agent_num: which agent to plot
+    :param to_plot: which trials to plot
+    :return:
+    """
+    config = load_config('joint', agent_type, seed)
+    left_pop, right_pop = load_population('joint', agent_type, seed, generation_num)
+
+    agent1 = left_pop[agent_num]
+    agent2 = right_pop[agent_num]
+
+    simulation_run = simulate.Simulation(config['network_params']['step_size'], config['evaluation_params'])
+    trial_data = simulation_run.run_joint_trials(agent1, agent2, simulation_run.trials, savedata=True)
+
+    fig_title = "Generation {}, agent {}".format(generation_num, agent_num)
+    lims = [config['evaluation_params']['screen_width'][0]-1, config['evaluation_params']['screen_width'][1]+1]
+    plot_data(trial_data, to_plot, fig_title, lims)
+
+    return trial_data, agent1, agent2
+
+# config = load_config()
+# evolution = evolve.Evolution(config['evolution_params']['pop_size'],
+#                              config['evolution_params'],
+#                              config['network_params'],
+#                              config['evaluation_params'],
+#                              config['agent_params'])
+# population = evolution.create_population(1)
+# a = population[0]
+# genes = np.zeros([1000, 90])
+#
+# for i in range(1000):
+#     new_a = evolution.mutate(a, 0.1)
+#     genes[i,:] = new_a.genotype
+#     a = deepcopy(new_a)
+# genesavg = np.mean(genes,1)
+# plt.plot(genesavg)

@@ -172,6 +172,164 @@ class Simulation:
 
         return trial_data
 
+    def run_joint_trials(self, agent1, agent2, trials, savedata=False):
+        """
+        An evaluation function that accepts two agents and returns a real number representing
+        the performance of these agents on the task.
+        Here the task is the Knoblich and Jordan task, the joint action version.
+
+        :param agent1: an agent with a CTRNN brain and particular anatomy, controls only left button
+        :param agent2: an agent with a CTRNN brain and particular anatomy, controls only right button
+        :param trials: a list of trials to perform
+        :param savedata: should all the trial data be saved
+        :return: fitness
+        """
+
+        trial_data = dict()
+        trial_data['fitness'] = []
+        trial_data['target_pos'] = [None] * len(trials)
+        trial_data['tracker_pos'] = [None] * len(trials)
+        trial_data['tracker_v'] = [None] * len(trials)
+        trial_data['keypress'] = [None] * len(trials)
+
+        if savedata:
+            trial_data['brain_state_a1'] = [None] * len(trials)
+            trial_data['input_a1'] = [None] * len(trials)
+            trial_data['brain_state_a2'] = [None] * len(trials)
+            trial_data['input_a2'] = [None] * len(trials)
+
+            trial_data['output'] = [None] * len(trials)
+            trial_data['button_state_a1'] = [None] * len(trials)
+            trial_data['button_state_a2'] = [None] * len(trials)
+
+        for i in range(len(trials)):
+            # create target and tracker
+            # target = Target(trials[i][0], self.step_size, 0)
+            target = Target(trials[i][0], self.step_size, trials[i][2])
+
+            if self.velocity_control == "buttons":
+                tracker = Tracker(trials[i][1], self.step_size, self.condition)
+            elif self.velocity_control == "direct":
+                tracker = DirectTracker(None, self.step_size, self.condition)
+
+            # set initial state in specified range
+            agent1.brain.randomize_state(self.initial_state)
+            agent1.initialize_buttons()
+
+            agent2.brain.randomize_state(self.initial_state)
+            agent2.initialize_buttons()
+
+            trial_data['target_pos'][i] = np.zeros((self.sim_length[i] + self.start_period, 1))
+            trial_data['tracker_pos'][i] = np.zeros((self.sim_length[i] + self.start_period, 1))
+            trial_data['tracker_v'][i] = np.zeros((self.sim_length[i] + self.start_period, 1))
+            trial_data['keypress'][i] = np.zeros((self.sim_length[i] + self.start_period, 2))
+
+            if savedata:
+                trial_data['brain_state_a1'][i] = np.zeros((self.sim_length[i] + self.start_period, agent1.brain.N))
+                trial_data['input_a1'][i] = np.zeros((self.sim_length[i] + self.start_period, agent1.brain.N))
+                trial_data['brain_state_a2'][i] = np.zeros((self.sim_length[i] + self.start_period, agent2.brain.N))
+                trial_data['input_a2'][i] = np.zeros((self.sim_length[i] + self.start_period, agent2.brain.N))
+
+                trial_data['output'][i] = np.zeros((self.sim_length[i] + self.start_period, 2))
+                trial_data['button_state_a1'][i] = np.zeros((self.sim_length[i] + self.start_period, 2))
+                trial_data['button_state_a2'][i] = np.zeros((self.sim_length[i] + self.start_period, 2))
+
+            if self.start_period > 0:
+                # don't move the target and don't allow tracker to move
+                for j in range(self.start_period):
+                    agent1.visual_input(tracker.position, target.position)
+                    agent1.brain.euler_step()
+                    agent2.visual_input(tracker.position, target.position)
+                    agent2.brain.euler_step()
+
+                    # activation, motor_activity = agent.motor_output()
+                    # activation = agent.motor_output()
+                    # tracker.accelerate(activation)
+
+                    trial_data['target_pos'][i][j] = target.position
+                    trial_data['tracker_pos'][i][j] = tracker.position
+                    trial_data['tracker_v'][i][j] = tracker.velocity
+                    # trial_data['keypress'][i][j] = activation
+
+                    if savedata:
+                        trial_data['brain_state_a1'][i][j] = agent1.brain.Y
+                        trial_data['input_a1'][i][j] = agent1.brain.I
+                        trial_data['brain_state_a2'][i][j] = agent2.brain.Y
+                        trial_data['input_a2'][i][j] = agent2.brain.I
+
+                        # trial_data['output'][i][j] = motor_activity
+                        trial_data['button_state_a1'][i][j] = agent1.button_state
+                        trial_data['button_state_a2'][i][j] = agent2.button_state
+
+            for j in range(self.start_period, self.sim_length[i] + self.start_period):
+
+                # 1) Target movement
+                target.movement(self.width)
+                # target.movement([self.width[0] + 10, self.width[1] - 10])
+
+                # 2) Agent sees
+                agent1.visual_input(tracker.position, target.position)
+                agent2.visual_input(tracker.position, target.position)
+
+                # 3) Agents moves
+                sound_output = tracker.movement(self.width)
+
+                # 4) Agent hears
+                if self.condition == 'sound':
+                    agent1.auditory_input(sound_output)
+                    agent2.auditory_input(sound_output)
+
+                trial_data['target_pos'][i][j] = target.position
+                trial_data['tracker_pos'][i][j] = tracker.position
+                trial_data['tracker_v'][i][j] = tracker.velocity
+
+                if savedata:
+                    trial_data['brain_state_a1'][i][j] = agent1.brain.Y
+                    trial_data['brain_state_a2'][i][j] = agent2.brain.Y
+
+                # 5) Update agent's neural system
+                agent1.brain.euler_step()
+                agent2.brain.euler_step()
+
+                # 6) Agent reacts
+                # activation, motor_activity = agent.motor_output()
+                activation_left = agent1.motor_output()[0]  # take only left activation from "left" agent
+                activation_right = agent2.motor_output()[1]  # take only right activation from "right" agent
+
+                activation = [activation_left, activation_right]
+                tracker.accelerate(activation)
+                # this will save -1 or 1 for button-controlling agents
+                # but left and right velocities for direct velocity control agent
+                trial_data['keypress'][i][j] = activation
+
+                if savedata:
+                    trial_data['input_a1'][i][j] = agent1.brain.I
+                    # trial_data['output'][i][j] = motor_activity
+                    trial_data['button_state_a1'][i][j] = agent1.button_state
+                    trial_data['input_a2'][i][j] = agent2.brain.I
+                    # trial_data['output'][i][j] = motor_activity
+                    trial_data['button_state_a2'][i][j] = agent2.button_state
+
+            # 6) Fitness tacking:
+            fitness = 1 - (np.sum(np.abs(trial_data['target_pos'][i] - trial_data['tracker_pos'][i])) /
+                           (2 * self.width[1] * (self.sim_length[i] + self.start_period)))
+            # penalty for not moving in the trial not counting the delay period
+            penalty = list(trial_data['tracker_v'][i][self.start_period:]).count(0) / (self.sim_length[i])
+            # if penalty decreases the score below 0, set it to 0
+            overall_fitness = np.clip(fitness - penalty, 0, 1)
+            trial_data['fitness'].append(overall_fitness)
+
+            # trial_data['fitness'].append(np.mean(trial_data['keypress'][i]))
+
+            # cap_distance = 10
+            # total_dist = np.abs(trial_data['target_pos'][i] - trial_data['tracker_pos'][i])
+            # scores = np.clip(-1/cap_distance * total_dist + 1, 0, 1)
+            # trial_data['fitness'].append(np.mean(scores))
+            # scores.sort(reverse=True)
+            # trial_data['fitness'].append(np.mean(weighted_scores))
+
+        return trial_data
+
 
 class SimpleSimulation:
     """

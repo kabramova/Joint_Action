@@ -1,15 +1,17 @@
 {
   "evolution_params": {
     "pop_size": 100,
-    "max_gens": 5000,
+    "max_gens": 3000,
     "mutation_variance": 10,
     "prob_crossover": 0.8,
     "elitist_fraction": 0.05,
     "fps_fraction": 0.9,
     "fitness_update": "rank",
     "selection": "sus",
-    "check_int": 50,
-    "evolution_break": 250
+    "check_int": 1,
+    "evolution_break": 250,
+    "tested_proportion": 2.5,
+    "num_cores": 25
   },
   "network_params": {
     "num_neurons": 8,
@@ -24,7 +26,7 @@
     "velocities": [-2, -3, -4, 2, 3, 4],
     "impacts": [1],
     "tg_start_range": [0, 0],
-    "tg_start_variants": [1],
+    "tg_start_variants": [0],
     "screen_width": [-20, 20],
     "start_period": 100,
     "initial_state": [0, 0],

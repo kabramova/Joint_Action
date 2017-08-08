@@ -6,6 +6,7 @@ from copy import deepcopy
 import CTRNN
 import simulate
 from joblib import Parallel, delayed
+from joblib.pool import has_shareable_memory
 np.seterr(over='ignore')
 
 
@@ -33,6 +34,7 @@ class Evolution:
         """
         Execute a full search run until some condition is reached.
         :param gen_to_load: which generation to load if starting from an existing population
+        :param parallel_agents: switch whether processing of agents within generation should be parallel
         :return: the last population in the search
         """
         gen = 0
@@ -43,8 +45,8 @@ class Evolution:
             population = self.load_population(self.foldername, gen_to_load)
 
         # collect average and best fitness
-        avg_fitness = [0]
-        best_fitness = [0]
+        avg_fitness = [0.0]
+        best_fitness = [0.0]
         best_counter = 0
 
         while gen < self.evolution_params['max_gens'] + 1:
@@ -54,28 +56,17 @@ class Evolution:
             tested_population = []
 
             if parallel_agents:
-                num_cores = int(self.pop_size / 4)
+                num_cores = self.evolution_params['num_cores']
                 for test_counter in range(4):
                     population_slice = population[test_counter*num_cores:(test_counter+1)*num_cores]
-                    tested_population.extend(Parallel(n_jobs=num_cores)(delayed(self.process_agent)(a) for a in population_slice))
+                    updated_slice = Parallel(n_jobs=num_cores)(delayed(self.process_agent)(a) for a in population_slice)
+                    tested_population.extend(updated_slice)
             else:
                 for agent in population:
-                    # initialize a type of simulation
-                    simulation_run = simulate.Simulation(self.step_size, self.evaluation_params)
-                    # simulation_run = simulate.SimpleSimulation(self.step_size, self.evaluation_params)
-
-                    # run the trials and return fitness in all trials
-                    trial_data = simulation_run.run_trials(agent, simulation_run.trials)
-
-                    # calculate overall fitness
-                    # agent.fitness = np.mean(trial_data['fitness'])
-                    agent.fitness = self.harmonic_mean(trial_data['fitness'])
-                    # agent.fitness = min(trial_data['fitness'])
-
-                    tested_population.extend([agent])
+                    tested_population.extend([self.process_agent(agent)])
 
             # log fitness results: average population fitness
-            population_avg_fitness = np.mean([agent.fitness for agent in tested_population])
+            population_avg_fitness = np.mean([agent.fitness for agent in tested_population]).item()
             avg_fitness.append(round(population_avg_fitness, 3))
 
             # sort agents by fitness from best to worst
@@ -94,7 +85,8 @@ class Evolution:
                     # print("Stopped the search at generation {}".format(gen))
 
                     # save the average and best fitness lists
-                    self.log_fitness(self.foldername, avg_fitness, best_fitness)
+                    fitness_log = {'average': avg_fitness, 'best': best_fitness}
+                    self.log_fitness(self.foldername, fitness_log)
                     break
             else:
                 best_counter = 0
@@ -103,7 +95,8 @@ class Evolution:
             if gen % self.evolution_params['check_int'] == 0 or gen == self.evolution_params['max_gens']:
                 self.save_population(tested_population, self.foldername, gen)
                 # print("Saved generation {}".format(gen))
-                self.log_fitness(self.foldername, avg_fitness, best_fitness)
+                fitness_log = {'average': avg_fitness, 'best': best_fitness}
+                self.log_fitness(self.foldername, fitness_log)
 
             # reproduce population
             population = self.reproduce(tested_population)
@@ -123,6 +116,139 @@ class Evolution:
         agent.fitness = self.harmonic_mean(trial_data['fitness'])
         # agent.fitness = min(trial_data['fitness'])
         return agent
+
+    def run_joint(self, gen_to_load, parallel_agents):
+        """
+        Execute a full search run until some condition is reached.
+        :param gen_to_load: which generation to load if starting from an existing population
+        :param parallel_agents: switch whether processing of agents within generation should be parallel
+        :return: the last population in the search
+        """
+        gen = 0
+        # create initial population or load existing one
+        if gen_to_load is None:
+            population_left, population_right = self.create_joint_population(self.pop_size)
+        else:
+            population_left, population_right = self.load_joint_population(self.foldername, gen_to_load)
+
+        # collect average and best fitness
+        avg_fitness = {'left': [0.0], 'right': [0.0], 'combined': [0.0]}
+        best_fitness = {'left': [0.0], 'right': [0.0], 'combined': [0.0]}
+        best_counter = 0
+
+        # size of the left and right sub-populations
+        sub_size = int(self.pop_size / 2)
+        # how many agents from each sub-population to test
+        tested_size = int(sub_size / self.evolution_params['tested_proportion'])
+
+        while gen < self.evolution_params['max_gens'] + 1:
+            #  print(gen)
+            idx_left = random.sample(range(sub_size), tested_size)
+            idx_right = random.sample(range(sub_size), tested_size)
+            idx_pairs = [(x, y) for x in idx_left for y in idx_right]
+            n_pairs = len(idx_pairs)
+
+            # set fitness of all agents that will participate in the experiment to 0
+            for idx in idx_left:
+                population_left[idx].fitness = 0
+            for idx in idx_right:
+                population_right[idx].fitness = 0
+
+            fitness_dict = dict.fromkeys(idx_pairs)
+
+            if parallel_agents:
+                # evaluate all agents on the task
+                num_cores = self.evolution_params['num_cores']
+                for test_counter in range(int(n_pairs/num_cores)):
+                    # process num_cores pairs at a time updating the dictionary with their trial fitness
+                    pairs_slice = idx_pairs[test_counter*num_cores:(test_counter+1)*num_cores]
+                    Parallel(n_jobs=num_cores)(delayed(has_shareable_memory)
+                                               (self.process_pair(pair, population_left, population_right, fitness_dict))
+                                               for pair in pairs_slice)
+            else:
+                # evaluate all agents on the task
+                for pair in idx_pairs:
+                    self.process_pair(pair, population_left, population_right, fitness_dict)
+
+            # update fitness value of tested agents, first sum
+            for key, value in fitness_dict.items():
+                population_left[key[0]].fitness += value
+                population_right[key[1]].fitness += value
+
+            # then take the mean from all experiments they took part in
+            for idx in idx_left:
+                population_left[idx].fitness = population_left[idx].fitness/tested_size
+            for idx in idx_right:
+                population_right[idx].fitness = population_right[idx].fitness/tested_size
+
+            pair_avg_fitness = np.mean(list(fitness_dict.values())).item()
+            avg_fitness['combined'].append(round(pair_avg_fitness, 3))
+            bf_combined = max(fitness_dict.values())
+            best_fitness['combined'].append(round(bf_combined, 3))
+
+            # log fitness results: average population fitness
+            avgf_left = np.mean([agent.fitness for agent in population_left]).item()
+            avgf_right = np.mean([agent.fitness for agent in population_left]).item()
+
+            avg_fitness['left'].append(round(avgf_left, 3))
+            avg_fitness['right'].append(round(avgf_right, 3))
+
+            # sort agents by fitness from best to worst
+            population_left.sort(key=lambda ag: ag.fitness, reverse=True)
+            population_right.sort(key=lambda ag: ag.fitness, reverse=True)
+
+            # log fitness results: best agent fitness
+            bf_left = round(population_left[0].fitness, 3)
+            bf_right = round(population_left[0].fitness, 3)
+
+            best_fitness['left'].append(bf_left)
+            best_fitness['right'].append(bf_right)
+
+            # stop the search if fitness hasn't increased in a set number of generations
+            if bf_left == best_fitness['left'][-2] and bf_right == best_fitness['right'][-2]:
+                best_counter += 1
+
+                if best_counter > self.evolution_params['evolution_break']:
+                    # save the last population
+                    self.save_population({'left': population_left, 'right': population_right},
+                                         self.foldername, gen)
+                    # print("Stopped the search at generation {}".format(gen))
+
+                    # save the average and best fitness lists
+                    fitness_log = {'average': avg_fitness, 'best': best_fitness}
+                    self.log_fitness(self.foldername, fitness_log)
+                    break
+            else:
+                best_counter = 0
+
+            # save the intermediate or last population and fitness
+            if gen % self.evolution_params['check_int'] == 0 or gen == self.evolution_params['max_gens']:
+                self.save_population({'left': population_left, 'right': population_right},
+                                     self.foldername, gen)
+                # print("Saved generation {}".format(gen))
+                fitness_log = {'average': avg_fitness, 'best': best_fitness}
+                self.log_fitness(self.foldername, fitness_log)
+
+            # reproduce population
+            population_left = self.reproduce(population_left)
+            population_right = self.reproduce(population_right)
+            gen += 1
+
+    def process_pair(self, pair, population_left, population_right, fitness_dict):
+        agent1 = population_left[pair[0]]
+        agent2 = population_right[pair[1]]
+
+        # initialize a type of simulation
+        simulation_run = simulate.Simulation(self.step_size, self.evaluation_params)
+        # simulation_run = simulate.SimpleSimulation(evolution.step_size, evolution.evaluation_params)
+
+        # run the trials and return fitness in all trials
+        trial_data = simulation_run.run_joint_trials(agent1, agent2, simulation_run.trials)
+
+        # calculate overall fitness for a given trial run
+        trial_fitness = self.harmonic_mean(trial_data['fitness'])
+        fitness_dict[pair] = trial_fitness
+        print(fitness_dict)
 
     def create_population(self, size):
         """
@@ -152,6 +278,12 @@ class Evolution:
             population.append(agent)
         return population
 
+    def create_joint_population(self, size):
+        population = self.create_population(size)
+        population_left = population[:int(size/2)]
+        population_right = population[int(size/2):]
+        return population_left, population_right
+
     @staticmethod
     def load_population(foldername, gen):
         pop_file = open('{}/gen{}'.format(foldername, gen), 'rb')
@@ -160,6 +292,13 @@ class Evolution:
         population.sort(key=lambda agent: agent.fitness, reverse=True)
         return population
 
+    def load_joint_population(self, foldername, gen):
+        population = self.load_population(foldername, gen)
+        size = len(population)
+        population_left = population[:int(size/2)]
+        population_right = population[int(size/2):]
+        return population_left, population_right
+
     @staticmethod
     def save_population(population, foldername, gen):
         pop_file = open('{}/gen{}'.format(foldername, gen), 'wb')
@@ -167,8 +306,7 @@ class Evolution:
         pop_file.close()
 
     @staticmethod
-    def log_fitness(foldername, avg, best):
-        fits = [avg, best]
+    def log_fitness(foldername, fits):
         fit_file = open('{}/fitnesses'.format(foldername), 'wb')
         pickle.dump(fits, fit_file)
         fit_file.close()
@@ -188,12 +326,14 @@ class Evolution:
         :return: new_population
         """
 
-        new_population = [None] * self.pop_size
+        pop_size = len(population)
+        new_population = [None] * pop_size
 
         # calculate all fractions
-        n_best = math.floor(self.pop_size * self.evolution_params['elitist_fraction'] + 0.5)
-        n_crossed = int(math.floor(self.pop_size * self.evolution_params['fps_fraction'] + 0.5)) & (-2)  # floor to the nearest even number
-        n_fillup = self.pop_size - (n_best + n_crossed)
+        n_best = math.floor(pop_size * self.evolution_params['elitist_fraction'] + 0.5)
+        # floor to the nearest even number
+        n_crossed = int(math.floor(pop_size * self.evolution_params['fps_fraction'] + 0.5)) & (-2)
+        n_fillup = pop_size - (n_best + n_crossed)
 
         # 1) Elitist selection
 
@@ -268,8 +408,8 @@ class Evolution:
             # if value is below zero, a small positive constant is given so the individual has some probability
             # of being chosen. The numbers are then normalized
             fitnesses = [agent.fitness for agent in population]
-            avg = np.mean(fitnesses)
-            std = max(0.0001, np.std(fitnesses))
+            avg = np.mean(fitnesses).item()
+            std = max(0.0001, np.std(fitnesses).item())
             exp_values = list((1 + ((f - avg) / (2 * std))) for f in fitnesses)
 
             for i, v in enumerate(exp_values):
@@ -338,7 +478,7 @@ class Evolution:
 
     def mutate(self, agent, mutation_var):
         magnitude = np.random.normal(0, np.sqrt(mutation_var))
-        unit_vector = np.array(self.make_rand_vector(len(agent.genotype)))
+        unit_vector = self.make_rand_vector(len(agent.genotype))
         mutant = deepcopy(agent)
         mutant.genotype = np.clip(agent.genotype + magnitude * unit_vector,
                                   self.agent_params['gene_range'][0], self.agent_params['gene_range'][1])
@@ -352,12 +492,17 @@ class Evolution:
         is a random Gaussian and then normalizing the resulting vector.
         """
         vec = np.random.normal(0, 1, dims)
-        mag = sum(x ** 2 for x in vec) ** .5
-        return [x / mag for x in vec]
+        mag = sum(vec ** 2) ** .5
+        return vec/mag
 
     @staticmethod
+    # TODO: consider replacing 0 values with small positive number to avoid slashing everything to 0
     def harmonic_mean(fit_list):
         if 0 in fit_list:
             return 0
         else:
             return len(fit_list) / np.sum(1.0 / np.array(fit_list))
+
+    @staticmethod
+    def rolling_mean(prev, current, counter):
+        return (prev * (counter - 1) + current) / counter

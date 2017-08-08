@@ -18,7 +18,7 @@ def main(agent_type, seed_num, mutation_variance, prob_crossover):
     config = json.load(json_data)
     json_data.close()
 
-    parent_dir = os.getcwd() + '/Agents/' + agent_type
+    parent_dir = os.getcwd() + '/Agents/joint/' + agent_type
     if not os.path.exists(parent_dir):
         os.makedirs(parent_dir)
 
@@ -51,7 +51,7 @@ def main(agent_type, seed_num, mutation_variance, prob_crossover):
             json.dump(config, fp)
 
         # run evolution from scratch or starting from a given population
-        evolution.run(None, parallel_agents=True)
+        evolution.run_joint(None, parallel_agents=True)
         # evolution.run(150)
     return
 
