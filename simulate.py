@@ -1,5 +1,6 @@
 import numpy as np
 import random
+import string
 
 
 class Simulation:
@@ -655,6 +656,7 @@ class Agent:
                                  crossover_points[-1] + len(self.VW) + len(self.AW)])
         self.crossover_points = crossover_points
         self.button_state = [False, False]  # both buttons off in the beginning
+        self.name = ''.join(random.choices(string.ascii_uppercase + string.digits, k=5))
 
     def __eq__(self, other):
         # two agents are the same if they have the same genotype

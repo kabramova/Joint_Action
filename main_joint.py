@@ -51,6 +51,7 @@ def main(agent_type, seed_num, mutation_variance, prob_crossover):
             json.dump(config, fp)
 
         # run evolution from scratch or starting from a given population
+        # evolution.run_joint(None, parallel_agents=False)
         evolution.run_joint(None, parallel_agents=True)
         # evolution.run(150)
     return

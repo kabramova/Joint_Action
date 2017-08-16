@@ -151,11 +151,11 @@ def plot_fitness(condition, agent_type, seed):
         plt.plot(fits['average'], label="Average population fitness")
         plt.plot(fits['best'], label="Best agent fitness")
     else:
-        plt.plot(fits['average']['combined'], 'ro-', label="Average trial fitness")
+        # plt.plot(fits['average']['combined'], 'ro-', label="Average trial fitness")
         plt.plot(fits['average']['left'], 'bo-', label="Average left population fitness")
         plt.plot(fits['average']['right'], 'go-', label="Average right population fitness",)
 
-        plt.plot(fits['best']['combined'], 'ro--', label="Best trial fitness")
+        # plt.plot(fits['best']['combined'], 'ro--', label="Best trial fitness")
         plt.plot(fits['best']['left'], 'bo--', label="Best left agent fitness")
         plt.plot(fits['best']['right'], 'go--', label="Best right agent fitness")
 
