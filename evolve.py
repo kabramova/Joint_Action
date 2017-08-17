@@ -359,10 +359,7 @@ class Evolution:
         trial_data = simulation_run.run_joint_trials(agent1, agent2, simulation_run.trials)
 
         # calculate overall fitness for a given trial run
-        #trial_fitness = self.harmonic_mean(trial_data['fitness'])
-        trial_fitness = np.mean(trial_data['fitness'])
-        print(trial_fitness)
-
+        trial_fitness = self.harmonic_mean(trial_data['fitness'])
 
         # update agent fitness with the current run
         # if it's the first run the fitness is just current trial fitness, otherwise it's a
@@ -373,8 +370,6 @@ class Evolution:
         else:
             agent1.fitness = self.rolling_mean(agent1.fitness, trial_fitness, shuffle_num+1)
             agent2.fitness = self.rolling_mean(agent2.fitness, trial_fitness, shuffle_num+1)
-        print(agent1.name, agent1.fitness)
-        print(agent2.name, agent2.fitness)
 
     def create_population(self, size):
         """
