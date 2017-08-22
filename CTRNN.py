@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class CTRNN:
+class BrainCTRNN:
 
     def __init__(self, number_of_neurons=0, step_size=0.01, tau_range=(1, 1), gain_range=(1, 1), theta_range=(0, 0), w_range=(0, 0)):
         """

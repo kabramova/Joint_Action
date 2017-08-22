@@ -21,4 +21,3 @@ az.plot_fitness('joint', 'buttons', '921660')
 td, a1, a2 = az.run_single_pair('buttons', '921660', 23, 0, 'all')
 
 
-

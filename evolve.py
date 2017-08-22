@@ -3,8 +3,9 @@ import numpy as np
 import random
 import math
 from copy import deepcopy
-import CTRNN
+from CTRNN import BrainCTRNN
 import simulate
+import agents
 from joblib import Parallel, delayed
 from joblib.pool import has_shareable_memory
 np.seterr(over='ignore')
@@ -246,12 +247,16 @@ class Evolution:
         if gen_to_load is None:
             population_left, population_right = self.create_joint_population(self.pop_size)
         else:
-            population_left, population_right = self.load_joint_population(self.foldername, gen_to_load)
+            # population_left, population_right = self.load_joint_population(self.foldername, gen_to_load)
+            population_left, population_right = self.load_joint_population(gen_to_load)
 
         # collect average and best fitness
         # with this implementation we don't save particular trial fitnesses
-        avg_fitness = {'left': [0.0], 'right': [0.0]}
-        best_fitness = {'left': [0.0], 'right': [0.0]}
+        avg_fitness_left = [0.0]
+        avg_fitness_right = [0.0]
+        best_fitness_left = [0.0]
+        best_fitness_right = [0.0]
+
         best_counter = 0
 
         # size of the left and right sub-populations
@@ -259,37 +264,53 @@ class Evolution:
         # how many reshuffles to test, e.g. 5
         tested_shuffles = self.evolution_params['tested_proportion']
 
+        # initialize a type of simulation
+        simulation_setup = simulate.Simulation(self.step_size, self.evaluation_params)
+        # simulation_run = simulate.SimpleSimulation(evolution.step_size, evolution.evaluation_params)
+
         while gen < self.evolution_params['max_gens'] + 1:
 
             shuffle_num = 0
+
             # repeat tested_shuffles times and accumulate average fitness for each agent
             while shuffle_num < tested_shuffles:
                 # population_left stays the same, we shuffle the right one
                 random.shuffle(population_right)
 
                 # form pairs from two sub-populations (this will be the size of the sub-population)
-                tested_pairs = list(zip(population_left, population_right))
+                pairs_to_test = list(zip(population_left, population_right))
+                tested_pairs = []
 
                 # evaluate all agents on the task
                 if parallel_agents:
                     num_cores = self.evolution_params['num_cores']
-                    for slice_counter in range(int(sub_size/num_cores)):
+                    # cdef int slice_counter
+                    # cdef int slice_size
+                    slice_size = int(sub_size/num_cores)
+                    for slice_counter in range(slice_size):
+
                         # process num_cores pairs at a time updating the dictionary with their trial fitness
-                        pairs_slice = tested_pairs[slice_counter*num_cores:(slice_counter+1)*num_cores]
-                        Parallel(n_jobs=num_cores)(delayed(has_shareable_memory)
-                                                   (self.process_pair(pair, shuffle_num))
+                        pairs_slice = pairs_to_test[slice_counter*num_cores:(slice_counter+1)*num_cores]
+                        # Parallel(n_jobs=num_cores)(delayed(has_shareable_memory)
+                        #                            (self.process_pair(pair, shuffle_num))
+                        #                            for pair in pairs_slice)
+                        updated_slice = Parallel(n_jobs=num_cores)(delayed(self.process_pair)
+                                                                   (pair, shuffle_num, simulation_setup)
                                                    for pair in pairs_slice)
+                        tested_pairs.extend(updated_slice)
                 else:
-                    for pair in tested_pairs:
-                        self.process_pair(pair, shuffle_num)
+                    for pair in pairs_to_test:
+                        tested_pairs.extend(self.process_pair(pair, shuffle_num))
+
+                population_left, population_right = [list(x) for x in list(zip(*tested_pairs))]
                 shuffle_num += 1
 
             # log fitness results: average population fitness
             avgf_left = np.mean(self.pop_fitness(population_left)).item()
             avgf_right = np.mean(self.pop_fitness(population_right)).item()
 
-            avg_fitness['left'].append(round(avgf_left, 3))
-            avg_fitness['right'].append(round(avgf_right, 3))
+            avg_fitness_left.append(round(avgf_left, 3))
+            avg_fitness_right.append(round(avgf_right, 3))
 
             # sort agents by fitness from best to worst
             population_left.sort(key=lambda ag: ag.fitness, reverse=True)
@@ -299,11 +320,11 @@ class Evolution:
             bf_left = round(population_left[0].fitness, 3)
             bf_right = round(population_right[0].fitness, 3)
 
-            best_fitness['left'].append(bf_left)
-            best_fitness['right'].append(bf_right)
+            best_fitness_left.append(bf_left)
+            best_fitness_right.append(bf_right)
 
             # stop the search if fitness hasn't increased in a set number of generations
-            if bf_left == best_fitness['left'][-2] and bf_right == best_fitness['right'][-2]:
+            if bf_left == best_fitness_left[-2] and bf_right == best_fitness_right[-2]:
                 best_counter += 1
 
                 if best_counter > self.evolution_params['evolution_break']:
@@ -313,7 +334,8 @@ class Evolution:
                     # print("Stopped the search at generation {}".format(gen))
 
                     # save the average and best fitness lists
-                    fitness_log = {'average': avg_fitness, 'best': best_fitness}
+                    fitness_log = {'average': {'left': avg_fitness_left, 'right': avg_fitness_right},
+                                   'best': {'left': best_fitness_left, 'right': best_fitness_right}}
                     self.log_fitness(self.foldername, fitness_log)
                     break
             else:
@@ -324,7 +346,8 @@ class Evolution:
                 self.save_population({'left': population_left, 'right': population_right},
                                      self.foldername, gen)
                 # print("Saved generation {}".format(gen))
-                fitness_log = {'average': avg_fitness, 'best': best_fitness}
+                fitness_log = {'average': {'left': avg_fitness_left, 'right': avg_fitness_right},
+                               'best': {'left': best_fitness_left, 'right': best_fitness_right}}
                 self.log_fitness(self.foldername, fitness_log)
 
             # reproduce population
@@ -347,19 +370,16 @@ class Evolution:
     #     trial_fitness = self.harmonic_mean(trial_data['fitness'])
     #     fitness_dict[pair] = trial_fitness
 
-    def process_pair(self, pair, shuffle_num):
+    def process_pair(self, pair, shuffle_num, simulation_setup):
         agent1 = pair[0]
         agent2 = pair[1]
 
-        # initialize a type of simulation
-        simulation_run = simulate.Simulation(self.step_size, self.evaluation_params)
-        # simulation_run = simulate.SimpleSimulation(evolution.step_size, evolution.evaluation_params)
-
         # run the trials and return fitness in all trials
-        trial_data = simulation_run.run_joint_trials(agent1, agent2, simulation_run.trials)
+        trial_data = simulation_setup.run_joint_trials(agent1, agent2, simulation_setup.trials)
 
         # calculate overall fitness for a given trial run
         trial_fitness = self.harmonic_mean(trial_data['fitness'])
+        # trial_fitness = np.mean(trial_data['fitness'])
 
         # update agent fitness with the current run
         # if it's the first run the fitness is just current trial fitness, otherwise it's a
@@ -370,6 +390,7 @@ class Evolution:
         else:
             agent1.fitness = self.rolling_mean(agent1.fitness, trial_fitness, shuffle_num+1)
             agent2.fitness = self.rolling_mean(agent2.fitness, trial_fitness, shuffle_num+1)
+        return agent1, agent2
 
     def create_population(self, size):
         """
@@ -381,21 +402,21 @@ class Evolution:
         population = []
         for i in range(size):
             # create the agent's CTRNN brain
-            agent_brain = CTRNN.CTRNN(self.network_params['num_neurons'],
-                                      self.network_params['step_size'],
-                                      self.network_params['tau_range'],
-                                      self.network_params['g_range'],
-                                      self.network_params['theta_range'],
-                                      self.network_params['w_range'])
+            agent_brain = BrainCTRNN(self.network_params['num_neurons'],
+                                     self.network_params['step_size'],
+                                     self.network_params['tau_range'],
+                                     self.network_params['g_range'],
+                                     self.network_params['theta_range'],
+                                     self.network_params['w_range'])
 
             if self.evaluation_params['velocity_control'] == "direct":
-                agent = simulate.DirectVelocityAgent(agent_brain, self.agent_params, self.evaluation_params['screen_width'])
+                agent = agents.DirectVelocityAgent(agent_brain, self.agent_params, self.evaluation_params['screen_width'])
             else:
                 # create new agent of a certain type
-                # agent = simulate.Agent(agent_brain, self.agent_params)
-                # agent = simulate.EmbodiedAgentV1(agent_brain, self.agent_params, self.evaluation_params['screen_width'])
-                agent = simulate.EmbodiedAgentV2(agent_brain, self.agent_params, self.evaluation_params['screen_width'])
-                # agent = simulate.ButtonOnOffAgent(agent_brain, self.agent_params, self.evaluation_params['screen_width'])
+                # agent = agents.Agent(agent_brain, self.agent_params)
+                # agent = agents.EmbodiedAgentV1(agent_brain, self.agent_params, self.evaluation_params['screen_width'])
+                agent = agents.EmbodiedAgentV2(agent_brain, self.agent_params, self.evaluation_params['screen_width'])
+                # agent = agents.ButtonOnOffAgent(agent_brain, self.agent_params, self.evaluation_params['screen_width'])
             population.append(agent)
         return population
 
@@ -413,8 +434,12 @@ class Evolution:
         population.sort(key=lambda agent: agent.fitness, reverse=True)
         return population
 
-    def load_joint_population(self, foldername, gen):
-        population = self.load_population(foldername, gen)
+    @staticmethod
+    def load_joint_population(genfile):
+        pop_file = open(genfile, 'rb')
+        population = pickle.load(pop_file)
+        pop_file.close()
+        random.shuffle(population)
         size = len(population)
         population_left = population[:int(size/2)]
         population_right = population[int(size/2):]
